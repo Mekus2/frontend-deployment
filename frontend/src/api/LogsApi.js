@@ -1,10 +1,12 @@
 import axios from "axios";
 
 // Base API URLs
-const LOGS_API_URL = "http://127.0.0.1:8000/logs/logs/";
+const LOGS_API_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/logs/logs/";
 const USER_LOGS_API_URL = `${LOGS_API_URL}user/`;
 const TRANSACTION_LOGS_API_URL = `${LOGS_API_URL}transaction/`;
-const USERS_API_URL = "http://127.0.0.1:8000/account/logs/";
+const USERS_API_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/account/logs/";
 
 // Fetch all logs
 export const fetchLogs = async () => {
@@ -75,13 +77,15 @@ export const createLog = async (logData) => {
   }
 };
 
-export const fetchTotalLogs = async  () => {
+export const fetchTotalLogs = async () => {
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/logs/total/`);
-    console.log('Total logs:', response.data);
+    const response = await axios.get(
+      `https://backend-deployment-production-92b6.up.railway.app/logs/total/`
+    );
+    console.log("Total logs:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch total logs');
-    throw new Error('Failed error');
+    console.error("Failed to fetch total logs");
+    throw new Error("Failed error");
   }
 };

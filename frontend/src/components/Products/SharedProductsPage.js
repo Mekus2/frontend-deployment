@@ -112,7 +112,7 @@ const SharedProductsPage = () => {
     try {
       // Ensure product.id is a valid number or string
       const productResponse = await axios.get(
-        `http://127.0.0.1:8000/items/productList/${product.id}`
+        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${product.id}`
       );
       console.log("Product API Response:", productResponse.data); // Log the product data
 
@@ -166,25 +166,19 @@ const SharedProductsPage = () => {
 
   return (
     <>
-      <Controls>
-        <SearchBar
-          placeholder="Search / Filter product..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <ButtonGroup>
-          <StyledButton onClick={openAddProductModal}>
-            <FaPlus className="icon" /> Product
-            <p value={product}></p>
-          </StyledButton>
-        </ButtonGroup>
-      </Controls>
       <AnalyticsContainer>
         <CardTotalProducts />
         <ClickableCard onClick={handleCardClick}>
           {/* <CardTotalCategories /> */}
         </ClickableCard>
       </AnalyticsContainer>
+      <Controls>
+        <SearchBar
+          placeholder="Search / Filter product..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </Controls>
       <Table headers={headers} rows={rows} />
       {isAddProductModalOpen && (
         <AddProductModal onClose={closeAddProductModal} />

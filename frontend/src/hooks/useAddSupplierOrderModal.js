@@ -40,7 +40,7 @@ const useAddSupplierOrderModal = (onSave, onClose) => {
     const fetchSuppliers = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/supplier/suppliers/"
+          "https://backend-deployment-production-92b6.up.railway.app/supplier/suppliers/"
         );
         setSupplierData(response.data);
         console.log("Supplier Data:", response.data);
@@ -308,7 +308,7 @@ const useAddSupplierOrderModal = (onSave, onClose) => {
     try {
       // Fetch user details from the backend using the userId
       const userResponse = await fetch(
-        `http://127.0.0.1:8000/account/logs/${userId}/`
+        `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`
       );
       if (!userResponse.ok) {
         const errorData = await userResponse.json();
@@ -338,13 +338,16 @@ const useAddSupplierOrderModal = (onSave, onClose) => {
       };
 
       // Send the log payload to the server to create a log entry
-      const logResponse = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const logResponse = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (logResponse.ok) {
         console.log("Supplier Order log successfully created:", logPayload);

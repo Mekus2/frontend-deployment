@@ -15,12 +15,15 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
   // Function to handle the deactivation request
   const handleDeactivate = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/account/deactivateUser/${user.id}/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `https://backend-deployment-production-92b6.up.railway.app/account/deactivateUser/${user.id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         alert("User has been deactivated successfully.");
@@ -39,12 +42,15 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
   // Function to handle the activation request
   const handleActivate = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/account/reactivateUser/${user.id}/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `https://backend-deployment-production-92b6.up.railway.app/account/reactivateUser/${user.id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         alert("User has been activated successfully.");
@@ -70,13 +76,16 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         console.log("Log successfully created:", logPayload);
@@ -117,7 +126,9 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
         <ButtonGroup>
           <Button
             variant={isActive ? "red" : "green"} // Red for Deactivate, Green for Activate
-            onClick={isActive ? () => setShowConfirmation(true) : handleActivate}
+            onClick={
+              isActive ? () => setShowConfirmation(true) : handleActivate
+            }
           >
             {isActive ? "Deactivate" : "Activate"} {/* Toggle button text */}
           </Button>
@@ -126,7 +137,10 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
 
       {/* Confirmation Modal for Deactivation */}
       {showConfirmation && (
-        <Modal title="Confirm Deactivation" onClose={() => setShowConfirmation(false)}>
+        <Modal
+          title="Confirm Deactivation"
+          onClose={() => setShowConfirmation(false)}
+        >
           <ConfirmationText>
             Are you sure you want to deactivate this user?
           </ConfirmationText>
@@ -134,7 +148,10 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
             <Button variant="red" onClick={handleDeactivate}>
               Yes, Deactivate
             </Button>
-            <Button variant="default" onClick={() => setShowConfirmation(false)}>
+            <Button
+              variant="default"
+              onClick={() => setShowConfirmation(false)}
+            >
               Cancel
             </Button>
           </ButtonGroup>

@@ -1,7 +1,8 @@
+//CustomerDeliveryApi.js
 import axios from "axios";
 
 // Base URL for the supplier API
-const BASE_URL = "http://127.0.0.1:8000/";
+const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app/";
 
 // Function to add new Customer Order Delivery
 export const addNewCustomerDelivery = async (orderData) => {

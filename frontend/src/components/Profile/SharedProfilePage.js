@@ -64,7 +64,7 @@ const SharedProfilePage = () => {
           setLastName(userData.last_name);
           setUsername(userData.username);
           const imageResponse = await axios.get(
-            `http://127.0.0.1:8000/account/users/${userId}/image/`
+            `https://backend-deployment-production-92b6.up.railway.app/account/users/${userId}/image/`
           );
           setProfileImage(imageResponse.data.image_url || profilePic);
         } catch (error) {

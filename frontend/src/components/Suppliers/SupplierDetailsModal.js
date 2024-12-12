@@ -18,14 +18,22 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
     if (!editedSupplier.Supp_Company_Name) {
       newErrors.Supp_Company_Name = "Company name is required";
     }
-    if (!editedSupplier.Supp_Company_Num || !/^\d{11}$/.test(editedSupplier.Supp_Company_Num)) {
-      newErrors.Supp_Company_Num = "Company number must be 11 digits and start with '0'";
+    if (
+      !editedSupplier.Supp_Company_Num ||
+      !/^\d{11}$/.test(editedSupplier.Supp_Company_Num)
+    ) {
+      newErrors.Supp_Company_Num =
+        "Company number must be 11 digits and start with '0'";
     }
     if (!editedSupplier.Supp_Contact_Pname) {
       newErrors.Supp_Contact_Pname = "Contact name is required";
     }
-    if (!editedSupplier.Supp_Contact_Num || !/^\d{11}$/.test(editedSupplier.Supp_Contact_Num)) {
-      newErrors.Supp_Contact_Num = "Contact number must be 11 digits and start with '0'";
+    if (
+      !editedSupplier.Supp_Contact_Num ||
+      !/^\d{11}$/.test(editedSupplier.Supp_Contact_Num)
+    ) {
+      newErrors.Supp_Contact_Num =
+        "Contact number must be 11 digits and start with '0'";
     }
 
     setErrors(newErrors);
@@ -43,7 +51,7 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
         try {
           const updatedSupplier = { ...editedSupplier };
           const response = await fetch(
-            `http://127.0.0.1:8000/supplier/suppliers/${supplier.id}/`,
+            `https://backend-deployment-production-92b6.up.railway.app/supplier/suppliers/${supplier.id}/`,
             {
               method: "PUT",
               headers: {
@@ -52,13 +60,15 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
               body: JSON.stringify(updatedSupplier),
             }
           );
-          console.log('updated:', updatedSupplier);
+          console.log("updated:", updatedSupplier);
           notify.success("Customer details updated succesfully!");
 
           if (!response.ok) {
             const errorData = await response.json();
             alert(
-              `Error: ${errorData.message || "Failed to update supplier details"}`
+              `Error: ${
+                errorData.message || "Failed to update supplier details"
+              }`
             );
           } else {
             alert("Supplier details saved successfully!");
@@ -116,13 +126,16 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
 
     try {
       // Send the log data to the backend
-      const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         console.log("Supplier log successfully created:", logPayload);
@@ -152,7 +165,9 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
 
   return (
     <Modal
-      title={isEditing ? `Edit ${supplier.Supp_Company_Name}` : "Supplier Details"}
+      title={
+        isEditing ? `Edit ${supplier.Supp_Company_Name}` : "Supplier Details"
+      }
       onClose={onClose}
     >
       {isEditing ? (
@@ -170,7 +185,9 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
                   })
                 }
               />
-              {errors.Supp_Company_Name && <Error>{errors.Supp_Company_Name}</Error>}
+              {errors.Supp_Company_Name && (
+                <Error>{errors.Supp_Company_Name}</Error>
+              )}
             </DetailItem>
             <DetailItem>
               <Label>Company Number:</Label>
@@ -180,7 +197,9 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
                 onChange={handleNumberChange("Supp_Company_Num")}
                 maxLength="11"
               />
-              {errors.Supp_Company_Num && <Error>{errors.Supp_Company_Num}</Error>}
+              {errors.Supp_Company_Num && (
+                <Error>{errors.Supp_Company_Num}</Error>
+              )}
             </DetailItem>
             <DetailItem>
               <Label>Contact Name:</Label>
@@ -194,7 +213,9 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
                   })
                 }
               />
-              {errors.Supp_Contact_Pname && <Error>{errors.Supp_Contact_Pname}</Error>}
+              {errors.Supp_Contact_Pname && (
+                <Error>{errors.Supp_Contact_Pname}</Error>
+              )}
             </DetailItem>
             <DetailItem>
               <Label>Contact Number:</Label>
@@ -204,7 +225,9 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
                 onChange={handleNumberChange("Supp_Contact_Num")}
                 maxLength="11"
               />
-              {errors.Supp_Contact_Num && <Error>{errors.Supp_Contact_Num}</Error>}
+              {errors.Supp_Contact_Num && (
+                <Error>{errors.Supp_Contact_Num}</Error>
+              )}
             </DetailItem>
           </Details>
           <ButtonGroup>

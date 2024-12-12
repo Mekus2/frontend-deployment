@@ -33,7 +33,7 @@ const SuperAdminDashboard = () => {
   const [currentCardOrder, setCurrentCardOrder] = useState([
     "CardTotalProducts",
     // "CardLowStocks",
-    "CardTotalInventoryValue",
+    // "CardTotalInventoryValue",
     "CardTotalCustomerOrder",
     "CardTotalCustomers",
     "CardTotalDelivery",
@@ -43,7 +43,7 @@ const SuperAdminDashboard = () => {
     "CardTotalSuppliers",
     "CardTotalTransactions",
     "CardTotalUsers",
-    "CardTotalSales",
+    // "CardTotalSales",
   ]);
 
   const [tableOrder, setTableOrder] = useState([]);

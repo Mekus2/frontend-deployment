@@ -9,7 +9,9 @@ export async function fetchSalesInvoices(
 ) {
   try {
     // Construct the URL with search, page, and page_size query parameters
-    const url = new URL("http://127.0.0.1:8000/sales/list/");
+    const url = new URL(
+      "https://backend-deployment-production-92b6.up.railway.app/sales/list/"
+    );
     const params = new URLSearchParams();
 
     // Add search term if provided

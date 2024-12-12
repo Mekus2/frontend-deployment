@@ -52,7 +52,6 @@ const SharedSuppliersPage = () => {
     });
     setFilteredSuppliers(filtered);
   };
-  
 
   const openAddSupplierModal = () => {
     setShowAddModal(true);
@@ -61,7 +60,7 @@ const SharedSuppliersPage = () => {
   const openDetailsModal = async (supplier) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/supplier/suppliers/${supplier.id}/`
+        `https://backend-deployment-production-92b6.up.railway.app/supplier/suppliers/${supplier.id}/`
       );
       console.log("API RESPONSE:", response.data);
       setSelectedSupplier(response.data);

@@ -29,9 +29,11 @@ const ChangePassModal = ({ onClose, onSave }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!currentPassword) newErrors.currentPassword = "Current password is required.";
+    if (!currentPassword)
+      newErrors.currentPassword = "Current password is required.";
     if (!newPassword) newErrors.newPassword = "New password is required.";
-    if (newPassword !== confirmPassword) newErrors.confirmPassword = "Passwords do not match.";
+    if (newPassword !== confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -39,23 +41,26 @@ const ChangePassModal = ({ onClose, onSave }) => {
 
   const handleSave = async () => {
     if (!validate()) return;
-  
+
     const userId = localStorage.getItem("user_id");
-    const accessToken = localStorage.getItem("access_token");  // Make sure the token is stored in localStorage
-  
+    const accessToken = localStorage.getItem("access_token"); // Make sure the token is stored in localStorage
+
     try {
-      const response = await fetch(`http://127.0.0.1:8000/account/users/${userId}/change-password/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,  // Include the access token for authentication
-        },
-        body: JSON.stringify({
-          old_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
-  
+      const response = await fetch(
+        `https://backend-deployment-production-92b6.up.railway.app/account/users/${userId}/change-password/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`, // Include the access token for authentication
+          },
+          body: JSON.stringify({
+            old_password: currentPassword,
+            new_password: newPassword,
+          }),
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to change password:", errorData);
@@ -69,7 +74,7 @@ const ChangePassModal = ({ onClose, onSave }) => {
       setErrors({ apiError: "An error occurred. Please try again." });
     }
   };
-  
+
   return (
     <Backdrop onClick={(e) => e.target === e.currentTarget && onClose()}>
       <ModalContainer ref={modalRef}>
@@ -91,11 +96,15 @@ const ChangePassModal = ({ onClose, onSave }) => {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Input Current Password"
               />
-              <EyeIcon onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+              <EyeIcon
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              >
                 {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
               </EyeIcon>
             </InputContainer>
-            {errors.currentPassword && <ErrorText>{errors.currentPassword}</ErrorText>}
+            {errors.currentPassword && (
+              <ErrorText>{errors.currentPassword}</ErrorText>
+            )}
           </Field>
           <Field>
             <Label>New Password</Label>
@@ -121,11 +130,15 @@ const ChangePassModal = ({ onClose, onSave }) => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm New Password"
               />
-              <EyeIcon onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <EyeIcon
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </EyeIcon>
             </InputContainer>
-            {errors.confirmPassword && <ErrorText>{errors.confirmPassword}</ErrorText>}
+            {errors.confirmPassword && (
+              <ErrorText>{errors.confirmPassword}</ErrorText>
+            )}
           </Field>
         </Content>
 

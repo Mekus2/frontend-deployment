@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { colors } from "../../colors";
 import AddUserModal from "../../components/Users/AddUserModal";
@@ -7,7 +7,7 @@ import SearchBar from "../../components/Layout/SearchBar";
 import Table from "../../components/Layout/Table";
 import Button from "../../components/Layout/Button";
 import Card from "../../components/Layout/Card";
-import { FaPlus, FaUsers } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import axios from "axios";
 import profilePic from "../../assets/profile.png";
 import Loading from "../../components/Layout/Loading"; // Add your Loading component
@@ -23,11 +23,18 @@ const SharedUsersPage = () => {
   const [showInactive, setShowInactive] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = useCallback(async () => {
+  useEffect(() => {
+    const storedUserType = localStorage.getItem("user_type");
+    setUserType(storedUserType);
+
+    fetchUsers();
+  }, [showInactive]); // Re-fetch data when toggling active/inactive state
+
+  const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/account/users/?isactive=${!showInactive}`
+        `https://backend-deployment-production-92b6.up.railway.app/account/users/?isactive=${!showInactive}`
       );
       const data = response.data;
 
@@ -36,7 +43,7 @@ const SharedUsersPage = () => {
       for (const member of data) {
         try {
           const imageResponse = await axios.get(
-            `http://127.0.0.1:8000/account/users/${member.id}/image/`
+            `https://backend-deployment-production-92b6.up.railway.app/account/users/${member.id}/image/`
           );
           const imageUrl = imageResponse.data.image_url;
           newImageUrls[member.id] = imageUrl || profilePic;
@@ -52,14 +59,7 @@ const SharedUsersPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [showInactive]); // Re-fetch data when toggling active/inactive state
-
-  useEffect(() => {
-    const storedUserType = localStorage.getItem("user_type");
-    setUserType(storedUserType);
-
-    fetchUsers();
-  }, [fetchUsers]); // Added fetchUsers to the dependency array
+  };
 
   const handleAddUser = (newUser) => {
     setStaffData((prevData) => [...prevData, newUser]);
@@ -67,9 +67,12 @@ const SharedUsersPage = () => {
 
   const handleActivateDeactivateUser = async (id) => {
     try {
-      await axios.put(`http://127.0.0.1:8000/account/users/${id}/`, {
-        isActive: !showInactive, // Toggle the user's active state
-      });
+      await axios.put(
+        `https://backend-deployment-production-92b6.up.railway.app/account/users/${id}/`,
+        {
+          isActive: !showInactive, // Toggle the user's active state
+        }
+      );
       fetchUsers(); // Refresh the data
     } catch (error) {
       console.error("Error updating user status:", error);
@@ -80,7 +83,7 @@ const SharedUsersPage = () => {
     try {
       // Fetch user details directly based on the user ID using the new URL
       const response = await axios.get(
-        `http://127.0.0.1:8000/account/details/${user.id}/` // Updated URL for fetching user details
+        `https://backend-deployment-production-92b6.up.railway.app/account/details/${user.id}/` // Updated URL for fetching user details
       );
 
       // Include the isActive field along with the other user details
@@ -95,24 +98,12 @@ const SharedUsersPage = () => {
 
   const filteredStaff = staffData.filter((member) => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    const matchesSearchTerm =
+    return (
       member.first_name.toLowerCase().includes(lowerCaseSearchTerm) ||
       member.last_name.toLowerCase().includes(lowerCaseSearchTerm) ||
       member.accType.toLowerCase().includes(lowerCaseSearchTerm) ||
-      member.username.toLowerCase().includes(lowerCaseSearchTerm);
-
-    // If the user is admin, show only staff
-    if (userType === "admin") {
-      return matchesSearchTerm && member.accType.toLowerCase() === "prevstaff";
-    }
-
-    // If the user is superadmin, show both staff and admin
-    if (userType === "superadmin") {
-      return matchesSearchTerm;
-    }
-
-    // Default case (for staff or any other case)
-    return matchesSearchTerm && member.accType.toLowerCase() === "prevstaff";
+      member.username.toLowerCase().includes(lowerCaseSearchTerm)
+    );
   });
 
   const rows = filteredStaff.map((member) => [
@@ -135,44 +126,16 @@ const SharedUsersPage = () => {
     </Button>,
   ]);
 
-  // Count the number of admins and staff if the user is a superadmin
-  const adminCount = staffData.filter(
-    (member) => member.accType.toLowerCase() === "staff"
-  ).length;
-  const staffCount = staffData.filter(
-    (member) => member.accType.toLowerCase() === "prevstaff"
-  ).length;
-
   if (loading) {
     return <Loading />; // Show loading spinner while fetching data
   }
 
   return (
     <>
-      <AnalyticsContainer>
-        {/* Show Staff card for both admin and superadmin */}
-        {(userType === "staff" || userType === "superadmin") && (
-          <Card
-            label="PrevStaff"
-            value={`${staffCount}`}
-            bgColor={colors.primary}
-            icon={<FaUsers />}
-          />
-        )}
-        {/* Show Admin card only for superadmin */}
-        {userType === "superadmin" && (
-          <Card
-            label="Staff"
-            value={`${adminCount}`}
-            bgColor={colors.primary}
-            icon={<FaUsers />}
-          />
-        )}
-      </AnalyticsContainer>
       <Controls>
         <SearchBar
           placeholder={`Search / Filter ${
-            userType === "staff" ? "staff..." : "users..."
+            userType === "admin" ? "staff..." : "users..."
           }`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -194,7 +157,16 @@ const SharedUsersPage = () => {
           </Button>
         </ButtonGroup>
       </Controls>
-
+      <AnalyticsContainer>
+        {(userType === "admin" || userType === "superadmin") && (
+          <Card
+            label={showInactive ? "Inactive Users" : "Active Users"}
+            value={`${filteredStaff.length}`}
+            bgColor={colors.primary}
+            icon={<FaPlus />}
+          />
+        )}
+      </AnalyticsContainer>
       <Table headers={headers} rows={rows} />
       {isAddModalOpen && (
         <AddUserModal

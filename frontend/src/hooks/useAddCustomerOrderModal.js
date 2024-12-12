@@ -52,7 +52,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
     const fetchClients = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/customer/clients/"
+          "https://backend-deployment-production-92b6.up.railway.app/customer/clients/"
         );
         setClientsData(response.data); // Store fetched clients
         console.log("Clients Data:", response.data); // Debug line to check if data is properly set
@@ -329,7 +329,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
     try {
       // Fetch user details from the backend using the userId
       const userResponse = await fetch(
-        `http://127.0.0.1:8000/account/logs/${userId}/`
+        `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`
       );
       if (!userResponse.ok) {
         const errorData = await userResponse.json();
@@ -359,13 +359,16 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       };
 
       // Send the log payload to the server to create a log entry
-      const logResponse = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const logResponse = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (logResponse.ok) {
         console.log("Order log successfully created:", logPayload);

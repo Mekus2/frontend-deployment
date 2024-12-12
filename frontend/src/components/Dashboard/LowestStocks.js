@@ -12,7 +12,7 @@ const LowestStocks = () => {
     const fetchLowStockProducts = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/items/lowStock/"
+          "https://backend-deployment-production-92b6.up.railway.app/items/lowStock/"
         ); // API URL for low stock products
         setLowStockProducts(response.data); // Set the fetched data to state
       } catch (err) {

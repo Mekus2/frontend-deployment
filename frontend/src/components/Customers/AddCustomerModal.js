@@ -29,7 +29,8 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     if (!clientPhoneNum) {
       newErrors.clientPhoneNum = "Phone number is required";
     } else if (!validatePhoneNumber(clientPhoneNum)) {
-      newErrors.clientPhoneNum = "Phone number must start with '0' and be exactly 11 digits";
+      newErrors.clientPhoneNum =
+        "Phone number must start with '0' and be exactly 11 digits";
     }
 
     if (Object.keys(newErrors).length === 0) {
@@ -70,13 +71,16 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         console.log("Customer log successfully created:", logPayload);

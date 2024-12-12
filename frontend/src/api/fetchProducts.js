@@ -5,7 +5,9 @@ import axios from "axios";
 export const getProductByName = async (query, signal) => {
   try {
     const response = await axios.get(
-      `http://127.0.0.1:8000/items/search/?q=${encodeURIComponent(query)}`,
+      `https://backend-deployment-production-92b6.up.railway.app/items/search/?q=${encodeURIComponent(
+        query
+      )}`,
       {
         signal, // Use the signal for aborting requests
         headers: {

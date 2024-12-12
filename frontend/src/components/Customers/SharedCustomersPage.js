@@ -68,7 +68,7 @@ const SharedCustomersPage = () => {
   const openDetailsModal = async (customer) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/customer/clients/${customer.id}/`
+        `https://backend-deployment-production-92b6.up.railway.app/customer/clients/${customer.id}/`
       );
       console.log("API Response:", response.data);
       setSelectedCustomer(response.data);

@@ -52,7 +52,7 @@ export const fetchOrderDetailsById = async (orderId) => {
 export const addNewCustomerOrder = async (orderData) => {
   try {
     const response = await axios.post(
-      "http://127.0.0.1:8000/api/customer-order/",
+      "https://backend-deployment-production-92b6.up.railway.app/api/customer-order/",
       orderData,
       {
         headers: {
@@ -123,7 +123,7 @@ export const updateOrderDetails = async (salesOrderId, orderDetails) => {
   try {
     // Send the request to the backend API for exporting the order details
     const response = await fetch(
-      `http://127.0.0.1:8000/api/customer-order/update/${salesOrderId}`, // Ensure correct URL format
+      `https://backend-deployment-production-92b6.up.railway.app/api/customer-order/update/${salesOrderId}`, // Ensure correct URL format
       {
         method: "PATCH",
         headers: {

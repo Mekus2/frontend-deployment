@@ -17,7 +17,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
     const fetchProductDetails = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/items/productList/${productId}/`
+          `https://backend-deployment-production-92b6.up.railway.app/items/productList/${productId}/`
         );
         setProduct(response.data);
         setEditFields({
@@ -66,7 +66,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
         PROD_CATEGORIES: editFields.categories, // Save categories
       };
       await axios.put(
-        `http://127.0.0.1:8000/items/productList/${productId}/`,
+        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${productId}/`,
         updatedProduct
       );
       notify.success("Product updated successfully!");
@@ -81,7 +81,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
   const logProductCreation = async (oldProduct, updatedProduct) => {
     const userId = localStorage.getItem("user_id");
     const userResponse = await fetch(
-      `http://127.0.0.1:8000/account/logs/${userId}/`
+      `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`
     );
     if (!userResponse.ok) {
       const errorData = await userResponse.json();
@@ -126,13 +126,16 @@ const ProductDetailsModal = ({ productId, onClose }) => {
 
       try {
         // Send the log data to the backend
-        const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(logPayload),
-        });
+        const response = await fetch(
+          "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(logPayload),
+          }
+        );
 
         // Handle the response
         if (response.ok) {
@@ -181,7 +184,10 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           </DetailItem>
           <DetailItem>
             <Label>Category:</Label>
-            <CategoriesInput value={editFields.categories} onChange={handleCategoriesChange} />
+            <CategoriesInput
+              value={editFields.categories}
+              onChange={handleCategoriesChange}
+            />
           </DetailItem>
           <DetailItem>
             <Label>Units:</Label>

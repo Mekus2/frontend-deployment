@@ -23,7 +23,8 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
     if (!editedClient.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
     } else if (!/^0\d{10}$/.test(editedClient.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be 11 digits and start with '0'";
+      newErrors.phoneNumber =
+        "Phone number must be 11 digits and start with '0'";
     }
 
     setErrors(newErrors);
@@ -41,7 +42,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
         try {
           const updatedClient = { ...editedClient };
           const response = await fetch(
-            `http://127.0.0.1:8000/customer/clients/${client.id}/`,
+            `https://backend-deployment-production-92b6.up.railway.app/customer/clients/${client.id}/`,
             {
               method: "PUT",
               headers: {
@@ -50,12 +51,14 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
               body: JSON.stringify(updatedClient),
             }
           );
-          notify.success("Customer details updated succesfully!");  
+          notify.success("Customer details updated succesfully!");
 
           if (!response.ok) {
             const errorData = await response.json();
             alert(
-              `Error: ${errorData.message || "Failed to update customer details"}`
+              `Error: ${
+                errorData.message || "Failed to update customer details"
+              }`
             );
           } else {
             alert("Customer details updated successfully!");
@@ -108,56 +111,58 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
     // Prepare the fields for logging changes
     const changes = [];
     const fieldsToCheck = [
-        { field: "name", label: "Customer Name" },
-        { field: "address", label: "Address" },
-        { field: "province", label: "Province" },
-        { field: "phoneNumber", label: "Phone Number" },
+      { field: "name", label: "Customer Name" },
+      { field: "address", label: "Address" },
+      { field: "province", label: "Province" },
+      { field: "phoneNumber", label: "Phone Number" },
     ];
 
     // Check for changes and format them for logging
     fieldsToCheck.forEach(({ field, label }) => {
-        if (oldClient[field] !== updatedClient[field]) {
-            changes.push(
-                `${label} changed from "${oldClient[field] || "N/A"}" to "${
-                    updatedClient[field] || "N/A"
-                }"`
-            );
-        }
+      if (oldClient[field] !== updatedClient[field]) {
+        changes.push(
+          `${label} changed from "${oldClient[field] || "N/A"}" to "${
+            updatedClient[field] || "N/A"
+          }"`
+        );
+      }
     });
 
     // If there are changes, prepare the log payload
     if (changes.length > 0) {
-        const logPayload = {
-            LLOG_TYPE: "User logs",
-            LOG_DESCRIPTION: `Updated Customer details:\n${changes.join("\n")}`,
-            USER_ID: userId,
-        };
+      const logPayload = {
+        LLOG_TYPE: "User logs",
+        LOG_DESCRIPTION: `Updated Customer details:\n${changes.join("\n")}`,
+        USER_ID: userId,
+      };
 
-        try {
-            // Send the log data to the backend
-            const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(logPayload),
-            });
+      try {
+        // Send the log data to the backend
+        const response = await fetch(
+          "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(logPayload),
+          }
+        );
 
-            // Handle the response
-            if (response.ok) {
-                console.log("Customer updated details:", logPayload);
-            } else {
-                const errorData = await response.json();
-                console.error("Failed to create log:", errorData);
-            }
-        } catch (error) {
-            console.error("Error logging customer updates:", error);
+        // Handle the response
+        if (response.ok) {
+          console.log("Customer updated details:", logPayload);
+        } else {
+          const errorData = await response.json();
+          console.error("Failed to create log:", errorData);
         }
+      } catch (error) {
+        console.error("Error logging customer updates:", error);
+      }
     } else {
-        console.log("No changes detected. Logging skipped.");
+      console.log("No changes detected. Logging skipped.");
     }
-};
-
+  };
 
   return (
     <Modal
@@ -186,7 +191,10 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
                   type="text"
                   value={editedClient.address || ""}
                   onChange={(e) =>
-                    setEditedClient({ ...editedClient, address: e.target.value })
+                    setEditedClient({
+                      ...editedClient,
+                      address: e.target.value,
+                    })
                   }
                   border
                   placeholder="Address"
@@ -196,7 +204,10 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
                   type="text"
                   value={editedClient.province || ""}
                   onChange={(e) =>
-                    setEditedClient({ ...editedClient, province: e.target.value })
+                    setEditedClient({
+                      ...editedClient,
+                      province: e.target.value,
+                    })
                   }
                   border
                   placeholder="Province"
@@ -228,16 +239,14 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
         <>
           <Section>
             <Detail>
-              <DetailLabel>Client Name:</DetailLabel>{" "}
-              {client.name || "N/A"}
+              <DetailLabel>Client Name:</DetailLabel> {client.name || "N/A"}
             </Detail>
             <Detail>
               <DetailLabel>Location:</DetailLabel>{" "}
               {`${client.address || "N/A"}, ${client.province || "N/A"}`}
             </Detail>
             <Detail>
-              <DetailLabel>Phone:</DetailLabel>{" "}
-              {client.phoneNumber || "N/A"}
+              <DetailLabel>Phone:</DetailLabel> {client.phoneNumber || "N/A"}
             </Detail>
           </Section>
           <ButtonGroup>

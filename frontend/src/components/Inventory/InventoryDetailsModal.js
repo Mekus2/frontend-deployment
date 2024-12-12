@@ -12,7 +12,9 @@ const InventoryDetailsModal = ({ item, onClose }) => {
   // Fetch the reorder level for the specific product ID
   useEffect(() => {
     if (prodId) {
-      fetch(`http://127.0.0.1:8000/items/productList/${prodId}/`)
+      fetch(
+        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${prodId}/`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch product data");
@@ -21,7 +23,7 @@ const InventoryDetailsModal = ({ item, onClose }) => {
         })
         .then((data) => {
           setReorderLevel(data.PROD_RO_LEVEL);
-          console.log('RO LEVEL:', data.PROD_RO_LEVEL)
+          console.log("RO LEVEL:", data.PROD_RO_LEVEL);
         })
         .catch((error) => {
           console.error("Error fetching product data:", error);
@@ -59,8 +61,7 @@ const InventoryDetailsModal = ({ item, onClose }) => {
           {new Date(item.EXPIRY_DATE).toLocaleDateString()}
         </Detail>
         <Detail>
-          <DetailLabel>Inbound Delivery Id:</DetailLabel>{" "}
-          {item.INBOUND_DEL_ID}
+          <DetailLabel>Inbound Delivery Id:</DetailLabel> {item.INBOUND_DEL_ID}
         </Detail>
         <Detail>
           <DetailLabel>Quantity on Hand:</DetailLabel> {item.QUANTITY_ON_HAND}

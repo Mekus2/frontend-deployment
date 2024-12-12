@@ -12,14 +12,15 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
 
   const handleQuantityChange = (index, value) => {
     const newOrderDetails = [...updatedOrderDetails];
-    const availableQuantity = newOrderDetails[index].OUTBOUND_DETAILS_PROD_QTY;
+    const availableQuantity =
+      newOrderDetails[index].OUTBOUND_DETAILS_PROD_QTY_ORDERED;
 
-    if (value <= availableQuantity && value >= 0) {
+    if (value >= 0 && value <= availableQuantity) {
       newOrderDetails[index].updatedQuantity = value;
       setUpdatedOrderDetails(newOrderDetails);
     } else {
       alert(
-        "Quantity must not exceed the shipped quantity and cannot be negative."
+        `Quantity must be between 0 and ${availableQuantity}, and cannot be negative.`
       );
     }
   };
@@ -112,9 +113,9 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
         <thead>
           <tr>
             <TableHeader>Product Name</TableHeader>
-            <TableHeader>Quantity Shipped</TableHeader>
+            <TableHeader>Qty Ordered</TableHeader>
             <TableHeader>Affected Qty</TableHeader>
-            <TableHeader>Price</TableHeader>
+            <TableHeader>Sell Price</TableHeader>
             <TableHeader>Total</TableHeader>
           </tr>
         </thead>
@@ -122,7 +123,8 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
           {updatedOrderDetails.map((item, index) => (
             <TableRow key={index}>
               <TableCell>{item.OUTBOUND_DETAILS_PROD_NAME}</TableCell>
-              <TableCell>{item.OUTBOUND_DETAILS_PROD_QTY}</TableCell>
+              <TableCell>{item.OUTBOUND_DETAILS_PROD_QTY_ORDERED}</TableCell>
+
               <TableCell>
                 <QuantityInput
                   type="number"

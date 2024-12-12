@@ -23,8 +23,8 @@ const SharedInventoryPage = () => {
       setError(null); // Reset error state
       try {
         const url = searchTerm
-          ? `http://127.0.0.1:8000/inventory/search/?PRODUCT_NAME=${searchTerm}`
-          : `http://127.0.0.1:8000/inventory/list/`;
+          ? `https://backend-deployment-production-92b6.up.railway.app/inventory/search/?PRODUCT_NAME=${searchTerm}`
+          : `https://backend-deployment-production-92b6.up.railway.app/inventory/list/`;
         const response = await axios.get(url);
         setInventoryData(response.data); // Store the fetched inventory data
       } catch (err) {
@@ -40,7 +40,7 @@ const SharedInventoryPage = () => {
   const handleDetailClick = async (item) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/inventory/list/${item.INVENTORY_ID}/`
+        `https://backend-deployment-production-92b6.up.railway.app/inventory/list/${item.INVENTORY_ID}/`
       );
       setSelectedItem(response.data);
       setShowDetailModal(true);
@@ -54,7 +54,13 @@ const SharedInventoryPage = () => {
     setSelectedItem(null);
   };
 
-  const headers = ["Name", "Batch No", "Quantity on Hand", "Expiry Date", "Action"];
+  const headers = [
+    "Name",
+    "Batch No",
+    "Quantity on Hand",
+    "Expiry Date",
+    "Action",
+  ];
 
   const rows = inventoryData.map((item) => [
     item.PRODUCT_NAME,

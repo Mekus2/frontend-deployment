@@ -87,7 +87,7 @@ const AddUserModal = ({ onClose, onSave }) => {
       try {
         // Make the API request to create the user
         const response = await fetch(
-          "http://127.0.0.1:8000/account/register/",
+          "https://backend-deployment-production-92b6.up.railway.app/account/register/",
           {
             method: "POST",
             body: formData,
@@ -148,13 +148,16 @@ const AddUserModal = ({ onClose, onSave }) => {
 
     try {
       // Send the log data to the backend
-      const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        body: JSON.stringify(logPayload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          body: JSON.stringify(logPayload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         console.log("Log successfully created:", logPayload);

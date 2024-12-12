@@ -1,10 +1,14 @@
 import axios from "axios";
 
 // Specific endpoints for each action in the Forgot Password process
-const OTP_URL = "http://127.0.0.1:8000/forgot/otp/";
-const VERIFY_OTP_URL = "http://127.0.0.1:8000/forgot/verifyotp/";
-const CHANGE_PASSWORD_URL = "http://127.0.0.1:8000/forgot/changepassword/";
-const RESEND_OTP_URL = "http://127.0.0.1:8000/forgot/resend-otp/";
+const OTP_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/forgot/otp/";
+const VERIFY_OTP_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/forgot/verifyotp/";
+const CHANGE_PASSWORD_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/forgot/changepassword/";
+const RESEND_OTP_URL =
+  "https://backend-deployment-production-92b6.up.railway.app/forgot/resend-otp/";
 
 // Function to send the OTP email
 export const sendOtp = async (email) => {

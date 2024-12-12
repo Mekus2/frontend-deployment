@@ -48,24 +48,13 @@ const StocksReport = () => {
     setFilteredStockData(filtered);
   };
 
-  const headers = [
-    "Product Name",
-    "Opening Qty",
-    "Sold Qty",
-    "Delivered Qty",
-    "Total Qty",
-    "Action",
-  ];
+  const headers = ["Product Name", "Date", "Opening Qty", "Current"];
 
   const rows = filteredStockData.map((item) => [
     item.product_name,
     item.opening_qty,
     item.sold_qty,
     item.delivered_qty,
-    item.total_qty,
-    <Button onClick={() => alert(`Details for ${item.product_name}`)}>
-      Details
-    </Button>,
   ]);
 
   return (

@@ -22,7 +22,9 @@ const SharedSalesPage = () => {
   useEffect(() => {
     const fetchSalesInvoices = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/sales/list/"); // Your API endpoint for sales invoices
+        const response = await fetch(
+          "https://backend-deployment-production-92b6.up.railway.app/sales/list/"
+        ); // Your API endpoint for sales invoices
         const data = await response.json();
 
         // Assuming the fetched data is an array of sales invoices, set it to the state

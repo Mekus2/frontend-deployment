@@ -15,7 +15,7 @@ const SharedLogsPage = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [userDetails, setUserDetails] = useState({});
+  const [userDetails, setUserDetails] = useState({}); // Map of USER_ID to user names
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +38,9 @@ const SharedLogsPage = () => {
 
         setLogs(data.results);
         setTotalRows(data.count);
+
+        // Fetch user details for the logs
+        await fetchUserDetails(data.results);
       } catch (err) {
         console.error("Error fetching logs:", err);
         setError("Failed to fetch logs. Please try again.");
@@ -46,6 +49,25 @@ const SharedLogsPage = () => {
         console.log("Finished fetching logs.");
       }
     };
+
+    const fetchUserDetails = async (logs) => {
+      const uniqueUserIds = [...new Set(logs.map((log) => log.USER_ID))];
+      const userMap = { ...userDetails }; // Preserve existing user details
+
+      for (const userId of uniqueUserIds) {
+        if (!userMap[userId]) {
+          try {
+            const user = await fetchUserById(userId);
+            userMap[userId] = `${user.first_name} ${user.last_name}`;
+          } catch (err) {
+            console.error(`Error fetching user details for ID ${userId}:`, err);
+            userMap[userId] = "Unknown User";
+          }
+        }
+      }
+      setUserDetails(userMap);
+    };
+
     fetchLogs();
   }, [activeTab, currentPage]);
 

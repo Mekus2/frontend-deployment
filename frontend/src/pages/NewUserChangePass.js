@@ -23,39 +23,43 @@ const NewUserChangePass = ({ userId }) => {
 
   const handleChangePassword = async () => {
     const userId = localStorage.getItem("user_id");
-    // Regex for validating a strong password
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
+
     if (!newPassword || !confirmPassword) {
       setError("Both fields are required.");
       return;
     }
-  
+
+    // Check if passwords match first
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match. Please re-enter your passwords.");
+      return;
+    }
+
+    // Regex for validating a strong password
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    // Now validate the password
     if (!passwordRegex.test(newPassword)) {
       setError(
         "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character."
       );
       return;
     }
-  
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match. Please re-enter your passwords.");
-      return;
-    }
-  
+
     try {
       // Make the API call to change the password
-      const token = localStorage.getItem("auth_token");  // Get JWT token from local storage
+      const token = localStorage.getItem("auth_token");
 
       const response = await axios.put(
-        `http://127.0.0.1:8000/account/users/changepass/${userId}/`,
+        `https://backend-deployment-production-92b6.up.railway.app/account/users/changepass/${userId}/`,
         {
-          new_password: newPassword,  // New password to update
-          confirm_password: confirmPassword,  // Confirm password to check match
+          new_password: newPassword,
+          confirm_password: confirmPassword,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,  // Pass the JWT token for authentication
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -63,7 +67,7 @@ const NewUserChangePass = ({ userId }) => {
       setPasswordChanged(true);
       notifySuccess("Your password has been successfully changed!");
       setTimeout(() => {
-        navigate("/login");  // Redirect to login page after successful change
+        navigate("/login");
       }, 2000);
     } catch (error) {
       setError("An error occurred while changing your password.");
@@ -89,7 +93,8 @@ const NewUserChangePass = ({ userId }) => {
         </LogoContainer>
         <Title>Change Your Password</Title>
         <InstructionText>
-          Please set a new password. Choose a strong password and keep it in a safe place.
+          Please set a new password. Choose a strong password and keep it in a
+          safe place.
         </InstructionText>
         {error && <ErrorText>{error}</ErrorText>}
         {passwordChanged ? (
@@ -105,7 +110,9 @@ const NewUserChangePass = ({ userId }) => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
-              <TogglePasswordVisibility onClick={() => setShowPassword(!showPassword)}>
+              <TogglePasswordVisibility
+                onClick={() => setShowPassword(!showPassword)}
+              >
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </TogglePasswordVisibility>
             </PasswordContainer>
@@ -116,11 +123,15 @@ const NewUserChangePass = ({ userId }) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <TogglePasswordVisibility onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <TogglePasswordVisibility
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
                 {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
               </TogglePasswordVisibility>
             </PasswordContainer>
-            <SubmitButton onClick={handleChangePassword}>Change Password</SubmitButton>
+            <SubmitButton onClick={handleChangePassword}>
+              Change Password
+            </SubmitButton>
           </>
         )}
       </FormContainer>
