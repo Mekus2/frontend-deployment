@@ -6,7 +6,10 @@ const API_URL = "https://backend-deployment-production-92b6.up.railway.app/"; //
 // Function to log in
 export const loginUser = async (credentials) => {
   try {
-    const response = await axios.post(`${API_URL}login/`, credentials);
+    const response = await axios.post(
+      "https://backend-deployment-production-92b6.up.railway.app/login/",
+      credentials
+    );
     console.log(response.data); // Check response data
 
     // Destructure response data to get the tokens and other user information
@@ -53,7 +56,10 @@ export const logoutUser = async () => {
     }
 
     // Send POST request to logout endpoint with refresh token
-    await axios.post(`${API_URL}logout/`, { refresh: refreshToken });
+    await axios.post(
+      "https://backend-deployment-production-92b6.up.railway.app/logout/",
+      { refresh: refreshToken }
+    );
 
     // Clear cookies and localStorage data on logout
     Cookies.remove("access_tokenStorage"); // Remove access token cookie
