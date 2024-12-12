@@ -1,42 +1,42 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; 
-import styled from 'styled-components';
-import { useUserRole } from '../context/UserContext'; 
-import { loginUser } from '../api/LoginApi'; 
-import logo from '../assets/roundlogo.png';
-import loginbg from '../assets/loginbg.png';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { useUserRole } from "../context/UserContext";
+import { loginUser } from "../api/LoginApi";
+import logo from "../assets/roundlogo.png";
+import loginbg from "../assets/loginbg.png";
 
 // Import icons from react-icons
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); 
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
-  const { setRole } = useUserRole(); 
-  const navigate = useNavigate(); 
+  const { setRole } = useUserRole();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true); 
+    setError("");
+    setIsLoading(true);
 
     try {
       const credentials = { username, password };
-      const data = await loginUser(credentials); 
+      const data = await loginUser(credentials);
       await logLoginEvent();
 
       if (password === "Password@123") {
-        navigate('/change-password'); 
+        navigate("/change-password");
       } else {
-        setRole(data.type); 
-        navigate(`/${data.type}/dashboard`); 
+        setRole(data.type);
+        navigate(`/${data.type}/dashboard`);
       }
     } catch (err) {
-      setError(err.detail || 'Login failed');
-      console.error('Login failed:', err); 
+      setError(err.detail || "Login failed");
+      console.error("Login failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -50,45 +50,51 @@ const LoginPage = () => {
 
   const logLoginEvent = async () => {
     const userId = localStorage.getItem("user_id");
-  
+
     if (!userId) {
       console.error("User ID is not available in localStorage.");
       return;
     }
-  
+
     try {
       // Fetch user details by user ID
-      const userResponse = await fetch(`http://127.0.0.1:8000/account/logs/${userId}/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
+      const userResponse = await fetch(
+        `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       if (!userResponse.ok) {
         console.error("Failed to fetch user details.");
         return;
       }
-  
+
       const userData = await userResponse.json();
       const { first_name, last_name } = userData;
-  
+
       // Construct the log payload
       const logPayload = {
         LLOG_TYPE: "User logs",
         LOG_DESCRIPTION: `User '${first_name} ${last_name}' logged in successfully.`,
         USER_ID: userId,
       };
-  
+
       // Log the event
-      const logResponse = await fetch("http://127.0.0.1:8000/logs/logs/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(logPayload),
-      });
-  
+      const logResponse = await fetch(
+        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(logPayload),
+        }
+      );
+
       if (logResponse.ok) {
         console.log("Login event logged successfully.");
       } else {
@@ -99,7 +105,6 @@ const LoginPage = () => {
       console.error("Error logging login event:", error);
     }
   };
-  
 
   return (
     <BackgroundContainer>
@@ -118,20 +123,21 @@ const LoginPage = () => {
           />
           <PasswordContainer>
             <Input
-              type={showPassword ? "text" : "password"}  // Toggle password visibility
+              type={showPassword ? "text" : "password"} // Toggle password visibility
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <PasswordToggleButton onClick={handlePasswordToggle}>
-              {showPassword ? <FaEye /> : <FaEyeSlash />}  {/* Use FaEye and FaEyeSlash */}
+              {showPassword ? <FaEye /> : <FaEyeSlash />}{" "}
+              {/* Use FaEye and FaEyeSlash */}
             </PasswordToggleButton>
           </PasswordContainer>
           <Link to="/forgot-password">
             <ForgotPasswordText>Forgot password?</ForgotPasswordText>
           </Link>
           <LoginButton type="submit" disabled={isLoading}>
-            {isLoading ? 'Logging In...' : 'Login'}
+            {isLoading ? "Logging In..." : "Login"}
           </LoginButton>
         </Form>
       </FormContainer>
@@ -159,7 +165,7 @@ const FormContainer = styled.div`
   padding: 30px;
   border-radius: 15px;
   width: 100%;
-  max-width: 450px;  /* Adjust max width */
+  max-width: 450px; /* Adjust max width */
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 `;
 
@@ -191,8 +197,8 @@ const Title = styled.h1`
 `;
 
 const Input = styled.input`
-  width: 100%;  /* Ensures the input takes up full width inside the form */
-  padding: 14px;  
+  width: 100%; /* Ensures the input takes up full width inside the form */
+  padding: 14px;
   margin-bottom: 15px;
   border: 2px solid #000;
   border-radius: 10px;
@@ -200,7 +206,7 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #007B83;
+    border-color: #007b83;
   }
 
   &::placeholder {
