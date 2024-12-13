@@ -20,24 +20,32 @@ const SharedProductsPage = () => {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [isProductDetailsModalOpen, setIsProductDetailsModalOpen] =
     useState(false);
-  const [product, setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Number of items per page
 
   const navigate = useNavigate();
   const location = useLocation();
+
   useEffect(() => {
     const loadProductsAndCategories = async () => {
       try {
         // Fetch products
-        const fetchedProducts = (await fetchProductList()).results;
-        console.log("fetchedProducts:", fetchedProducts);
+        const response = await fetchProductList(currentPage, itemsPerPage); // Make sure to pass pagination params
+        const fetchedProducts = response.results;
+        const total = response.total; // Assuming the API returns a total count of products
+        const totalPages = Math.ceil(total / itemsPerPage);
+
+        setTotalPages(totalPages);
         setProducts(fetchedProducts);
 
         // Filter products based on search term
-        const filteredProducts = fetchedProducts.filter((products) =>
-          products.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
+        const filteredProducts = fetchedProducts.filter((product) =>
+          product.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
         // Get unique category codes
@@ -49,8 +57,6 @@ const SharedProductsPage = () => {
           ),
         ];
 
-        console.log("uncachedCategoryCodes:", uncachedCategoryCodes);
-
         // Fetch categories if uncached codes are found
         const uncachedCategories =
           uncachedCategoryCodes.length > 0
@@ -59,10 +65,6 @@ const SharedProductsPage = () => {
 
         // Map products to rows
         const rowsData = filteredProducts.map((product) => {
-          console.log("Product ID:", product.id); // Log product IDs for debugging
-          console.log("Product Object:", product); // To verify that the correct product is passed
-          const prodId = product.id;
-          console.log("prod IDDD:", prodId);
           const productDetail = product.PROD_DETAILS;
           const category = uncachedCategories.find(
             (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
@@ -73,11 +75,6 @@ const SharedProductsPage = () => {
           const price = parseFloat(productDetail.PROD_DETAILS_PRICE);
 
           return [
-            // <img
-            //   src={product.PROD_IMAGE}
-            //   alt={product.PROD_NAME}
-            //   style={{ width: "50px", height: "auto" }}
-            // />,
             product.PROD_NAME,
             category ? category.PROD_CAT_NAME : "N/A",
             unit,
@@ -95,7 +92,6 @@ const SharedProductsPage = () => {
 
         setRows(rowsData);
         setLoading(false);
-        console.log("rowsData:", rowsData);
       } catch (err) {
         setError("Error fetching products or categories");
         setLoading(false);
@@ -103,23 +99,18 @@ const SharedProductsPage = () => {
     };
 
     loadProductsAndCategories();
-  }, [searchTerm]); // Re-run if searchTerm changes
+  }, [searchTerm, currentPage]); // Re-run if searchTerm or currentPage changes
 
   const openAddProductModal = () => setIsAddProductModalOpen(true);
   const closeAddProductModal = () => setIsAddProductModalOpen(false);
 
   const openProductDetailsModal = async (product) => {
     try {
-      // Ensure product.id is a valid number or string
       const productResponse = await axios.get(
         `https://backend-deployment-production-92b6.up.railway.app/items/productList/${product.id}`
       );
-      console.log("Product API Response:", productResponse.data); // Log the product data
-
-      // Set only the product ID into state
+      console.log("Product API Response:", productResponse.data);
       setSelectedProductId(product.id);
-
-      // Open the modal with the selected product ID
       setIsProductDetailsModalOpen(true);
     } catch (error) {
       console.error("Error fetching product data:", error);
@@ -146,6 +137,10 @@ const SharedProductsPage = () => {
     navigate(path);
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   if (loading) {
     return <div>Loading products...</div>;
   }
@@ -155,7 +150,6 @@ const SharedProductsPage = () => {
   }
 
   const headers = [
-    // "Image",
     "Product Name",
     "Category",
     "Unit",
@@ -168,9 +162,7 @@ const SharedProductsPage = () => {
     <>
       <AnalyticsContainer>
         <CardTotalProducts />
-        <ClickableCard onClick={handleCardClick}>
-          {/* <CardTotalCategories /> */}
-        </ClickableCard>
+        <ClickableCard onClick={handleCardClick} />
       </AnalyticsContainer>
       <Controls>
         <SearchBar
@@ -180,6 +172,11 @@ const SharedProductsPage = () => {
         />
       </Controls>
       <Table headers={headers} rows={rows} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
       {isAddProductModalOpen && (
         <AddProductModal onClose={closeAddProductModal} />
       )}
