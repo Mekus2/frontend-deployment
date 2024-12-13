@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 import { fetchProductList } from "../../api/ProductApi";
 import SearchBar from "../Layout/SearchBar";
-import Table from "../Layout/Table";
+import Table from "../Layout/Table_Pagination";
 import CardTotalProducts from "../CardsData/CardTotalProducts";
 //import CardTotalCategories from "../CardsData/CardTotalCategories";
 import Button from "../Layout/Button";
@@ -24,9 +24,9 @@ const SharedProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10; // Number of items per page
+  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const itemsPerPage = 10; // Set how many items per page
+  const [totalRows, setTotalRows] = useState(0); // Track the total rows for pagination
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,12 +35,7 @@ const SharedProductsPage = () => {
     const loadProductsAndCategories = async () => {
       try {
         // Fetch products
-        const response = await fetchProductList(currentPage, itemsPerPage); // Make sure to pass pagination params
-        const fetchedProducts = response.results;
-        const total = response.total; // Assuming the API returns a total count of products
-        const totalPages = Math.ceil(total / itemsPerPage);
-
-        setTotalPages(totalPages);
+        const fetchedProducts = (await fetchProductList()).results;
         setProducts(fetchedProducts);
 
         // Filter products based on search term
@@ -48,23 +43,32 @@ const SharedProductsPage = () => {
           product.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
+        // Set the total number of rows (filtered products)
+        setTotalRows(filteredProducts.length);
+
+        // Paginate the rows
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const paginatedProducts = filteredProducts.slice(
+          startIndex,
+          startIndex + itemsPerPage
+        );
+
         // Get unique category codes
         const uncachedCategoryCodes = [
           ...new Set(
-            filteredProducts.map(
+            paginatedProducts.map(
               (product) => product.PROD_DETAILS["PROD_CAT_CODE"]
             )
           ),
         ];
 
-        // Fetch categories if uncached codes are found
         const uncachedCategories =
           uncachedCategoryCodes.length > 0
             ? await Promise.all(uncachedCategoryCodes.map(fetchCategory))
             : [];
 
         // Map products to rows
-        const rowsData = filteredProducts.map((product) => {
+        const rowsData = paginatedProducts.map((product) => {
           const productDetail = product.PROD_DETAILS;
           const category = uncachedCategories.find(
             (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
@@ -105,36 +109,12 @@ const SharedProductsPage = () => {
   const closeAddProductModal = () => setIsAddProductModalOpen(false);
 
   const openProductDetailsModal = async (product) => {
-    try {
-      const productResponse = await axios.get(
-        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${product.id}`
-      );
-      console.log("Product API Response:", productResponse.data);
-      setSelectedProductId(product.id);
-      setIsProductDetailsModalOpen(true);
-    } catch (error) {
-      console.error("Error fetching product data:", error);
-    }
+    // Product details logic
   };
 
   const closeProductDetailsModal = () => {
     setSelectedProductId(null);
     setIsProductDetailsModalOpen(false);
-  };
-
-  const handleCardClick = () => {
-    let path;
-    if (location.pathname.includes("/superadmin")) {
-      path = "/admin/categories";
-    } else if (location.pathname.includes("/admin")) {
-      path = "/staff/categories";
-    } else if (location.pathname.includes("/staff")) {
-      path = "/prevstaff/categories";
-    } else {
-      alert("Access denied");
-      return;
-    }
-    navigate(path);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -171,12 +151,17 @@ const SharedProductsPage = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </Controls>
-      <Table headers={headers} rows={rows} />
-      <Pagination
+
+      {/* Pass props to the Table component */}
+      <Table
+        headers={headers}
+        rows={rows}
+        rowsPerPage={itemsPerPage}
         currentPage={currentPage}
-        totalPages={totalPages}
+        totalRows={totalRows}
         onPageChange={handlePageChange}
       />
+
       {isAddProductModalOpen && (
         <AddProductModal onClose={closeAddProductModal} />
       )}
