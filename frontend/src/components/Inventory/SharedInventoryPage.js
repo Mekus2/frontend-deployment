@@ -15,18 +15,25 @@ const SharedInventoryPage = () => {
   const [inventoryData, setInventoryData] = useState([]); // State to store inventory data
   const [loading, setLoading] = useState(false); // State to handle loading
   const [error, setError] = useState(null); // State to handle errors
+  const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
+  const [totalRows, setTotalRows] = useState(0); // Total rows from the backend
+  const rowsPerPage = 20; // Items per page
 
-  // Fetch inventory data when the search term changes
+  // Fetch inventory data whenever searchTerm or currentPage changes
   useEffect(() => {
     const fetchInventory = async () => {
       setLoading(true); // Start loading
       setError(null); // Reset error state
       try {
         const url = searchTerm
-          ? `https://backend-deployment-production-92b6.up.railway.app/inventory/search/?PRODUCT_NAME=${searchTerm}`
-          : `https://backend-deployment-production-92b6.up.railway.app/inventory/list/`;
+          ? `https://backend-deployment-production-92b6.up.railway.app/inventory/search/?PRODUCT_NAME=${searchTerm}&page=${currentPage}&page_size=${rowsPerPage}`
+          : `https://backend-deployment-production-92b6.up.railway.app/inventory/list/?page=${currentPage}&page_size=${rowsPerPage}`;
         const response = await axios.get(url);
-        setInventoryData(response.data); // Store the fetched inventory data
+
+        // Assuming the backend sends pagination metadata
+        const { results, count } = response.data;
+        setInventoryData(results); // Store fetched inventory data
+        setTotalRows(count); // Update total rows
       } catch (err) {
         console.error("Error fetching inventory data:", err);
         setError("Inventory data not found.");
@@ -35,7 +42,7 @@ const SharedInventoryPage = () => {
       }
     };
     fetchInventory();
-  }, [searchTerm]); // Re-run whenever the search term changes
+  }, [searchTerm, currentPage]); // Re-run whenever searchTerm or currentPage changes
 
   const handleDetailClick = async (item) => {
     try {
@@ -88,7 +95,14 @@ const SharedInventoryPage = () => {
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <Table headers={headers} rows={rows} />
+        <Table
+          headers={headers}
+          rows={rows}
+          rowsPerPage={rowsPerPage}
+          currentPage={currentPage}
+          totalRows={totalRows}
+          onPageChange={setCurrentPage} // Update the current page
+        />
       )}
       {showDetailModal && selectedItem && (
         <InventoryDetailsModal item={selectedItem} onClose={closeModal} />
