@@ -92,7 +92,15 @@ const SharedProductsPage = () => {
         setRows(rowsData);
         setLoading(false);
       } catch (err) {
-        setError("Error fetching products or categories");
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          setError(`Error: ${err.response.data.message}`);
+        } else if (err.request) {
+          // The request was made but no response was received
+          setError("Network error. Please try again.");
+        } else {
+          setError("Error fetching products or categories");
+        }
         setLoading(false);
       }
     };
@@ -157,13 +165,18 @@ const SharedProductsPage = () => {
       </Controls>
       <Table headers={headers} rows={rows} />
       <div className="pagination-controls">
-        <button onClick={() => handlePaginationClick(page - 1)}>
+        <button
+          onClick={() => handlePaginationClick(page - 1)}
+          disabled={page === 1}
+        >
           Previous
         </button>
-        <span>
-          Page {page} of {totalPages}
-        </span>
-        <button onClick={() => handlePaginationClick(page + 1)}>Next</button>
+        <button
+          onClick={() => handlePaginationClick(page + 1)}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
       </div>
       {isAddProductModalOpen && (
         <AddProductModal onClose={closeAddProductModal} />
