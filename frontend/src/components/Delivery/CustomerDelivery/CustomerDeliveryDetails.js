@@ -312,7 +312,11 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
       20,
       doc.autoTable.previous.finalY + 10
     );
-    doc.text(`Total Amount: ${total}`, 20, doc.autoTable.previous.finalY + 15); // Removed peso sign here as well
+    doc.text(
+      `Total Amount: ${delivery.OUTBOUND_DEL_TOTAL_PRICE}`,
+      20,
+      doc.autoTable.previous.finalY + 15
+    ); // Removed peso sign here as well
 
     // Save the PDF
     doc.save("Invoice.pdf");
