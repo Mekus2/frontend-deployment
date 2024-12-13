@@ -1,4 +1,4 @@
-const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app/";
+const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app";
 const categoryCache = new Map(); // Cache for storing category data
 
 // Function to fetch category data by code with caching
