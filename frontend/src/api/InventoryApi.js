@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app";
 
 // Function to add a new inventory entry
 export const addNewInventory = async (orderData) => {

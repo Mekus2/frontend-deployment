@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL =
+  "https://backend-deployment-production-92b6.up.railway.app";
 
 /**
  * Add an issue using the DeliveryIssueCreateAPIView endpoint.
