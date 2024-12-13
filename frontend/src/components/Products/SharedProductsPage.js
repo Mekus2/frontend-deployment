@@ -20,31 +20,24 @@ const SharedProductsPage = () => {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [isProductDetailsModalOpen, setIsProductDetailsModalOpen] =
     useState(false);
-  const [products, setProducts] = useState([]);
+  const [product, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([]);
 
-  // New state variables for pagination
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Modify the useEffect to handle pagination
   useEffect(() => {
     const loadProductsAndCategories = async () => {
       try {
-        // Fetch products with pagination
-        const fetchedData = await fetchProductList(page, searchTerm); // Pass page and searchTerm to API
-        const fetchedProducts = fetchedData.results;
+        // Fetch products
+        const fetchedProducts = (await fetchProductList()).results;
+        console.log("fetchedProducts:", fetchedProducts);
         setProducts(fetchedProducts);
-        setTotalPages(fetchedData.total_pages); // Assuming the backend returns total_pages
 
         // Filter products based on search term
-        const filteredProducts = fetchedProducts.filter((product) =>
-          product.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
+        const filteredProducts = fetchedProducts.filter((products) =>
+          products.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
         // Get unique category codes
@@ -56,7 +49,9 @@ const SharedProductsPage = () => {
           ),
         ];
 
-        // Fetch uncached categories
+        console.log("uncachedCategoryCodes:", uncachedCategoryCodes);
+
+        // Fetch categories if uncached codes are found
         const uncachedCategories =
           uncachedCategoryCodes.length > 0
             ? await Promise.all(uncachedCategoryCodes.map(fetchCategory))
@@ -64,6 +59,10 @@ const SharedProductsPage = () => {
 
         // Map products to rows
         const rowsData = filteredProducts.map((product) => {
+          console.log("Product ID:", product.id); // Log product IDs for debugging
+          console.log("Product Object:", product); // To verify that the correct product is passed
+          const prodId = product.id;
+          console.log("prod IDDD:", prodId);
           const productDetail = product.PROD_DETAILS;
           const category = uncachedCategories.find(
             (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
@@ -74,6 +73,11 @@ const SharedProductsPage = () => {
           const price = parseFloat(productDetail.PROD_DETAILS_PRICE);
 
           return [
+            // <img
+            //   src={product.PROD_IMAGE}
+            //   alt={product.PROD_NAME}
+            //   style={{ width: "50px", height: "auto" }}
+            // />,
             product.PROD_NAME,
             category ? category.PROD_CAT_NAME : "N/A",
             unit,
@@ -91,32 +95,31 @@ const SharedProductsPage = () => {
 
         setRows(rowsData);
         setLoading(false);
+        console.log("rowsData:", rowsData);
       } catch (err) {
-        if (err.response) {
-          // The request was made and the server responded with a status code
-          setError(`Error: ${err.response.data.message}`);
-        } else if (err.request) {
-          // The request was made but no response was received
-          setError("Network error. Please try again.");
-        } else {
-          setError("Error fetching products or categories");
-        }
+        setError("Error fetching products or categories");
         setLoading(false);
       }
     };
 
     loadProductsAndCategories();
-  }, [searchTerm, page]); // Re-run if searchTerm or page changes
+  }, [searchTerm]); // Re-run if searchTerm changes
 
   const openAddProductModal = () => setIsAddProductModalOpen(true);
   const closeAddProductModal = () => setIsAddProductModalOpen(false);
 
   const openProductDetailsModal = async (product) => {
     try {
+      // Ensure product.id is a valid number or string
       const productResponse = await axios.get(
         `https://backend-deployment-production-92b6.up.railway.app/items/productList/${product.id}`
       );
+      console.log("Product API Response:", productResponse.data); // Log the product data
+
+      // Set only the product ID into state
       setSelectedProductId(product.id);
+
+      // Open the modal with the selected product ID
       setIsProductDetailsModalOpen(true);
     } catch (error) {
       console.error("Error fetching product data:", error);
@@ -128,9 +131,19 @@ const SharedProductsPage = () => {
     setIsProductDetailsModalOpen(false);
   };
 
-  const handlePaginationClick = (newPage) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setPage(newPage); // Update page number
+  const handleCardClick = () => {
+    let path;
+    if (location.pathname.includes("/superadmin")) {
+      path = "/admin/categories";
+    } else if (location.pathname.includes("/admin")) {
+      path = "/staff/categories";
+    } else if (location.pathname.includes("/staff")) {
+      path = "/prevstaff/categories";
+    } else {
+      alert("Access denied");
+      return;
+    }
+    navigate(path);
   };
 
   if (loading) {
@@ -142,6 +155,7 @@ const SharedProductsPage = () => {
   }
 
   const headers = [
+    // "Image",
     "Product Name",
     "Category",
     "Unit",
@@ -154,7 +168,9 @@ const SharedProductsPage = () => {
     <>
       <AnalyticsContainer>
         <CardTotalProducts />
-        <ClickableCard onClick={handleCardClick} />
+        <ClickableCard onClick={handleCardClick}>
+          {/* <CardTotalCategories /> */}
+        </ClickableCard>
       </AnalyticsContainer>
       <Controls>
         <SearchBar
@@ -164,20 +180,6 @@ const SharedProductsPage = () => {
         />
       </Controls>
       <Table headers={headers} rows={rows} />
-      <div className="pagination-controls">
-        <button
-          onClick={() => handlePaginationClick(page - 1)}
-          disabled={page === 1}
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => handlePaginationClick(page + 1)}
-          disabled={page === totalPages}
-        >
-          Next
-        </button>
-      </div>
       {isAddProductModalOpen && (
         <AddProductModal onClose={closeAddProductModal} />
       )}
