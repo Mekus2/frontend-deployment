@@ -142,7 +142,7 @@ const SharedProductsPage = () => {
     <>
       <AnalyticsContainer>
         <CardTotalProducts />
-        <ClickableCard onClick={handleCardClick} />
+        {/* <ClickableCard onClick={handleCardClick} /> */}
       </AnalyticsContainer>
       <Controls>
         <SearchBar
