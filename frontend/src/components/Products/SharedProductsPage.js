@@ -34,31 +34,21 @@ const SharedProductsPage = () => {
   useEffect(() => {
     const loadProductsAndCategories = async () => {
       try {
-        // Fetch products
-        const fetchedProducts = (await fetchProductList()).results;
-        setProducts(fetchedProducts);
-
-        // Filter products based on search term
-        const filteredProducts = fetchedProducts.filter((product) =>
-          product.PROD_NAME.toLowerCase().includes(searchTerm.toLowerCase())
+        // Fetch products with pagination and searchTerm
+        const { results, count } = await fetchProductList(
+          currentPage, // Current page
+          itemsPerPage, // Number of items per page
+          searchTerm // Search term for filtering
         );
 
-        // Set the total number of rows (filtered products)
-        setTotalRows(filteredProducts.length);
-
-        // Paginate the rows
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const paginatedProducts = filteredProducts.slice(
-          startIndex,
-          startIndex + itemsPerPage
-        );
+        // Set products and total rows for pagination
+        setProducts(results);
+        setTotalRows(count);
 
         // Get unique category codes
         const uncachedCategoryCodes = [
           ...new Set(
-            paginatedProducts.map(
-              (product) => product.PROD_DETAILS["PROD_CAT_CODE"]
-            )
+            results.map((product) => product.PROD_DETAILS["PROD_CAT_CODE"])
           ),
         ];
 
@@ -68,7 +58,7 @@ const SharedProductsPage = () => {
             : [];
 
         // Map products to rows
-        const rowsData = paginatedProducts.map((product) => {
+        const rowsData = results.map((product) => {
           const productDetail = product.PROD_DETAILS;
           const category = uncachedCategories.find(
             (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
