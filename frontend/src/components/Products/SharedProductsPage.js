@@ -25,7 +25,7 @@ const SharedProductsPage = () => {
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const itemsPerPage = 10; // Set how many items per page
+  const itemsPerPage = 20; // Set how many items per page
   const [totalRows, setTotalRows] = useState(0); // Track the total rows for pagination
 
   const navigate = useNavigate();
