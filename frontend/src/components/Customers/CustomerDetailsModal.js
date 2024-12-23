@@ -6,7 +6,10 @@ import { notify } from "../Layout/CustomToast";
 
 const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedClient, setEditedClient] = useState(client || {});
+  const [editedClient, setEditedClient] = useState({
+    ...client,
+    creditLimit: client?.creditLimit || 20000, // Default value for Credit Limit
+  });
   const [errors, setErrors] = useState({});
 
   if (!client) return null; // Ensure modal doesn't render if client is undefined
@@ -23,8 +26,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
     if (!editedClient.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
     } else if (!/^0\d{10}$/.test(editedClient.phoneNumber)) {
-      newErrors.phoneNumber =
-        "Phone number must be 11 digits and start with '0'";
+      newErrors.phoneNumber = "Phone number must be 11 digits and start with '0'";
     }
 
     setErrors(newErrors);
@@ -51,14 +53,12 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
               body: JSON.stringify(updatedClient),
             }
           );
-          notify.success("Customer details updated succesfully!");
+          notify.success("Customer details updated succesfully!");  
 
           if (!response.ok) {
             const errorData = await response.json();
             alert(
-              `Error: ${
-                errorData.message || "Failed to update customer details"
-              }`
+              `Error: ${errorData.message || "Failed to update customer details"}`
             );
           } else {
             alert("Customer details updated successfully!");
@@ -104,6 +104,16 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
     }
   };
 
+  const handleCreditLimitChange = (e) => {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value)) {  // Only numbers allowed
+      setEditedClient({
+        ...editedClient,
+        creditLimit: value,
+      });
+    }
+  };
+
   const logCustomerCreation = async (oldClient, updatedClient) => {
     // Fetch the user_id from localStorage
     const userId = localStorage.getItem("user_id");
@@ -111,21 +121,22 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
     // Prepare the fields for logging changes
     const changes = [];
     const fieldsToCheck = [
-      { field: "name", label: "Customer Name" },
-      { field: "address", label: "Address" },
-      { field: "province", label: "Province" },
-      { field: "phoneNumber", label: "Phone Number" },
+        { field: "name", label: "Customer Name" },
+        { field: "address", label: "Address" },
+        { field: "province", label: "Province" },
+        { field: "phoneNumber", label: "Phone Number" },
+        { field: "creditLimit", label: "Credit Limit" }, // Track Credit Limit changes
     ];
 
     // Check for changes and format them for logging
     fieldsToCheck.forEach(({ field, label }) => {
-      if (oldClient[field] !== updatedClient[field]) {
-        changes.push(
-          `${label} changed from "${oldClient[field] || "N/A"}" to "${
-            updatedClient[field] || "N/A"
-          }"`
-        );
-      }
+        if (oldClient[field] !== updatedClient[field]) {
+            changes.push(
+                `${label} changed from "${oldClient[field] || "N/A"}" to "${
+                    updatedClient[field] || "N/A"
+                }"`
+            );
+        }
     });
 
     // If there are changes, prepare the log payload
@@ -156,13 +167,10 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
           const errorData = await response.json();
           console.error("Failed to create log:", errorData);
         }
-      } catch (error) {
-        console.error("Error logging customer updates:", error);
-      }
     } else {
-      console.log("No changes detected. Logging skipped.");
+        console.log("No changes detected. Logging skipped.");
     }
-  };
+};
 
   return (
     <Modal
@@ -191,10 +199,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
                   type="text"
                   value={editedClient.address || ""}
                   onChange={(e) =>
-                    setEditedClient({
-                      ...editedClient,
-                      address: e.target.value,
-                    })
+                    setEditedClient({ ...editedClient, address: e.target.value })
                   }
                   border
                   placeholder="Address"
@@ -204,10 +209,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
                   type="text"
                   value={editedClient.province || ""}
                   onChange={(e) =>
-                    setEditedClient({
-                      ...editedClient,
-                      province: e.target.value,
-                    })
+                    setEditedClient({ ...editedClient, province: e.target.value })
                   }
                   border
                   placeholder="Province"
@@ -225,6 +227,15 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
               />
               {errors.phoneNumber && <Error>{errors.phoneNumber}</Error>}
             </DetailItem>
+            <DetailItem>
+              <strong>Credit Limit:</strong>
+              <Input
+                type="number"
+                value={editedClient.creditLimit || 20000} // Default value
+                onChange={handleCreditLimitChange}
+                border
+              />
+            </DetailItem>
           </Details>
           <ButtonGroup>
             <Button variant="red" onClick={handleCancel}>
@@ -239,14 +250,20 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
         <>
           <Section>
             <Detail>
-              <DetailLabel>Client Name:</DetailLabel> {client.name || "N/A"}
+              <DetailLabel>Client Name:</DetailLabel>{" "}
+              {client.name || "N/A"}
             </Detail>
             <Detail>
               <DetailLabel>Location:</DetailLabel>{" "}
               {`${client.address || "N/A"}, ${client.province || "N/A"}`}
             </Detail>
             <Detail>
-              <DetailLabel>Phone:</DetailLabel> {client.phoneNumber || "N/A"}
+              <DetailLabel>Phone:</DetailLabel>{" "}
+              {client.phoneNumber || "N/A"}
+            </Detail>
+            <Detail>
+              <DetailLabel>Credit Limit:</DetailLabel>{" "}
+              {client.creditLimit || "₱20,000"} {/* Display Credit Limit */}
             </Detail>
           </Section>
           <ButtonGroup>
@@ -292,15 +309,15 @@ const Input = styled.input`
 
 const LocationContainer = styled.div`
   display: flex;
-  gap: 10px; /* Space between address and province */
+  gap: 10px;
 `;
 
 const AddressInput = styled(Input)`
-  flex: 1; /* Allows the address input to take available space */
+  flex: 1;
 `;
 
 const ProvinceInput = styled(Input)`
-  flex: 1; /* Allows the province input to take available space */
+  flex: 1;
 `;
 
 const ButtonGroup = styled.div`

@@ -4,20 +4,16 @@ import SearchBar from "../Layout/SearchBar";
 import Table from "../Layout/Table";
 import ReportCard from "../Layout/ReportCard";
 import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
-// import { SALES_ORDR } from "../../data/CusOrderData"; // Import customer orders data
-// import PURCHASE_ORDR from "../../data/SuppOrderData"; // Import purchase orders data
-import Button from "../Layout/Button"; // Import the Button component
-import SalesDetailsModal from "./SalesDetailsModal"; // Import SalesDetailsModal component
+import Button from "../Layout/Button";
+import SalesDetailsModal from "./SalesDetailsModal";
 
 const SharedSalesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for controlling modal visibility
-  const [selectedOrder, setSelectedOrder] = useState(null); // State to store selected order for details
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [salesInvoice, setSalesInvoices] = useState([]);
-
-  const combinedOrders = [];
 
   useEffect(() => {
     const fetchSalesInvoices = async () => {
@@ -26,12 +22,8 @@ const SharedSalesPage = () => {
           "https://backend-deployment-production-92b6.up.railway.app/sales/list/"
         ); // Your API endpoint for sales invoices
         const data = await response.json();
-
-        // Assuming the fetched data is an array of sales invoices, set it to the state
         setSalesInvoices(data.results);
         console.log("Received Invoice list:", data.results);
-
-        // setCombinedOrders(allOrders);
       } catch (error) {
         console.error("Error fetching sales invoices:", error);
       }
@@ -47,27 +39,39 @@ const SharedSalesPage = () => {
   );
 
   const formatCurrency = (value) => {
-    // Ensure the value is a number and fallback to 0 if it's not a valid number
     const numberValue = isNaN(value) ? 0 : Number(value);
     return `₱${numberValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
-  // Prepare table data with required columns: TYPE, DATE, COST, REVENUE, GROSS PROFIT, ACTION (Details Button)
-  const tableData = salesInvoice.map((order) => [
-    order.SALES_INV_ID || "N/A", // Sales Invoice ID
+
+  const sortedInvoices = [...salesInvoice].sort((a, b) => {
+    if (a.SALES_INV_PYMNT_STATUS === "Unpaid" && b.SALES_INV_PYMNT_STATUS !== "Unpaid") return -1;
+    if (a.SALES_INV_PYMNT_STATUS !== "Unpaid" && b.SALES_INV_PYMNT_STATUS === "Unpaid") return 1;
+    return 0;
+  });
+
+  const filteredInvoices = sortedInvoices.filter((order) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      order.SALES_INV_ID.toString().includes(search) ||
+      order.CLIENT_NAME.toLowerCase().includes(search) ||
+      (order.SALES_INV_AMOUNT_BALANCE && formatCurrency(order.SALES_INV_AMOUNT_BALANCE).includes(search)) ||
+      (order.SALES_INV_PYMNT_STATUS && order.SALES_INV_PYMNT_STATUS.toLowerCase().includes(search))
+    );
+  });
+
+  const tableData = filteredInvoices.map((order) => [
+    order.SALES_INV_ID || "N/A",
     order.SALES_INV_DATETIME
-      ? new Date(order.SALES_INV_DATETIME).toISOString().slice(0, 10) // Convert to Date if necessary
-      : "N/A", // Format date as YYYY-MM-DD
-    order.CLIENT_NAME || "Unknown", // Client Name
-    formatCurrency(order.SALES_INV_AMOUNT_BALANCE || 0), // Balance (Total Amount Balance)
-    order.SALES_INV_PYMNT_STATUS || "Pending", // Payment Status
-    <Button
-      variant="primary"
-      onClick={() => handleOpenModal(order)} // Pass the corresponding order to the modal
-    >
-      {console.log("Sent Invoice list:", order)}
+      ? new Date(order.SALES_INV_DATETIME).toISOString().slice(0, 10)
+      : "N/A",
+    order.CLIENT_NAME || "Unknown",
+    formatCurrency(order.SALES_INV_AMOUNT_BALANCE || 0),
+    order.SALES_INV_PYMNT_STATUS || "Pending",
+    <Button variant="primary" onClick={() => handleOpenModal(order)}>
       Details
     </Button>,
   ]);
+
   const header = [
     "Invoice ID",
     "Date",
@@ -78,13 +82,13 @@ const SharedSalesPage = () => {
   ];
 
   const handleOpenModal = (order) => {
-    setSelectedOrder(order); // Set the selected order to be shown in the modal
-    setIsModalOpen(true); // Open the modal
+    setSelectedOrder(order);
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Close the modal
-    setSelectedOrder(null); // Clear selected order
+    setIsModalOpen(false);
+    setSelectedOrder(null);
   };
 
   return (
@@ -102,12 +106,12 @@ const SharedSalesPage = () => {
         />
         <ReportCard
           label="Cost"
-          value={formatCurrency(0)} // totalExpense Here
+          value={formatCurrency(0)} // Replace with total expense if available
           icon={<FaDollarSign />}
         />
         <ReportCard
           label="Gross Profit"
-          value={formatCurrency()} // Net Profit here
+          value={formatCurrency()} // Replace with net profit if available
           icon={<FaDollarSign />}
         />
       </CardsContainer>
@@ -137,14 +141,12 @@ const SharedSalesPage = () => {
         </DateContainer>
       </Controls>
 
-      {/* Conditional rendering of SalesDetailsModal */}
       {isModalOpen && selectedOrder && (
         <SalesDetailsModal
           onClose={handleCloseModal}
-          sale={selectedOrder} // Ensure the sale data is passed to the modal
+          sale={selectedOrder}
         />
       )}
-      {console.log("Selected Order:", selectedOrder)}
 
       <ReportContent>
         <Table headers={header} rows={tableData} />
@@ -153,7 +155,7 @@ const SharedSalesPage = () => {
   );
 };
 
-// Styled components
+// Styled Components
 const Controls = styled.div`
   display: flex;
   flex-direction: column;

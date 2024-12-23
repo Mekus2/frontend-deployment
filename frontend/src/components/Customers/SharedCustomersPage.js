@@ -95,7 +95,7 @@ const SharedCustomersPage = () => {
     setFilteredCustomers(updatedCustomers);
   };
 
-  const headers = ["Customer Name", "Address", "Province", "Phone", "Action"];
+  const headers = ["Customer Name", "Address", "Phone", "Balance", "Action"];
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -124,9 +124,9 @@ const SharedCustomersPage = () => {
 
   const rows = sortedCustomers.map((customer) => [
     customer.name,
-    customer.address,
-    customer.province,
+    `${customer.address}, ${customer.province}`, // Combined address and province
     customer.phoneNumber,
+    customer.balance ? formatCurrency(customer.balance) : "₱0.00", // Assuming balance is a field
     <ActionButton key="action" onClick={() => openDetailsModal(customer)}>
       Details
     </ActionButton>,
@@ -248,5 +248,10 @@ const TableHeader = styled.th`
   justify-content: center;
   align-items: center;
 `;
+
+const formatCurrency = (value) => {
+  const numberValue = typeof value === "number" && !isNaN(value) ? value : 0;
+  return `₱${numberValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+};
 
 export default SharedCustomersPage;

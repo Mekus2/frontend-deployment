@@ -164,6 +164,15 @@ const ForgotPassword = () => {
               </>
             ) : (
               <>
+                <PasswordPolicy>
+                  <h3>Password Policy</h3>
+                  <ul>
+                    <li>Must be at least 6 characters long.</li>
+                    <li>Must contain at least one uppercase letter.</li>
+                    <li>Must contain at least one number.</li>
+                    <li>Must contain at least one special character (e.g., @, #, $, etc.).</li>
+                  </ul>
+                </PasswordPolicy>
                 <PasswordContainer>
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -312,6 +321,29 @@ const ResendOtpButton = styled.button`
 
   &:hover {
     background-color: #9e9e9e;
+  }
+`;
+
+const PasswordPolicy = styled.div`
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 5px;
   }
 `;
 

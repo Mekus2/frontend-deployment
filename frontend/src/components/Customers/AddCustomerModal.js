@@ -6,14 +6,16 @@ import { addCustomer } from "../../api/CustomerApi"; // Import the addCustomer A
 import { notify } from "../Layout/CustomToast"; // Import the toast notification utility
 
 const AddCustomerModal = ({ onClose, onAdd }) => {
-  const [clientName, setClientName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [clientAddress, setClientAddress] = useState("");
   const [clientProvince, setClientProvince] = useState("");
-  const [clientPhoneNum, setClientPhoneNum] = useState("0");
+  const [clientPhoneNum, setClientPhoneNum] = useState("09"); // Default to "09"
   const [errors, setErrors] = useState({});
 
   const validatePhoneNumber = (phoneNum) => {
-    const phoneRegex = /^0\d{10}$/; // Must start with "0" and be exactly 11 digits
+    const phoneRegex = /^09\d{9}$/; // Must start with "09" and be exactly 11 digits
     return phoneRegex.test(phoneNum);
   };
 
@@ -21,7 +23,8 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     let newErrors = {};
 
     // Validate all fields are filled
-    if (!clientName) newErrors.clientName = "Customer name is required";
+    if (!firstName) newErrors.firstName = "First name is required";
+    if (!lastName) newErrors.lastName = "Last name is required";
     if (!clientAddress) newErrors.clientAddress = "Address is required";
     if (!clientProvince) newErrors.clientProvince = "Province is required";
 
@@ -29,13 +32,12 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     if (!clientPhoneNum) {
       newErrors.clientPhoneNum = "Phone number is required";
     } else if (!validatePhoneNumber(clientPhoneNum)) {
-      newErrors.clientPhoneNum =
-        "Phone number must start with '0' and be exactly 11 digits";
+      newErrors.clientPhoneNum = "Phone number must start with '09' and be exactly 11 digits";
     }
 
     if (Object.keys(newErrors).length === 0) {
       const newClient = {
-        name: clientName,
+        name: `${firstName} ${middleName} ${lastName}`.trim(),
         address: clientAddress,
         province: clientProvince,
         phoneNumber: clientPhoneNum,
@@ -61,7 +63,7 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     const userId = localStorage.getItem("user_id");
 
     const logPayload = {
-      LLOG_TYPE: "User logs",
+      LOG_TYPE: "User logs",
       LOG_DESCRIPTION: `Added new customer: 
       Name: ${addedCustomer.name}, 
       Address: ${addedCustomer.address}, 
@@ -96,10 +98,8 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
   const handlePhoneNumberChange = (e) => {
     const value = e.target.value;
 
-    if (value === "" || (value.length > 0 && value[0] === "0")) {
-      if (/^\d*$/.test(value) && value.length <= 11) {
-        setClientPhoneNum(value.length === 0 ? "0" : value);
-      }
+    if (/^\d*$/.test(value) && value.length <= 11) {
+      setClientPhoneNum(value.length === 0 ? "09" : value);
     }
   };
 
@@ -107,13 +107,28 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     <Modal title="Add New Customer" onClose={onClose}>
       <Form>
         <Label>Customer Name</Label>
-        {errors.clientName && <Error>{errors.clientName}</Error>}
-        <Input
-          type="text"
-          placeholder="Enter Customer Name"
-          value={clientName}
-          onChange={(e) => setClientName(e.target.value)}
-        />
+        <NameContainer>
+          <NameInput
+            type="text"
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <NameInput
+            type="text"
+            placeholder="Middle Name"
+            value={middleName}
+            onChange={(e) => setMiddleName(e.target.value)}
+          />
+          <NameInput
+            type="text"
+            placeholder="Last Name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </NameContainer>
+        {errors.firstName && <Error>{errors.firstName}</Error>}
+        {errors.lastName && <Error>{errors.lastName}</Error>}
 
         <Label>Location</Label>
         <LocationContainer>
@@ -168,6 +183,18 @@ const Label = styled.label`
 `;
 
 const Input = styled.input`
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const NameContainer = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const NameInput = styled.input`
+  flex: 1;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;

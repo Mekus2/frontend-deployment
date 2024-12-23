@@ -23,22 +23,21 @@ const NewUserChangePass = ({ userId }) => {
 
   const handleChangePassword = async () => {
     const userId = localStorage.getItem("user_id");
-
+  
     if (!newPassword || !confirmPassword) {
       setError("Both fields are required.");
       return;
     }
-
+  
     // Check if passwords match first
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match. Please re-enter your passwords.");
       return;
     }
-
+  
     // Regex for validating a strong password
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  
     // Now validate the password
     if (!passwordRegex.test(newPassword)) {
       setError(
@@ -46,11 +45,11 @@ const NewUserChangePass = ({ userId }) => {
       );
       return;
     }
-
+  
     try {
       // Make the API call to change the password
       const token = localStorage.getItem("auth_token");
-
+  
       const response = await axios.put(
         `https://backend-deployment-production-92b6.up.railway.app/account/users/changepass/${userId}/`,
         {
@@ -63,7 +62,7 @@ const NewUserChangePass = ({ userId }) => {
           },
         }
       );
-
+  
       setPasswordChanged(true);
       notifySuccess("Your password has been successfully changed!");
       setTimeout(() => {
@@ -73,7 +72,7 @@ const NewUserChangePass = ({ userId }) => {
       setError("An error occurred while changing your password.");
     }
   };
-
+  
   return (
     <BackgroundContainer>
       <ToastContainer
@@ -93,8 +92,7 @@ const NewUserChangePass = ({ userId }) => {
         </LogoContainer>
         <Title>Change Your Password</Title>
         <InstructionText>
-          Please set a new password. Choose a strong password and keep it in a
-          safe place.
+          Please set a new password. Choose a strong password and keep it in a safe place.
         </InstructionText>
         {error && <ErrorText>{error}</ErrorText>}
         {passwordChanged ? (
@@ -103,6 +101,16 @@ const NewUserChangePass = ({ userId }) => {
           </Link>
         ) : (
           <>
+            <PasswordPolicy>
+              <h3>Password Policy</h3>
+              <ul>
+                <li>Must be at least 8 characters long.</li>
+                <li>Must contain at least one uppercase letter.</li>
+                <li>Must contain at least one lowercase letter.</li>
+                <li>Must contain at least one number.</li>
+                <li>Must contain at least one special character (e.g., @$!%*?&).</li>
+              </ul>
+            </PasswordPolicy>
             <PasswordContainer>
               <Input
                 type={showPassword ? "text" : "password"}
@@ -110,9 +118,7 @@ const NewUserChangePass = ({ userId }) => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
-              <TogglePasswordVisibility
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <TogglePasswordVisibility onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </TogglePasswordVisibility>
             </PasswordContainer>
@@ -123,15 +129,11 @@ const NewUserChangePass = ({ userId }) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <TogglePasswordVisibility
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
+              <TogglePasswordVisibility onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
               </TogglePasswordVisibility>
             </PasswordContainer>
-            <SubmitButton onClick={handleChangePassword}>
-              Change Password
-            </SubmitButton>
+            <SubmitButton onClick={handleChangePassword}>Change Password</SubmitButton>
           </>
         )}
       </FormContainer>
@@ -248,6 +250,29 @@ const BackToLoginLink = styled.div`
   margin-top: 20px;
   color: #007b83;
   cursor: pointer;
+`;
+
+const PasswordPolicy = styled.div`
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 5px;
+  }
 `;
 
 export default NewUserChangePass;

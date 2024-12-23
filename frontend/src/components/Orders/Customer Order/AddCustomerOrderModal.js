@@ -146,13 +146,13 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
     const price = parseFloat(orderDetail.price) || 0;
     const quantity = parseInt(orderDetail.quantity, 10) || 0;
     const discount = parseFloat(orderDetail.discount) || 0;
-  
+
     const totalWithoutDiscount = price * quantity;
     const discountValue = (totalWithoutDiscount * discount) / 100;
-  
+
     return totalWithoutDiscount - discountValue;
   };
-  
+
   return (
     <Modal title="Add Customer Order" onClose={onClose}>
       <Field>
@@ -335,14 +335,28 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
                             <SuggestionItem
                               key={product.id}
                               onClick={() => {
-                                setInputStates((prevStates) => ({
-                                  ...prevStates,
-                                  [index]: product.PROD_NAME,
-                                }));
-                                handleProductSelect(index, product);
+                                if (product.PROD_QOH > 0) {
+                                  setInputStates((prevStates) => ({
+                                    ...prevStates,
+                                    [index]: product.PROD_NAME,
+                                  }));
+                                  handleProductSelect(index, product);
+                                } else {
+                                  notify.error(
+                                    `The product ${product.PROD_NAME} is out of stock.`
+                                  );
+                                }
+                              }}
+                              style={{
+                                color:
+                                  product.PROD_QOH === 0 ? "gray" : "black", // Gray out unavailable products
+                                cursor:
+                                  product.PROD_QOH === 0
+                                    ? "not-allowed"
+                                    : "pointer", // Change cursor to not-allowed if out of stock
                               }}
                             >
-                              {product.PROD_NAME}
+                              {product.PROD_NAME} (QOH: {product.PROD_QOH})
                             </SuggestionItem>
                           ))}
                         </SuggestionsList>
@@ -508,7 +522,6 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
   );
 };
 
-
 const TotalSummary = styled.div`
   display: flex;
   flex-direction: column;
@@ -523,7 +536,7 @@ const TotalItem = styled.p`
 `;
 
 const HighlightedTotal = styled.span`
-  color: #1DBA0B;
+  color: #1dba0b;
   font-size: 16px;
 `;
 

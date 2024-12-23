@@ -17,9 +17,9 @@ const AddUserModal = ({ onClose, onSave }) => {
   const [address, setAddress] = useState("");
   const [acctype, setAcctype] = useState("staff");
   const [errors, setErrors] = useState({});
-  const [showOtpInput, setShowOtpInput] = useState(false); // OTP input visibility
-  const [otp, setOtp] = useState(""); // OTP state
-  const [otpVerified, setOtpVerified] = useState(false); // OTP verification status
+  const [showOtpInput, setShowOtpInput] = useState(false);  // OTP input visibility
+  const [otp, setOtp] = useState("");  // OTP state
+  const [otpVerified, setOtpVerified] = useState(false);  // OTP verification status
   const modalRef = useRef();
 
   useEffect(() => {
@@ -87,19 +87,16 @@ const AddUserModal = ({ onClose, onSave }) => {
       formData.append("mid_initial", midinitial);
       formData.append("last_name", lastname);
       formData.append("email", email);
-      formData.append("password", password);
+      formData.append("password", password); 
       formData.append("phonenumber", phoneNumber);
       formData.append("address", address);
       formData.append("accType", acctype);
 
       try {
-        const response = await fetch(
-          "https://backend-deployment-production-92b6.up.railway.app/account/register/",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const response = await fetch("http://127.0.0.1:8000/account/register/", {
+          method: "POST",
+          body: formData,
+        });
 
         const result = await response.json();
 
@@ -107,28 +104,7 @@ const AddUserModal = ({ onClose, onSave }) => {
           onSave(result);
           onClose();
         } else {
-          // Handle validation errors for each field
-          if (result.username) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              username: result.username[0],
-            }));
-            alert(`Error: Username "${username}" is already taken.`);
-          }
-
-          if (result.email) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              email: result.email[0],
-            }));
-            alert(`Error: Email "${email}" is already taken.`);
-          }
-
-          if (!result.username && !result.email && result.detail) {
-            alert(`Error: ${result.detail || "An error occurred"}`);
-          } else if (!result.username && !result.email) {
-            alert("An unknown error occurred. Please try again.");
-          }
+          alert(`Error: ${result.detail || "An error occurred"}`);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -137,60 +113,19 @@ const AddUserModal = ({ onClose, onSave }) => {
     }
   };
 
-  const logUserCreation = async (user) => {
-    // Fetch the user_id from localStorage
-    const userId = localStorage.getItem("user_id"); // Make sure "user_id" is the correct key
   const handleOtpSubmit = () => {
     // Assuming you have a valid OTP for the user. Replace this with your actual OTP check
     const correctOtp = "123456"; // Example OTP
 
-    // Get first_name and last_name from the user object
-    const { first_name, last_name } = user;
-
-    // Prepare the log payload with the user's first name and last name
-    const logPayload = {
-      LLOG_TYPE: "User logs",
-      LOG_DESCRIPTION: `Added new user: ${first_name} ${last_name} successfully`,
-      USER_ID: userId, // Use the user_id from localStorage
-    };
-
-    try {
-      // Send the log data to the backend
-      const response = await fetch(
-        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-        {
-          method: "POST",
-          body: JSON.stringify(logPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        console.log("Log successfully created:", logPayload);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to create log:", errorData);
-      }
-    } catch (error) {
-      console.error("Error logging user creation:", error);
+    if (otp === correctOtp) {
+      setOtpVerified(true);
+      alert("OTP verified successfully.");
+    } else {
+      alert("Invalid OTP. Please try again.");
     }
   };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const handleAddUserClick = () => {
-    const validationErrors = validateFields();
-    setErrors(validationErrors);
-  
-    // Ensure all fields are valid before showing the OTP input
-    if (Object.keys(validationErrors).length === 0) {
-      setShowOtpInput(true); // Show OTP input only if validation passes
-    } else {
-      setShowOtpInput(false); // Hide OTP input if there are errors
-    }
-  };
-  
 
   return (
     <ModalOverlay>
@@ -204,13 +139,8 @@ const AddUserModal = ({ onClose, onSave }) => {
         <ModalBody>
           <Field>
             <Label>First Name</Label>
-            <Input
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-            />
-            {errors.firstname && (
-              <ErrorMessage>{errors.firstname}</ErrorMessage>
-            )}
+            <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} />
+            {errors.firstname && <ErrorMessage>{errors.firstname}</ErrorMessage>}
           </Field>
 
           <Field>
@@ -228,19 +158,13 @@ const AddUserModal = ({ onClose, onSave }) => {
 
           <Field>
             <Label>Last Name</Label>
-            <Input
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
-            />
+            <Input value={lastname} onChange={(e) => setLastname(e.target.value)} />
             {errors.lastname && <ErrorMessage>{errors.lastname}</ErrorMessage>}
           </Field>
 
           <Field>
             <Label>Address</Label>
-            <Input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} />
             {errors.address && <ErrorMessage>{errors.address}</ErrorMessage>}
           </Field>
 
@@ -248,23 +172,15 @@ const AddUserModal = ({ onClose, onSave }) => {
             <Label>Phone Number</Label>
             <Input
               value={phoneNumber}
-              onChange={(e) =>
-                setPhoneNumber(e.target.value.replace(/[^0-9]/g, ""))
-              }
+              onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ""))}
               maxLength={11}
             />
-            {errors.phoneNumber && (
-              <ErrorMessage>{errors.phoneNumber}</ErrorMessage>
-            )}
+            {errors.phoneNumber && <ErrorMessage>{errors.phoneNumber}</ErrorMessage>}
           </Field>
 
           <Field>
             <Label>Email</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
           </Field>
 
@@ -276,11 +192,7 @@ const AddUserModal = ({ onClose, onSave }) => {
           <Field>
             <Label>Password</Label>
             <PasswordWrapper>
-              <Input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                readOnly
-              />
+              <Input type={showPassword ? "text" : "password"} value={password} readOnly />
               <TogglePasswordButton onClick={togglePasswordVisibility}>
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </TogglePasswordButton>
@@ -292,22 +204,14 @@ const AddUserModal = ({ onClose, onSave }) => {
           {showOtpInput && (
             <Field>
               <Label>Enter OTP</Label>
-              <Input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-              <Button variant="primary" onClick={handleOtpSubmit}>
-                Verify OTP
-              </Button>
+              <Input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} />
+              <Button variant="primary" onClick={handleOtpSubmit}>Verify OTP</Button>
             </Field>
           )}
         </ModalBody>
         <ModalFooter>
-          <Button variant="red" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleAddUserClick}>
+          <Button variant="red" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" onClick={() => setShowOtpInput(true)}>
             Add User
           </Button>
         </ModalFooter>
@@ -315,6 +219,7 @@ const AddUserModal = ({ onClose, onSave }) => {
     </ModalOverlay>
   );
 };
+
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -422,6 +327,7 @@ const ModalFooter = styled.div`
     margin-right: 10px;
   }
 `;
+
 const ErrorMessage = styled.p`
   color: red;
   font-size: 0.875rem;
