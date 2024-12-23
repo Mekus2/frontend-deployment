@@ -139,11 +139,18 @@ const AddUserModal = ({ onClose, onSave }) => {
 
   const logUserCreation = async (user) => {
     // Fetch the user_id from localStorage
-    const userId = localStorage.getItem("user_id"); // Make sure "user_id" is the correct key
+    const userId = localStorage.getItem("user_id");
   const handleOtpSubmit = () => {
     // Assuming you have a valid OTP for the user. Replace this with your actual OTP check
     const correctOtp = "123456"; // Example OTP
 
+    if (otp === correctOtp) {
+      setOtpVerified(true);
+      alert("OTP verified successfully.");
+    } else {
+      alert("Invalid OTP. Please try again.");
+    }
+  };
     // Get first_name and last_name from the user object
     const { first_name, last_name } = user;
 
@@ -177,7 +184,7 @@ const AddUserModal = ({ onClose, onSave }) => {
       console.error("Error logging user creation:", error);
     }
   };
-
+  
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const handleAddUserClick = () => {
     const validationErrors = validateFields();

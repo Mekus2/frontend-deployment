@@ -51,7 +51,7 @@ const NewUserChangePass = ({ userId }) => {
       const token = localStorage.getItem("auth_token");
   
       const response = await axios.put(
-        `https://backend-deployment-production-92b6.up.railway.app/account/users/changepass/${userId}/`,
+        `http://127.0.0.1:8000/account/users/changepass/${userId}/`,
         {
           new_password: newPassword,
           confirm_password: confirmPassword,

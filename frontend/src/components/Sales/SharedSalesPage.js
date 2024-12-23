@@ -20,8 +20,7 @@ const SharedSalesPage = () => {
       try {
         const response = await fetch(
           "https://backend-deployment-production-92b6.up.railway.app/sales/list/"
-        ); // Your API endpoint for sales invoices
-        const data = await response.json();
+        );        const data = await response.json();
         setSalesInvoices(data.results);
         console.log("Received Invoice list:", data.results);
       } catch (error) {

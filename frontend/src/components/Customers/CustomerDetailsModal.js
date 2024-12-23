@@ -141,31 +141,33 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
 
     // If there are changes, prepare the log payload
     if (changes.length > 0) {
-      const logPayload = {
-        LLOG_TYPE: "User logs",
-        LOG_DESCRIPTION: `Updated Customer details:\n${changes.join("\n")}`,
-        USER_ID: userId,
-      };
+        const logPayload = {
+            LLOG_TYPE: "User logs",
+            LOG_DESCRIPTION: `Updated Customer details:\n${changes.join("\n")}`,
+            USER_ID: userId,
+        };
 
-      try {
-        // Send the log data to the backend
-        const response = await fetch(
-          "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(logPayload),
-          }
-        );
-
-        // Handle the response
-        if (response.ok) {
-          console.log("Customer updated details:", logPayload);
-        } else {
-          const errorData = await response.json();
-          console.error("Failed to create log:", errorData);
+        try {
+            // Send the log data to the backend
+            const response = await fetch(
+              "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(logPayload),
+              }
+            );
+            // Handle the response
+            if (response.ok) {
+                console.log("Customer updated details:", logPayload);
+            } else {
+                const errorData = await response.json();
+                console.error("Failed to create log:", errorData);
+            }
+        } catch (error) {
+            console.error("Error logging customer updates:", error);
         }
     } else {
         console.log("No changes detected. Logging skipped.");
