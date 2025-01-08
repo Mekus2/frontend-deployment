@@ -66,6 +66,7 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
 
   const [errors, setErrors] = useState({});
   const [inputStates, setInputStates] = useState({});
+  const [paymentNumber, setPaymentNumber] = useState("");
 
   const validateFields = () => {
     const newErrors = {};
@@ -276,6 +277,27 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
             <option value="gcash">GCash</option>
             <option value="installment">Installment</option>
           </Select>
+          <Input
+            type="text"
+            value={paymentNumber || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (
+                /^\d*$/.test(value) &&
+                !value.includes("e") &&
+                !value.includes("+")
+              ) {
+                setPaymentNumber(value);
+              }
+            }}
+            placeholder="Days"
+            style={{
+              width: "150px",
+              textAlign: "center",
+              display: "block",
+              margin: "0 auto",
+            }}
+          />
         </div>
       </Field>
 

@@ -88,9 +88,7 @@ const SharedCustomerDeliveryPage = () => {
   const filteredDeliveries = (orders || []).filter((delivery) => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
-    // Check if any value in the delivery object contains the search term
     return Object.values(delivery).some((value) => {
-      // Ensure the value is not undefined, null, or empty before trying to search
       if (value && value.toString) {
         return value.toString().toLowerCase().includes(lowerCaseSearchTerm);
       }
@@ -111,7 +109,6 @@ const SharedCustomerDeliveryPage = () => {
       return (dateB - dateA) * (sortConfig.direction === "asc" ? 1 : -1);
     }
 
-    // Custom sorting for "Status"
     if (sortConfig.key === "OUTBOUND_DEL_STATUS") {
       const statusA = customStatusOrder[a.OUTBOUND_DEL_STATUS] || 0;
       const statusB = customStatusOrder[b.OUTBOUND_DEL_STATUS] || 0;
@@ -121,11 +118,9 @@ const SharedCustomerDeliveryPage = () => {
     return 0;
   });
 
-  // Handle opening and closing modal
   const openDetailsModal = (delivery) => setSelectedDelivery(delivery);
   const closeDetailsModal = () => setSelectedDelivery(null);
 
-  // Handle sorting
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -134,7 +129,6 @@ const SharedCustomerDeliveryPage = () => {
     setSortConfig({ key, direction });
   };
 
-  // Table headers definition
   const headers = [
     { title: "Customer Name", key: "OUTBOUND_DEL_CUSTOMER_NAME" },
     { title: "Status", key: "OUTBOUND_DEL_STATUS" },
@@ -142,12 +136,9 @@ const SharedCustomerDeliveryPage = () => {
     { title: "Delivery Option", key: "OUTBOUND_DEL_DLVRY_OPTION" },
     { title: "Created Date", key: "OUTBOUND_DEL_CREATED" },
     { title: "Total Price", key: "OUTBOUND_DEL_TOTAL_PRICE" },
-    // Commenting out the "Received Date" column for now
-    // { title: "Received Date", key: "OUTBOUND_DEL_RECEIVED_DATE" }, // Ensure correct field key
     { title: "Action", key: "action" },
   ];
 
-  // Table rows rendering
   const rows = sortedDeliveries.map((delivery) => [
     delivery.OUTBOUND_DEL_CUSTOMER_NAME || "Unknown",
     <Status status={delivery.OUTBOUND_DEL_STATUS}>
@@ -159,10 +150,6 @@ const SharedCustomerDeliveryPage = () => {
     delivery.OUTBOUND_DEL_DLVRY_OPTION || "Not Specified",
     new Date(delivery.OUTBOUND_DEL_CREATED).toLocaleString(),
     `₱${(Number(delivery.OUTBOUND_DEL_TOTAL_PRICE) || 0).toFixed(2)}`,
-    // Commented out the received date logic for now
-    // delivery.OUTBOUND_DEL_STATUS === "Delivered" && delivery.OUTBOUND_DEL_RECEIVED_DATE
-    //   ? new Date(delivery.OUTBOUND_DEL_RECEIVED_DATE).toLocaleString()
-    //   : "Not Updated",
     <Button
       data-cy="details-button"
       backgroundColor={colors.primary}
@@ -173,7 +160,6 @@ const SharedCustomerDeliveryPage = () => {
     </Button>,
   ]);
 
-  // Show loading spinner while fetching data
   if (loading) {
     return <Loading />;
   }
@@ -191,49 +177,68 @@ const SharedCustomerDeliveryPage = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </Controls>
-      <Table
-        headers={headers.map((header) => (
-          <TableHeader
-            key={header.key}
-            onClick={
-              header.key === "OUTBOUND_DEL_SHIPPED_DATE" ||
-              header.key === "OUTBOUND_DEL_CSTMR_RCVD_DATE" ||
-              header.key === "OUTBOUND_DEL_STATUS"
-                ? () => handleSort(header.key)
-                : undefined
-            }
-          >
-            {header.title}
-            {(header.key === "OUTBOUND_DEL_SHIPPED_DATE" ||
-              header.key === "OUTBOUND_DEL_DATE_CUST_RCVD" ||
-              header.key === "OUTBOUND_DEL_STATUS") && (
-              <>
-                {sortConfig.key === header.key ? (
-                  sortConfig.direction === "asc" ? (
-                    <FaChevronUp
-                      style={{ marginLeft: "5px", fontSize: "12px" }}
-                    />
+
+      {/* Customer Deliveries Table */}
+      <div>
+        <h3>Customer Deliveries</h3>
+        <Table
+          headers={headers.map((header) => (
+            <TableHeader
+              key={header.key}
+              onClick={
+                header.key === "OUTBOUND_DEL_SHIPPED_DATE" ||
+                header.key === "OUTBOUND_DEL_CSTMR_RCVD_DATE" ||
+                header.key === "OUTBOUND_DEL_STATUS"
+                  ? () => handleSort(header.key)
+                  : undefined
+              }
+            >
+              {header.title}
+              {(header.key === "OUTBOUND_DEL_SHIPPED_DATE" ||
+                header.key === "OUTBOUND_DEL_DATE_CUST_RCVD" ||
+                header.key === "OUTBOUND_DEL_STATUS") && (
+                <>
+                  {sortConfig.key === header.key ? (
+                    sortConfig.direction === "asc" ? (
+                      <FaChevronUp
+                        style={{ marginLeft: "5px", fontSize: "12px" }}
+                      />
+                    ) : (
+                      <FaChevronDown
+                        style={{ marginLeft: "5px", fontSize: "12px" }}
+                      />
+                    )
                   ) : (
-                    <FaChevronDown
-                      style={{ marginLeft: "5px", fontSize: "12px" }}
-                    />
-                  )
-                ) : (
-                  <span style={{ opacity: 0.5 }}>
-                    <FaChevronUp
-                      style={{ marginLeft: "5px", fontSize: "12px" }}
-                    />
-                    <FaChevronDown
-                      style={{ marginLeft: "5px", fontSize: "12px" }}
-                    />
-                  </span>
-                )}
-              </>
-            )}
-          </TableHeader>
-        ))}
-        rows={rows}
-      />
+                    <span style={{ opacity: 0.5 }}>
+                      <FaChevronUp
+                        style={{ marginLeft: "5px", fontSize: "12px" }}
+                      />
+                      <FaChevronDown
+                        style={{ marginLeft: "5px", fontSize: "12px" }}
+                      />
+                    </span>
+                  )}
+                </>
+              )}
+            </TableHeader>
+          ))}
+          rows={rows}
+        />
+      </div>
+
+      {/* Payment Table (Duplicate) */}
+      <div style={{ marginTop: "20px" }}>
+        <h3>Payment</h3>
+        <Table
+          headers={headers.map((header) => (
+            <TableHeader key={header.key}>
+              {header.title}
+            </TableHeader>
+          ))}
+          rows={rows}
+        />
+      </div>
+
       {selectedDelivery && (
         <CustomerDeliveryDetails
           delivery={selectedDelivery}

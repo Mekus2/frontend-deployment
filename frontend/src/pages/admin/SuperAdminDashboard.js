@@ -21,11 +21,10 @@ import CardTotalTransactions from "../../components/CardsData/CardTotalTransacti
 import CardTotalUsers from "../../components/CardsData/CardTotalUsers";
 import ExpiredItemsAlert from "../../components/Dashboard/ExpiredItemsAlert";
 import { getLayout, saveLayout } from "../../utils/indexedDB";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import MainLayout from "../../components/Layout/MainLayout";
 import Loading from "../../components/Layout/Loading";
-import ResetLayout from "../../utils/ResetLayout";
 import { checkUserAccess } from "../../api/authUtils";
+import RevenueGraph from "../../components/Dashboard/RevenueGraph"; // Import the RevenueGraph component
 
 const SuperAdminDashboard = () => {
   checkUserAccess();
@@ -79,27 +78,6 @@ const SuperAdminDashboard = () => {
 
     loadLayout();
   }, []);
-
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
-
-    if (result.type === "CARD") {
-      const newOrder = Array.from(currentCardOrder);
-      const [removed] = newOrder.splice(sourceIndex, 1);
-      newOrder.splice(destinationIndex, 0, removed);
-      setCurrentCardOrder(newOrder);
-      saveLayout("superadmin", "cardOrder", newOrder);
-    } else if (result.type === "TABLE") {
-      const newTableOrder = Array.from(tableOrder);
-      const [removed] = newTableOrder.splice(sourceIndex, 1);
-      newTableOrder.splice(destinationIndex, 0, removed);
-      setTableOrder(newTableOrder);
-      saveLayout("superadmin", "tableOrder", newTableOrder);
-    }
-  };
 
   // Custom onClick handlers for cards (with superadmin role)
   const cardOnClickHandlers = {
@@ -155,78 +133,37 @@ const SuperAdminDashboard = () => {
 
   return (
     <MainLayout>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="cards" direction="horizontal" type="CARD">
-          {(provided) => (
-            <CardContainer {...provided.droppableProps} ref={provided.innerRef}>
-              {currentCardOrder.map((cardKey, index) => {
-                if (cardComponents[cardKey]) {
-                  return (
-                    <Draggable
-                      key={cardKey}
-                      draggableId={cardKey}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <CardWrapper
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          onClick={cardOnClickHandlers[cardKey]}
-                        >
-                          {cardComponents[cardKey]}
-                        </CardWrapper>
-                      )}
-                    </Draggable>
-                  );
-                }
-                return null;
-              })}
-              {provided.placeholder}
-            </CardContainer>
-          )}
-        </Droppable>
+      <CardContainer>
+        {currentCardOrder.map((cardKey, index) => {
+          if (cardComponents[cardKey]) {
+            return (
+              <CardWrapper key={cardKey} onClick={cardOnClickHandlers[cardKey]}>
+                {cardComponents[cardKey]}
+              </CardWrapper>
+            );
+          }
+          return null;
+        })}
+      </CardContainer>
 
-        <ScrollableTablesContainer>
-          <Droppable droppableId="tables" type="TABLE">
-            {(provided) => (
-              <TablesContainer
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-              >
-                {tableOrder.map((tableKey, index) => {
-                  if (tableComponents[tableKey]) {
-                    return (
-                      <Draggable
-                        key={tableKey}
-                        draggableId={tableKey}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <Row
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onClick={tableOnClickHandlers[tableKey]}
-                          >
-                            {tableComponents[tableKey]}
-                          </Row>
-                        )}
-                      </Draggable>
-                    );
-                  }
-                  return null;
-                })}
-                {provided.placeholder}
-              </TablesContainer>
-            )}
-          </Droppable>
-        </ScrollableTablesContainer>
-      </DragDropContext>
-      <ResetLayout
-        setCurrentCardOrder={setCurrentCardOrder}
-        setTableOrder={setTableOrder}
-      />
+      <ScrollableTablesContainer>
+        <TablesContainer>
+          {tableOrder.map((tableKey, index) => {
+            if (tableComponents[tableKey]) {
+              return (
+                <Row key={tableKey} onClick={tableOnClickHandlers[tableKey]}>
+                  {tableComponents[tableKey]}
+                </Row>
+              );
+            }
+            return null;
+          })}
+        </TablesContainer>
+      </ScrollableTablesContainer>
+
+      
+      {/* Revenue Graph below Cards Section */}
+      <RevenueGraph />
     </MainLayout>
   );
 };
@@ -241,7 +178,7 @@ const CardContainer = styled.div`
 `;
 
 const CardWrapper = styled.div`
-  cursor: move;
+  cursor: pointer;
 `;
 
 const ScrollableTablesContainer = styled.div`
@@ -263,7 +200,7 @@ const Row = styled.div`
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
-  cursor: move;
+  cursor: pointer;
 `;
 
 export default SuperAdminDashboard;
