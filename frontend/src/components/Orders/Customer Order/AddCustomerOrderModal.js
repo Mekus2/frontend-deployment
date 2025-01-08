@@ -55,6 +55,7 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
     handleClientInputChange,
     handleClientSelect,
     handleQuantityChange,
+    handleDiscountChange,
     handlePriceChange,
     handleSave,
     handleRemoveProduct,
