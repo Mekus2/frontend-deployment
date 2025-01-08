@@ -8,7 +8,9 @@ import { notify } from "../Layout/CustomToast"; // Import the toast notification
 const AddSupplierModal = ({ onClose, onAdd }) => {
   const [supplierName, setSupplierName] = useState("");
   const [supplierNumber, setSupplierNumber] = useState("0");
-  const [contactPersonName, setContactPersonName] = useState("");
+  const [contactPersonFirstName, setContactPersonFirstName] = useState("");
+  const [contactPersonMiddleName, setContactPersonMiddleName] = useState("");
+  const [contactPersonLastName, setContactPersonLastName] = useState("");
   const [contactPersonNumber, setContactPersonNumber] = useState("0");
   const [errors, setErrors] = useState({});
 
@@ -18,8 +20,8 @@ const AddSupplierModal = ({ onClose, onAdd }) => {
     if (!/^\d{11}$/.test(supplierNumber))
       newErrors.supplierNumber =
         "Supplier number must be 11 digits and start with '0'.";
-    if (!contactPersonName)
-      newErrors.contactPersonName = "Contact person name is required.";
+    if (!contactPersonFirstName || !contactPersonLastName)
+      newErrors.contactPersonName = "Contact person first and last name are required.";
     if (!/^\d{11}$/.test(contactPersonNumber))
       newErrors.contactPersonNumber =
         "Contact person number must be 11 digits and start with '0'.";
@@ -32,7 +34,9 @@ const AddSupplierModal = ({ onClose, onAdd }) => {
       const newSupplier = {
         Supp_Company_Name: supplierName,
         Supp_Company_Num: supplierNumber,
-        Supp_Contact_Pname: contactPersonName,
+        Supp_Contact_First_Name: contactPersonFirstName,
+        Supp_Contact_Middle_Name: contactPersonMiddleName,
+        Supp_Contact_Last_Name: contactPersonLastName,
         Supp_Contact_Num: contactPersonNumber,
       };
 
@@ -75,7 +79,9 @@ const AddSupplierModal = ({ onClose, onAdd }) => {
     const {
       Supp_Company_Name: supplierName,
       Supp_Company_Num: supplierNumber,
-      Supp_Contact_Pname: contactPersonName,
+      Supp_Contact_First_Name: contactPersonFirstName,
+      Supp_Contact_Middle_Name: contactPersonMiddleName,
+      Supp_Contact_Last_Name: contactPersonLastName,
       Supp_Contact_Num: contactPersonNumber,
     } = addedSupplier;
 
@@ -83,7 +89,7 @@ const AddSupplierModal = ({ onClose, onAdd }) => {
     const logPayload = {
       LLOG_TYPE: "User logs",
       LOG_DESCRIPTION: `Added new supplier: Company name & number: ${supplierName} ${supplierNumber} 
-        -- Contact person and number: ${contactPersonName} ${contactPersonNumber}`,
+        -- Contact person and number: ${contactPersonFirstName} ${contactPersonMiddleName} ${contactPersonLastName} ${contactPersonNumber}`,
       USER_ID: userId,
     };
 
@@ -130,14 +136,28 @@ const AddSupplierModal = ({ onClose, onAdd }) => {
           maxLength="11"
         />
 
-        <Label>Contact Person Name</Label>
+        <Label>Name</Label>
         {errors.contactPersonName && <Error>{errors.contactPersonName}</Error>}
-        <Input
-          type="text"
-          value={contactPersonName}
-          onChange={(e) => setContactPersonName(e.target.value)}
-          placeholder="Enter contact person name"
-        />
+        <NameRow>
+          <Input
+            type="text"
+            value={contactPersonFirstName}
+            onChange={(e) => setContactPersonFirstName(e.target.value)}
+            placeholder="First Name"
+          />
+          <Input
+            type="text"
+            value={contactPersonMiddleName}
+            onChange={(e) => setContactPersonMiddleName(e.target.value)}
+            placeholder="Middle Name"
+          />
+          <Input
+            type="text"
+            value={contactPersonLastName}
+            onChange={(e) => setContactPersonLastName(e.target.value)}
+            placeholder="Last Name"
+          />
+        </NameRow>
 
         <Label>Contact Person Number</Label>
         {errors.contactPersonNumber && (
@@ -179,6 +199,13 @@ const Input = styled.input`
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  flex: 1; /* This makes the input fill the available space */
+`;
+
+const NameRow = styled.div`
+  display: flex;
+  gap: 10px;
+  width: 100%; /* Ensures that the row takes full width */
 `;
 
 const ButtonGroup = styled.div`
