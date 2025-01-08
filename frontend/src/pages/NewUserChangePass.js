@@ -51,7 +51,7 @@ const NewUserChangePass = ({ userId }) => {
       const token = localStorage.getItem("auth_token");
   
       const response = await axios.put(
-        `http://127.0.0.1:8000/account/users/changepass/${userId}/`,
+        `http://localhost:8000/account/users/changepass/${userId}/`,
         {
           new_password: newPassword,
           confirm_password: confirmPassword,

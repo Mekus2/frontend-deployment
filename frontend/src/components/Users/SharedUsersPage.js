@@ -34,7 +34,7 @@ const SharedUsersPage = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://backend-deployment-production-92b6.up.railway.app/account/users/?isactive=${!showInactive}`
+        `http://localhost:8000/account/users/?isactive=${!showInactive}`
       );
       const data = response.data;
 
@@ -43,7 +43,7 @@ const SharedUsersPage = () => {
       for (const member of data) {
         try {
           const imageResponse = await axios.get(
-            `https://backend-deployment-production-92b6.up.railway.app/account/users/${member.id}/image/`
+            `http://localhost:8000/account/users/${member.id}/image/`
           );
           const imageUrl = imageResponse.data.image_url;
           newImageUrls[member.id] = imageUrl || profilePic;
@@ -67,12 +67,9 @@ const SharedUsersPage = () => {
 
   const handleActivateDeactivateUser = async (id) => {
     try {
-      await axios.put(
-        `https://backend-deployment-production-92b6.up.railway.app/account/users/${id}/`,
-        {
-          isActive: !showInactive, // Toggle the user's active state
-        }
-      );
+      await axios.put(`http://localhost:8000/account/users/${id}/`, {
+        isActive: !showInactive, // Toggle the user's active state
+      });
       fetchUsers(); // Refresh the data
     } catch (error) {
       console.error("Error updating user status:", error);
@@ -83,7 +80,7 @@ const SharedUsersPage = () => {
     try {
       // Fetch user details directly based on the user ID using the new URL
       const response = await axios.get(
-        `https://backend-deployment-production-92b6.up.railway.app/account/details/${user.id}/` // Updated URL for fetching user details
+        `http://localhost:8000/account/details/${user.id}/` // Updated URL for fetching user details
       );
 
       // Include the isActive field along with the other user details

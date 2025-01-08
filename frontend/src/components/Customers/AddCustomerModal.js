@@ -73,16 +73,13 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     };
 
     try {
-      const response = await fetch(
-        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-        {
-          method: "POST",
-          body: JSON.stringify(logPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:8000/logs/logs/", {
+        method: "POST",
+        body: JSON.stringify(logPayload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         console.log("Customer log successfully created:", logPayload);

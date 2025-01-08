@@ -44,7 +44,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
         try {
           const updatedClient = { ...editedClient };
           const response = await fetch(
-            `https://backend-deployment-production-92b6.up.railway.app/customer/clients/${client.id}/`,
+            `http://localhost:8000/customer/clients/${client.id}/`,
             {
               method: "PUT",
               headers: {
@@ -147,28 +147,26 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
             USER_ID: userId,
         };
 
-        try {
-            // Send the log data to the backend
-            const response = await fetch(
-              "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(logPayload),
-              }
-            );
-            // Handle the response
-            if (response.ok) {
-                console.log("Customer updated details:", logPayload);
-            } else {
-                const errorData = await response.json();
-                console.error("Failed to create log:", errorData);
-            }
-        } catch (error) {
-            console.error("Error logging customer updates:", error);
+      try {
+        // Send the log data to the backend
+        const response = await fetch("http://localhost:8000/logs/logs/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(logPayload),
+        });
+
+        // Handle the response
+        if (response.ok) {
+          console.log("Customer updated details:", logPayload);
+        } else {
+          const errorData = await response.json();
+          console.error("Failed to create log:", errorData);
         }
+      } catch (error) {
+        console.error("Error logging customer updates:", error);
+      }
     } else {
         console.log("No changes detected. Logging skipped.");
     }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie"; // Ensure js-cookie is installed
 
-const API_URL = "https://backend-deployment-production-92b6.up.railway.app/"; // Base URL for the API
+const API_URL = "http://localhost:8000/"; // Base URL for the API
 
 // Function to log in
 export const loginUser = async (credentials) => {

@@ -51,7 +51,7 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
         try {
           const updatedSupplier = { ...editedSupplier };
           const response = await fetch(
-            `https://backend-deployment-production-92b6.up.railway.app/supplier/suppliers/${supplier.id}/`,
+            `http://localhost:8000/supplier/suppliers/${supplier.id}/`,
             {
               method: "PUT",
               headers: {
@@ -126,16 +126,13 @@ const SupplierDetailsModal = ({ supplier, onClose }) => {
 
     try {
       // Send the log data to the backend
-      const response = await fetch(
-        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-        {
-          method: "POST",
-          body: JSON.stringify(logPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:8000/logs/logs/", {
+        method: "POST",
+        body: JSON.stringify(logPayload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         console.log("Supplier log successfully created:", logPayload);

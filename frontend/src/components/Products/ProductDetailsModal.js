@@ -17,7 +17,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
     const fetchProductDetails = async () => {
       try {
         const response = await axios.get(
-          `https://backend-deployment-production-92b6.up.railway.app/items/productList/${productId}/`
+          `http://localhost:8000/items/productList/${productId}/`
         );
         setProduct(response.data);
         setEditFields({
@@ -66,7 +66,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
         PROD_CATEGORIES: editFields.categories, // Save categories
       };
       await axios.put(
-        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${productId}/`,
+        `http://localhost:8000/items/productList/${productId}/`,
         updatedProduct
       );
       notify.success("Product updated successfully!");
@@ -81,7 +81,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
   const logProductCreation = async (oldProduct, updatedProduct) => {
     const userId = localStorage.getItem("user_id");
     const userResponse = await fetch(
-      `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`
+      `http://localhost:8000/account/logs/${userId}/`
     );
     if (!userResponse.ok) {
       const errorData = await userResponse.json();
@@ -126,16 +126,13 @@ const ProductDetailsModal = ({ productId, onClose }) => {
 
       try {
         // Send the log data to the backend
-        const response = await fetch(
-          "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(logPayload),
-          }
-        );
+        const response = await fetch("http://localhost:8000/logs/logs/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(logPayload),
+        });
 
         // Handle the response
         if (response.ok) {

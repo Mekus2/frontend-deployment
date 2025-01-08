@@ -16,7 +16,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
   const handleDeactivate = async () => {
     try {
       const response = await fetch(
-        `https://backend-deployment-production-92b6.up.railway.app/account/deactivateUser/${user.id}/`,
+        `http://localhost:8000/account/deactivateUser/${user.id}/`,
         {
           method: "PUT",
           headers: {
@@ -43,7 +43,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
   const handleActivate = async () => {
     try {
       const response = await fetch(
-        `https://backend-deployment-production-92b6.up.railway.app/account/reactivateUser/${user.id}/`,
+        `http://localhost:8000/account/reactivateUser/${user.id}/`,
         {
           method: "PUT",
           headers: {
@@ -76,16 +76,13 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
     };
 
     try {
-      const response = await fetch(
-        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-        {
-          method: "POST",
-          body: JSON.stringify(logPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:8000/logs/logs/", {
+        method: "POST",
+        body: JSON.stringify(logPayload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         console.log("Log successfully created:", logPayload);

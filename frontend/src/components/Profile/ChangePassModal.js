@@ -47,7 +47,7 @@ const ChangePassModal = ({ onClose, onSave }) => {
 
     try {
       const response = await fetch(
-        `https://backend-deployment-production-92b6.up.railway.app/account/users/${userId}/change-password/`,
+        `http://localhost:8000/account/users/${userId}/change-password/`,
         {
           method: "PUT",
           headers: {

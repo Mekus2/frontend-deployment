@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app";
+const BASE_URL = "http://localhost:8000";
 // const TOKEN =
 //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI4OTc5NDM5LCJpYXQiOjE3Mjg5NzkxMzksImp0aSI6ImY1OTdjYWZjOWFiZjQ3MDE4MDdlNGIzN2Y3NTBlYWRmIiwidXNlcl9pZCI6Mn0.FXTX1OFzbJ3fWL0bTxef1-QNda-oWAlCcXoOwzLCKVs";
 
@@ -52,7 +52,7 @@ export const fetchOrderDetailsById = async (orderId) => {
 export const addNewCustomerOrder = async (orderData) => {
   try {
     const response = await axios.post(
-      "https://backend-deployment-production-92b6.up.railway.app/api/customer-order/",
+      "http://localhost:8000/api/customer-order/",
       orderData,
       {
         headers: {
@@ -123,7 +123,7 @@ export const updateOrderDetails = async (salesOrderId, orderDetails) => {
   try {
     // Send the request to the backend API for exporting the order details
     const response = await fetch(
-      `https://backend-deployment-production-92b6.up.railway.app/api/customer-order/update/${salesOrderId}`, // Ensure correct URL format
+      `http://localhost:8000/api/customer-order/update/${salesOrderId}`, // Ensure correct URL format
       {
         method: "PATCH",
         headers: {
