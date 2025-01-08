@@ -12,7 +12,7 @@ const ExpiredItemsAlert = () => {
     const fetchExpiringProducts = async () => {
       try {
         const response = await axios.get(
-          "https://backend-deployment-production-92b6.up.railway.app/inventory/expiredsoon/"
+          "http://localhost:8000/inventory/expiredsoon/"
         );
         setExpiringProducts(response.data); // Store fetched data
       } catch (err) {

@@ -26,8 +26,8 @@ const SharedInventoryPage = () => {
       setError(null); // Reset error state
       try {
         const url = searchTerm
-          ? `https://backend-deployment-production-92b6.up.railway.app/inventory/search/?PRODUCT_NAME=${searchTerm}&page=${currentPage}&page_size=${rowsPerPage}`
-          : `https://backend-deployment-production-92b6.up.railway.app/inventory/list/?page=${currentPage}&page_size=${rowsPerPage}`;
+          ? `http://localhost:8000/inventory/search/?PRODUCT_NAME=${searchTerm}&page=${currentPage}&page_size=${rowsPerPage}`
+          : `http://localhost:8000/inventory/list/?page=${currentPage}&page_size=${rowsPerPage}`;
         const response = await axios.get(url);
 
         // Assuming the backend sends pagination metadata
@@ -47,7 +47,7 @@ const SharedInventoryPage = () => {
   const handleDetailClick = async (item) => {
     try {
       const response = await axios.get(
-        `https://backend-deployment-production-92b6.up.railway.app/inventory/list/${item.INVENTORY_ID}/`
+        `http://localhost:8000/inventory/list/${item.INVENTORY_ID}/`
       );
       setSelectedItem(response.data);
       setShowDetailModal(true);

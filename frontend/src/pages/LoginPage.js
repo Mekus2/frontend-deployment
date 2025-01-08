@@ -59,7 +59,7 @@ const LoginPage = () => {
     try {
       // Fetch user details by user ID
       const userResponse = await fetch(
-        `https://backend-deployment-production-92b6.up.railway.app/account/logs/${userId}/`,
+        `http://localhost:8000/account/logs/${userId}/`,
         {
           method: "GET",
           headers: {
@@ -84,16 +84,13 @@ const LoginPage = () => {
       };
 
       // Log the event
-      const logResponse = await fetch(
-        "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(logPayload),
-        }
-      );
+      const logResponse = await fetch("http://localhost:8000/logs/logs/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(logPayload),
+      });
 
       if (logResponse.ok) {
         console.log("Login event logged successfully.");

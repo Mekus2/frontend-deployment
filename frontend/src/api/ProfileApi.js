@@ -2,8 +2,8 @@ import axios from "axios";
 import { createAuthorizedInstance } from "./AuthorizedApi"; // Correctly import the named export
 
 // Base API URL for users
-//const API_URL = 'https://backend-deployment-production-92b6.up.railway.app/account/users/'; // Adjust the endpoint based on your API structure
-const API_UPDATE = "https://backend-deployment-production-92b6.up.railway.app/";
+//const API_URL = 'http://localhost:8000/account/users/'; // Adjust the endpoint based on your API structure
+const API_UPDATE = "http://localhost:8000/";
 const getAccessToken = () => {
   return localStorage.getItem("access_tokenStorage"); // Fetches 'access_token1' from localStorage
 };
@@ -27,7 +27,7 @@ export const fetchUserData = async (userId = null) => {
 
     // Make the request and directly set the headers
     const response = await axios.get(
-      `https://backend-deployment-production-92b6.up.railway.app/account/logs/${resolvedUserId}/`,
+      `http://localhost:8000/account/logs/${resolvedUserId}/`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -12,9 +12,7 @@ const InventoryDetailsModal = ({ item, onClose }) => {
   // Fetch the reorder level for the specific product ID
   useEffect(() => {
     if (prodId) {
-      fetch(
-        `https://backend-deployment-production-92b6.up.railway.app/items/productList/${prodId}/`
-      )
+      fetch(`http://localhost:8000/items/productList/${prodId}/`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch product data");

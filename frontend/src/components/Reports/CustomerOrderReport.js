@@ -25,7 +25,7 @@ const CustomerOrderReport = () => {
 
       try {
         const response = await fetch(
-          `https://backend-deployment-production-92b6.up.railway.app/api/delivery/customer/dateRange/?start_date=${startDate}&end_date=${endDate}`
+          `http://localhost:8000/api/delivery/customer/dateRange/?start_date=${startDate}&end_date=${endDate}`
         );
         if (response.ok) {
           const data = await response.json();

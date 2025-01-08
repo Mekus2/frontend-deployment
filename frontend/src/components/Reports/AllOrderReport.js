@@ -25,12 +25,8 @@ const AllOrderReport = () => {
         setLoading(true);
 
         const [viewDailyResponse, currentStockResponse] = await Promise.all([
-          axios.get(
-            "https://backend-deployment-production-92b6.up.railway.app/report/viewdaily/"
-          ),
-          axios.get(
-            "https://backend-deployment-production-92b6.up.railway.app/report/current/"
-          ),
+          axios.get("http://localhost:8000/report/viewdaily/"),
+          axios.get("http://localhost:8000/report/current/"),
         ]);
 
         const viewDailyData = viewDailyResponse.data;

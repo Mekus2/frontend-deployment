@@ -1,8 +1,7 @@
 import axios from "axios";
 
 // Base URL for the supplier API
-const BASE_URL =
-  "https://backend-deployment-production-92b6.up.railway.app/supplier";
+const BASE_URL = "http://localhost:8000/supplier";
 
 // Fetch the total number of suppliers
 export const fetchTotalSupplier = async () => {

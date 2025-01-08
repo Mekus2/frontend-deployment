@@ -42,7 +42,7 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
         try {
           const updatedClient = { ...editedClient };
           const response = await fetch(
-            `https://backend-deployment-production-92b6.up.railway.app/customer/clients/${client.id}/`,
+            `http://localhost:8000/customer/clients/${client.id}/`,
             {
               method: "PUT",
               headers: {
@@ -138,16 +138,13 @@ const CustomerDetailsModal = ({ client, onClose, onRemove }) => {
 
       try {
         // Send the log data to the backend
-        const response = await fetch(
-          "https://backend-deployment-production-92b6.up.railway.app/logs/logs/",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(logPayload),
-          }
-        );
+        const response = await fetch("http://localhost:8000/logs/logs/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(logPayload),
+        });
 
         // Handle the response
         if (response.ok) {

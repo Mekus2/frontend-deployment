@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app";
+const BASE_URL = "http://localhost:8000";
 // Function to fetch sales invoices with search term and pagination
 export async function fetchSalesInvoices(
   searchTerm = "",
@@ -9,9 +9,7 @@ export async function fetchSalesInvoices(
 ) {
   try {
     // Construct the URL with search, page, and page_size query parameters
-    const url = new URL(
-      "https://backend-deployment-production-92b6.up.railway.app/sales/list/"
-    );
+    const url = new URL("http://localhost:8000/sales/list/");
     const params = new URLSearchParams();
 
     // Add search term if provided

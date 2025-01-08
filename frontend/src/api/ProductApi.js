@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const BASE_URL =
-  "https://backend-deployment-production-92b6.up.railway.app/items"; // Base URL for the product API
+const BASE_URL = "http://localhost:8000/items"; // Base URL for the product API
 
 // Function to get the list of products
 // export const fetchProductList = async () => {
@@ -125,7 +124,7 @@ export const fetchTotalProduct = async () => {
 export const fetchTotalCategory = async () => {
   try {
     const response = await axios.get(
-      `https://backend-deployment-production-92b6.up.railway.app/product/totalCategories/`
+      `http://localhost:8000/product/totalCategories/`
     );
     console.log("total categories:", response.data);
     return response.data;

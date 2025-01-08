@@ -2,7 +2,7 @@
 
 import axios from "axios";
 
-const BASE_URL = "https://backend-deployment-production-92b6.up.railway.app";
+const BASE_URL = "http://localhost:8000";
 
 export const fetchPurchaseOrders = async () => {
   try {

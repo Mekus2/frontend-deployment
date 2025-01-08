@@ -1,8 +1,7 @@
 import axios from "axios";
 
 // Base URL for the staff API
-const BASE_URL =
-  "https://backend-deployment-production-92b6.up.railway.app/account";
+const BASE_URL = "http://localhost:8000/account";
 
 // Fetch the total number of staff
 export const fetchTotalStaff = async () => {

@@ -1,8 +1,7 @@
 import axios from "axios";
 
 // Base URL for the customer API
-const BASE_URL =
-  "https://backend-deployment-production-92b6.up.railway.app/customer";
+const BASE_URL = "http://localhost:8000/customer";
 
 // Fetch the total number of customers
 export const fetchTotalCustomer = async () => {
