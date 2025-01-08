@@ -62,11 +62,12 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
     totalQuantity,
     totalValue,
     setOrderDetails,
+    paymentNumber,
+    setPaymentNumber,
   } = useAddCustomerOrderModal(onSave, onClose);
 
   const [errors, setErrors] = useState({});
   const [inputStates, setInputStates] = useState({});
-  const [paymentNumber, setPaymentNumber] = useState("");
 
   const validateFields = () => {
     const newErrors = {};
@@ -395,10 +396,14 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
                     value={orderDetail.quantity}
                     onChange={(e) => {
                       const quantity = parseInt(e.target.value, 10);
-                      handleQuantityChange(
-                        index,
-                        isNaN(quantity) ? 0 : quantity
-                      );
+                      if (quantity > orderDetail.PROD_QOH) {
+                        notify.error("Quantity exceeds available stock.");
+                      } else {
+                        handleQuantityChange(
+                          index,
+                          isNaN(quantity) ? 0 : quantity
+                        );
+                      }
                     }}
                     placeholder="Quantity"
                   />

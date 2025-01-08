@@ -46,6 +46,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
   const [filteredClients, setFilteredClients] = useState([]);
   const [clientsData, setClientsData] = useState([]); // To store fetched clients
   const [currentEditingIndex, setCurrentEditingIndex] = useState(null);
+  const [paymentNumber, setPaymentNumber] = useState("");
 
   // Fetch clients data from API
   useEffect(() => {
@@ -187,6 +188,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       updatedOrderDetails[index].productName = product.PROD_NAME;
       updatedOrderDetails[index].price =
         parseFloat(product.PROD_DETAILS["PROD_DETAILS_PRICE"]) || 0;
+      updatedOrderDetails[index].PROD_QOH = product.PROD_QOH; // Store the product's QOH
       updatedOrderDetails[index].lineTotal = calculateLineTotal(
         updatedOrderDetails[index]
       );
@@ -256,6 +258,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
   const handlePriceChange = (index, value) => {
     const price = value === "" ? 0 : Math.max(0, parseFloat(value));
     console.log(`Changing price at index ${index} to: ${price}`);
+    console.log("Payment Number:", paymentNumber);
 
     setOrderDetails((prevOrderDetails) => {
       const updatedOrderDetails = [...prevOrderDetails];
@@ -428,6 +431,8 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
     totalQuantity,
     totalValue,
     totalDiscount,
+    paymentNumber,
+    setPaymentNumber,
   };
 };
 
