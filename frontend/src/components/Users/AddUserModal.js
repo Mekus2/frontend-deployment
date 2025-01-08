@@ -136,10 +136,6 @@ const AddUserModal = ({ onClose, onSave }) => {
       }
     }
   };
-
-  const logUserCreation = async (user) => {
-    // Fetch the user_id from localStorage
-    const userId = localStorage.getItem("user_id");
   const handleOtpSubmit = () => {
     // Assuming you have a valid OTP for the user. Replace this with your actual OTP check
     const correctOtp = "123456"; // Example OTP
@@ -151,6 +147,10 @@ const AddUserModal = ({ onClose, onSave }) => {
       alert("Invalid OTP. Please try again.");
     }
   };
+  const logUserCreation = async (user) => {
+    // Fetch the user_id from localStorage
+    const userId = localStorage.getItem("user_id");
+  
     // Get first_name and last_name from the user object
     const { first_name, last_name } = user;
 
