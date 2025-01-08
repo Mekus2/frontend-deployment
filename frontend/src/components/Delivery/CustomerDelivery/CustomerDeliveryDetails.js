@@ -387,6 +387,7 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                   <TableHeader>Qty Ordered</TableHeader>
                   <TableHeader>Qty Accepted</TableHeader>
                   <TableHeader>Qty Defect</TableHeader>
+                  <TableHeader>Discount</TableHeader>
                   <TableHeader>Price</TableHeader>
                   <TableHeader>Total</TableHeader>
                 </tr>
@@ -461,6 +462,9 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                     </TableCell>
 
                     <TableCell>{item.QTY_DEFECT || 0}</TableCell>
+                    <TableCell>
+                      {item.OUTBOUND_DETAILS_LINE_DISCOUNT || 0}
+                    </TableCell>
 
                     <TableCell>
                       ₱
@@ -493,11 +497,31 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
             <TotalSummary>
               {/* Total Quantity */}
               <SummaryItem>
-                <strong>Total Quantity:</strong>{" "}
+                <strong>Ordered Quantity:</strong>{" "}
+                {orderDetails.reduce(
+                  (acc, detail) =>
+                    acc +
+                    (parseInt(detail.OUTBOUND_DETAILS_PROD_QTY_ORDERED, 10) ||
+                      0),
+                  0
+                )}
+              </SummaryItem>
+              <SummaryItem>
+                <strong>Accepted Quantity:</strong>{" "}
                 {orderDetails.reduce(
                   (acc, detail) =>
                     acc +
                     (parseInt(detail.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED, 10) ||
+                      0),
+                  0
+                )}
+              </SummaryItem>
+              <SummaryItem>
+                <strong>Defective Quantity:</strong>{" "}
+                {orderDetails.reduce(
+                  (acc, detail) =>
+                    acc +
+                    (parseInt(detail.OUTBOUND_DETAILS_PROD_QTY_DEFECT, 10) ||
                       0),
                   0
                 )}
@@ -511,14 +535,15 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                   {orderDetails
                     .reduce((acc, detail) => {
                       const discountValue =
-                        (((parseFloat(
-                          detail.OUTBOUND_DETAILS_PROD_SELL_PRICE
-                        ) || 0) *
-                          (parseFloat(detail.OUTBOUND_DETAILS_PROD_DISCOUNT) ||
+                        (((parseFloat(detail.OUTBOUND_DETAILS_SELL_PRICE) ||
+                          0) *
+                          (parseFloat(detail.OUTBOUND_DETAILS_LINE_DISCOUNT) ||
                             0)) /
                           100) *
-                        (parseInt(detail.OUTBOUND_DETAILS_PROD_LINE_QTY, 10) ||
-                          0);
+                        (parseInt(
+                          detail.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+                          10
+                        ) || 0);
                       return acc + discountValue;
                     }, 0)
                     .toFixed(2)}
@@ -527,16 +552,17 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
 
               {/* Total Cost */}
               <SummaryItem>
-                <strong>Total Cost:</strong>{" "}
+                <strong>Total Amount:</strong>{" "}
                 <HighlightedTotal style={{ color: "#ff5757" }}>
                   ₱
                   {orderDetails
                     .reduce((acc, detail) => {
                       const totalCost =
-                        (parseFloat(detail.OUTBOUND_DETAILS_PROD_SALES_PRICE) ||
-                          0) *
-                        (parseInt(detail.OUTBOUND_DETAILS_PROD_LINE_QTY, 10) ||
-                          0);
+                        (parseFloat(detail.OUTBOUND_DETAILS_SELL_PRICE) || 0) *
+                        (parseInt(
+                          detail.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+                          10
+                        ) || 0);
                       return acc + totalCost;
                     }, 0)
                     .toFixed(2)}

@@ -122,6 +122,8 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
       OUTBOUND_DEL_CUSTOMER_NAME: order.SALES_ORDER_CLIENT_NAME,
       OUTBOUND_DEL_DLVRY_OPTION: order.SALES_ORDER_DLVRY_OPTION,
       OUTBOUND_DEL_TOTAL_PRICE: order.SALES_ORDER_TOTAL_PRICE,
+      OUTBOUND_DEL_DISCOUNT: order.SALES_ORDER_TOTAL_DISCOUNT,
+      OUTBOUND_DEL_TOTAL_ORDERED_QTY: order.SALES_ORDER_TOTAL_QTY,
       OUTBOUND_DEL_CITY: order.SALES_ORDER_CLIENT_CITY,
       OUTBOUND_DEL_PROVINCE: order.SALES_ORDER_CLIENT_PROVINCE,
       OUTBOUND_DEL_ACCPTD_BY_USERNAME: localStorage.getItem("user_first_name"),
@@ -191,6 +193,12 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
           <p>
             <strong>Province:</strong> {order.SALES_ORDER_CLIENT_PROVINCE}
           </p>
+          <p>
+            <strong>Payment Terms:</strong> {order.SALES_ORDER_PYMNT_TERMS}
+          </p>
+          <p>
+            <strong>Payment Option:</strong> {order.SALES_ORDER_PYMNT_OPTION}
+          </p>
         </Section>
 
         <Section>
@@ -200,7 +208,6 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
                 <tr>
                   <TableHeader>Product Name</TableHeader>
                   <TableHeader>Quantity</TableHeader>
-                  <TableHeader>Purchase Price</TableHeader>
                   <TableHeader>Sell Price</TableHeader>
                   <TableHeader>Discount</TableHeader>
                   <TableHeader>Total</TableHeader>
@@ -215,16 +222,11 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
                       </TableCell>
                       <TableCell>{detail.SALES_ORDER_LINE_QTY || 0}</TableCell>
                       <TableCell>
-                        {formatCurrency(
-                          detail.SALES_ORDER_LINE_PURCHASE_PRICE || 0
-                        )}
-                      </TableCell>
-                      <TableCell>
                         {formatCurrency(detail.SALES_ORDER_LINE_PRICE || 0)}
                       </TableCell>
-                      <TableCell>{`${
+                      <TableCell>{`₱${
                         detail.SALES_ORDER_LINE_DISCOUNT || "0"
-                      }%`}</TableCell>
+                      }`}</TableCell>
                       <TableCell>
                         {formatCurrency(detail.SALES_ORDER_LINE_TOTAL || 0)}
                       </TableCell>
@@ -247,10 +249,12 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
             <strong>Total Quantity:</strong> {totalQuantity}
           </TotalItem>
           <TotalItem>
-            <strong>Total Discount:</strong> {formatCurrency(totalDiscount)}
+            <strong>Total Discount:</strong>{" "}
+            {formatCurrency(order.SALES_ORDER_TOTAL_DISCOUNT)}
           </TotalItem>
           <HighlightedTotal>
-            <strong>Total Amount:</strong> {formatCurrency(totalAmount)}
+            <strong>Total Amount:</strong>{" "}
+            {formatCurrency(order.SALES_ORDER_TOTAL_PRICE)}
           </HighlightedTotal>
         </TotalSummary>
 

@@ -301,6 +301,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       SALES_ORDER_CLIENT_PHONE_NUM: clientNumber, // Add client number
       SALES_ORDER_DLVRY_OPTION: deliveryOption,
       SALES_ORDER_PYMNT_OPTION: paymentTerms,
+      SALES_ORDER_PYMNT_TERMS: paymentNumber,
       SALES_ORDER_TOTAL_QTY: calculateTotalQuantity(orderDetails),
       SALES_ORDER_TOTAL_PRICE: parseFloat(
         calculateTotalValue(orderDetails).toFixed(2)
@@ -316,10 +317,10 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
         return {
           SALES_ORDER_PROD_ID: item.productId,
           SALES_ORDER_PROD_NAME: item.productName,
-          SALES_ORDER_LINE_PRICE: discountedPrice, // Calculate discounted price
+          SALES_ORDER_LINE_PRICE: item.price, // Calculate discounted price
           SALES_ORDER_LINE_QTY: item.quantity,
           SALES_ORDER_LINE_DISCOUNT: discountValue || 0,
-          SALES_ORDER_LINE_TOTAL: item.lineTotal,
+          SALES_ORDER_LINE_TOTAL: discountedPrice,
         };
       }),
     };
