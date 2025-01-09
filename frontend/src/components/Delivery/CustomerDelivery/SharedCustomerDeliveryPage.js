@@ -133,7 +133,7 @@ const SharedCustomerDeliveryPage = () => {
     { title: "Customer Name", key: "OUTBOUND_DEL_CUSTOMER_NAME" },
     { title: "Status", key: "OUTBOUND_DEL_STATUS" },
     { title: "Location", key: "OUTBOUND_DEL_LOCATION" },
-    { title: "Delivery Option", key: "OUTBOUND_DEL_DLVRY_OPTION" },
+    { title: "Payment Option", key: "OUTBOUND_DEL_DLVRY_OPTION" },
     { title: "Created Date", key: "OUTBOUND_DEL_CREATED" },
     { title: "Total Price", key: "OUTBOUND_DEL_TOTAL_PRICE" },
     { title: "Action", key: "action" },
@@ -231,9 +231,7 @@ const SharedCustomerDeliveryPage = () => {
         <h3>Payment</h3>
         <Table
           headers={headers.map((header) => (
-            <TableHeader key={header.key}>
-              {header.title}
-            </TableHeader>
+            <TableHeader key={header.key}>{header.title}</TableHeader>
           ))}
           rows={rows}
         />
