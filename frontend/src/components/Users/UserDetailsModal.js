@@ -6,29 +6,28 @@ import Button from "../Layout/Button";
 const UserDetailsModal = ({ user, onClose, onRemove }) => {
   const [showConfirmation, setShowConfirmation] = useState(false); // State for confirmation modal
   console.log("User active status:", user.isActive);
+  console.log('USERS ID:', user.id);
 
   if (!user) return null; // Ensure modal doesn't render if user is undefined
 
   // Defaulting isActive to false if undefined
-  const isActive = user.isActive ?? false; // This ensures that undefined is treated as false
+  const isActive = user.isActive ?? false ; // This ensures that undefined is treated as false
 
   // Function to handle the deactivation request
   const handleDeactivate = async () => {
+    console.log('DEACTIVATEUSER ID:', userIDD);
     try {
-      const response = await fetch(
-        `http://localhost:8000/account/deactivateUser/${user.id}/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`http://127.0.0.1:8000/account/deactivateUser/${user.id}/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         alert("User has been deactivated successfully.");
         logUserCreation(user, "deactivated"); // Log the status change
-        if (onRemove) onRemove(); // Optionally trigger onRemove callback
+       // if (onRemove) onRemove(); // Optionally trigger onRemove callback
         onClose(); // Close the modal after deactivation
       } else {
         alert("Failed to deactivate user.");
@@ -38,24 +37,22 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
       alert("An error occurred while deactivating the user.");
     }
   };
-
+  const userIDD = user.id;
   // Function to handle the activation request
   const handleActivate = async () => {
+    console.log('USER ID:', userIDD);
     try {
-      const response = await fetch(
-        `http://localhost:8000/account/reactivateUser/${user.id}/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`http://127.0.0.1:8000/account/reactivateUser/${user.id}/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         alert("User has been activated successfully.");
         logUserCreation(user, "activated"); // Log the status change
-        if (onRemove) onRemove(); // Optionally trigger onRemove callback
+      //  if (onRemove) onRemove(); // Optionally trigger onRemove callback
         onClose(); // Close the modal after activation
       } else {
         alert("Failed to activate user.");
@@ -76,7 +73,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/logs/logs/", {
+      const response = await fetch("http://127.0.0.1:8000/logs/logs/", {
         method: "POST",
         body: JSON.stringify(logPayload),
         headers: {
@@ -123,9 +120,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
         <ButtonGroup>
           <Button
             variant={isActive ? "red" : "green"} // Red for Deactivate, Green for Activate
-            onClick={
-              isActive ? () => setShowConfirmation(true) : handleActivate
-            }
+            onClick={isActive ? () => setShowConfirmation(true) : handleActivate}
           >
             {isActive ? "Deactivate" : "Activate"} {/* Toggle button text */}
           </Button>
@@ -134,10 +129,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
 
       {/* Confirmation Modal for Deactivation */}
       {showConfirmation && (
-        <Modal
-          title="Confirm Deactivation"
-          onClose={() => setShowConfirmation(false)}
-        >
+        <Modal title="Confirm Deactivation" onClose={() => setShowConfirmation(false)}>
           <ConfirmationText>
             Are you sure you want to deactivate this user?
           </ConfirmationText>
@@ -145,10 +137,7 @@ const UserDetailsModal = ({ user, onClose, onRemove }) => {
             <Button variant="red" onClick={handleDeactivate}>
               Yes, Deactivate
             </Button>
-            <Button
-              variant="default"
-              onClick={() => setShowConfirmation(false)}
-            >
+            <Button variant="default" onClick={() => setShowConfirmation(false)}>
               Cancel
             </Button>
           </ButtonGroup>
