@@ -151,7 +151,7 @@ const SuperAdminDashboard = () => {
           {tableOrder.map((tableKey, index) => {
             if (tableComponents[tableKey]) {
               return (
-                <Row key={tableKey} onClick={tableOnClickHandlers[tableKey]}>
+                <Row key={tableKey}>
                   {tableComponents[tableKey]}
                 </Row>
               );

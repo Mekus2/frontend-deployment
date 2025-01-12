@@ -1,56 +1,124 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Ensure axios is installed in your project
-import DashboardTable from "./DashboardTable"; // Adjust the path accordingly
+import axios from "axios";
+import styled from "styled-components";
+import DashboardTable from "./DashboardTable";
+import { fetchProductList } from "../../api/ProductApi";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const ExpiredItemsAlert = () => {
-  const [expiringProducts, setExpiringProducts] = useState([]); // State to store the expiring products
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [expiringProducts, setExpiringProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [productsList, setProductsList] = useState([]);
+  const [isSortedByExpiryAsc, setIsSortedByExpiryAsc] = useState(true);
 
-  // Fetch data from the backend API
+  // Fetch expired products and product list
+  const fetchExpiringProducts = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/inventory/expiredsoon/");
+      setExpiringProducts(response.data);
+    } catch (err) {
+      setError("Error fetching expiring products.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const { results } = await fetchProductList(1, 20, "");
+      setProductsList(results);
+    } catch (err) {
+      console.error("Error fetching products", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchExpiringProducts = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/inventory/expiredsoon/"
-        );
-        setExpiringProducts(response.data); // Store fetched data
-      } catch (err) {
-        setError("Error fetching expiring products.");
-      } finally {
-        setLoading(false);
-      }
+    const fetchData = async () => {
+      await fetchExpiringProducts();
+      await loadProducts();
     };
-
-    fetchExpiringProducts(); // Call the fetch function
+    fetchData();
   }, []);
 
-  // Show loading or error message
-  if (loading) {
-    return <p>Loading expiring products...</p>;
-  }
+  const getSupplierForProduct = (productName) => {
+    const product = productsList.find((prod) => prod.PROD_NAME === productName);
+    return product ? product.PROD_DETAILS.PROD_DETAILS_SUPPLIER : "N/A";
+  };
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  const toggleExpiryDateSort = () => {
+    setIsSortedByExpiryAsc(!isSortedByExpiryAsc);
+  };
 
-  const headers = ["Product Name", "Quantity", "Expiry Date"]; // Table headers
-  const data = expiringProducts.map(
-    ({ PRODUCT_NAME, QUANTITY_ON_HAND, EXPIRY_DATE }) => [
-      PRODUCT_NAME,
-      QUANTITY_ON_HAND,
-      new Date(EXPIRY_DATE).toLocaleDateString(), // Format expiry date
-    ]
-  ); // Format data for the table
+  const sortedExpiringProducts = isSortedByExpiryAsc
+    ? expiringProducts.sort((a, b) => new Date(a.EXPIRY_DATE) - new Date(b.EXPIRY_DATE))
+    : expiringProducts.sort((a, b) => new Date(b.EXPIRY_DATE) - new Date(a.EXPIRY_DATE));
+
+  const limitedData = sortedExpiringProducts.slice(0, 10); // Limit to 10 rows
+
+  const headers = [
+    "Product Name",
+    "Supplier Name",
+    "Quantity",
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center", // Center content horizontally
+        gap: "5px", // Add space between the text and chevron
+        color: "white",
+        width: "100%", // Ensure the content spans fully
+      }}
+    >
+      Expiry Date
+      <ToggleSortButton onClick={toggleExpiryDateSort}>
+        {isSortedByExpiryAsc ? <FaChevronUp /> : <FaChevronDown />}
+      </ToggleSortButton>
+    </div>,
+  ];
+  
+
+  const data = limitedData.map(({ PRODUCT_NAME, QUANTITY_ON_HAND, EXPIRY_DATE }) => [
+    PRODUCT_NAME,
+    getSupplierForProduct(PRODUCT_NAME),
+    QUANTITY_ON_HAND,
+    new Date(EXPIRY_DATE).toLocaleDateString(),
+  ]);
+
+  if (loading) return <p>Loading expiring products...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
-    <DashboardTable
-      title="Expiring Soon"
-      headers={headers}
-      data={data}
-      onRowClick={(id) => (window.location.href = `/staff/inventory/${id}`)} // Navigate to specific product's inventory page
-    />
+    <ModalWrapper>
+      <DashboardTable
+        title="Expiring Soon"
+        headers={headers}
+        data={data}
+        onRowClick={(id) => (window.location.href = `/staff/inventory/${id}`)}
+      />
+    </ModalWrapper>
   );
 };
+
+// Styled Components
+const ModalWrapper = styled.div`
+  width: 100%;
+  background-color: #f8f9fa;
+`;
+
+const ToggleSortButton = styled.button`
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-left: 5px;
+  }
+`;
 
 export default ExpiredItemsAlert;

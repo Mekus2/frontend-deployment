@@ -6,6 +6,7 @@ import AddSupplierOrderModal from "./AddSupplierOrderModal";
 import SearchBar from "../../Layout/SearchBar";
 import Table from "../../Layout/Table";
 import CardTotalSupplierOrder from "../../../components/CardsData/CardTotalSupplierOrder";
+import CardTotalPendingOrders from "../../../components/CardsData/CardTotalPendingOrders";
 import Button from "../../Layout/Button";
 import { FaPlus, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { fetchPurchaseOrders } from "../../../api/fetchPurchaseOrders";
@@ -121,9 +122,8 @@ const SharedSupplierOrderPage = () => {
   return (
     <>
       <AnalyticsContainer>
-        <div onClick={() => navigate("/staff/orders/purchase-order")}>
           <CardTotalSupplierOrder />
-        </div>
+          <CardTotalPendingOrders />
       </AnalyticsContainer>
       <Controls>
         <SearchBar
@@ -213,6 +213,7 @@ const Controls = styled.div`
 
 const AnalyticsContainer = styled.div`
   display: flex;
+  flex-direction: row;
   gap: 16px;
   margin-bottom: 16px;
   padding: 0 1px;

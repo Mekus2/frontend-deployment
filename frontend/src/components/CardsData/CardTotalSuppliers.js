@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FaWarehouse } from "react-icons/fa"; // Import a relevant icon
 import Card from "../Layout/Card"; // Import the reusable Card component
-import { fetchTotalSupplier } from "../../api/SupplierApi"; // Import the API call function
+import { fetchTotalSupplier } from "../../api/SupplierApi";
+import { fetchProductList } from "../../api/ProductApi";
 import styled from "styled-components";
 
 const CardTotalSuppliers = () => {
