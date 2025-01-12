@@ -46,6 +46,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
   const [filteredClients, setFilteredClients] = useState([]);
   const [clientsData, setClientsData] = useState([]); // To store fetched clients
   const [currentEditingIndex, setCurrentEditingIndex] = useState(null);
+  const [paymentNumber, setPaymentNumber] = useState("");
 
   // Fetch clients data from API
   useEffect(() => {
@@ -187,6 +188,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       updatedOrderDetails[index].productName = product.PROD_NAME;
       updatedOrderDetails[index].price =
         parseFloat(product.PROD_DETAILS["PROD_DETAILS_PRICE"]) || 0;
+      updatedOrderDetails[index].PROD_QOH = product.PROD_QOH; // Store the product's QOH
       updatedOrderDetails[index].lineTotal = calculateLineTotal(
         updatedOrderDetails[index]
       );
@@ -253,9 +255,24 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
     });
   };
 
+  const getTotalDiscount = (orderDetails) => {
+    return orderDetails
+      .reduce((acc, detail) => {
+        // Calculate the discount based on the line's price, discount, and quantity
+        const discountValue =
+          (((parseFloat(detail.price) || 0) *
+            (parseFloat(detail.discount) || 0)) /
+            100) *
+          (parseInt(detail.quantity, 10) || 0);
+        return acc + discountValue;
+      }, 0)
+      .toFixed(2);
+  };
+
   const handlePriceChange = (index, value) => {
     const price = value === "" ? 0 : Math.max(0, parseFloat(value));
     console.log(`Changing price at index ${index} to: ${price}`);
+    console.log("Payment Number:", paymentNumber);
 
     setOrderDetails((prevOrderDetails) => {
       const updatedOrderDetails = [...prevOrderDetails];
@@ -284,19 +301,28 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       SALES_ORDER_CLIENT_PHONE_NUM: clientNumber, // Add client number
       SALES_ORDER_DLVRY_OPTION: deliveryOption,
       SALES_ORDER_PYMNT_OPTION: paymentTerms,
+      SALES_ORDER_PYMNT_TERMS: paymentNumber,
       SALES_ORDER_TOTAL_QTY: calculateTotalQuantity(orderDetails),
       SALES_ORDER_TOTAL_PRICE: parseFloat(
         calculateTotalValue(orderDetails).toFixed(2)
       ), // Ensure this is a number
-      SALES_ORDER_TOTAL_DISCOUNT: calculateTotalDiscount(orderDetails) || 0, // Updated discount logic
-      details: orderDetails.map((item) => ({
-        SALES_ORDER_PROD_ID: item.productId,
-        SALES_ORDER_PROD_NAME: item.productName,
-        SALES_ORDER_LINE_PRICE: parseFloat(item.price) || 0, // Ensure this is a number
-        SALES_ORDER_LINE_QTY: item.quantity,
-        SALES_ORDER_LINE_DISCOUNT: item.discount || 0,
-        SALES_ORDER_LINE_TOTAL: item.lineTotal,
-      })),
+      SALES_ORDER_TOTAL_DISCOUNT: getTotalDiscount(orderDetails) || 0, // Updated discount logic
+      details: orderDetails.map((item) => {
+        const price = parseFloat(item.price) || 0;
+        const discount = parseFloat(item.discount) || 0;
+        const quantity = parseInt(item.quantity, 10) || 0;
+        const discountValue = ((price * discount) / 100) * quantity;
+        const discountedPrice = price * quantity - discountValue;
+
+        return {
+          SALES_ORDER_PROD_ID: item.productId,
+          SALES_ORDER_PROD_NAME: item.productName,
+          SALES_ORDER_LINE_PRICE: item.price, // Calculate discounted price
+          SALES_ORDER_LINE_QTY: item.quantity,
+          SALES_ORDER_LINE_DISCOUNT: discountValue || 0,
+          SALES_ORDER_LINE_TOTAL: discountedPrice,
+        };
+      }),
     };
 
     console.log("Final Data to be passed:", newOrder);
@@ -305,7 +331,7 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
       console.log(newOrder);
       const createdOrder = await addNewCustomerOrder(newOrder);
       console.log("Order saved:", createdOrder);
-      console.log("IDDD:", createdOrder.SALES_ORDER_ID);
+      console.log("ID:", createdOrder.SALES_ORDER_ID);
       alert("Order has been saved successfully!"); // Display confirmation alert
       logAddCustomerOrder(createdOrder);
       onSave(); // Notify parent component or UI
@@ -428,6 +454,8 @@ const useAddCustomerOrderModal = (onSave, onClose) => {
     totalQuantity,
     totalValue,
     totalDiscount,
+    paymentNumber,
+    setPaymentNumber,
   };
 };
 
