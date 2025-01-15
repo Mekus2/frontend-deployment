@@ -1,22 +1,17 @@
 // Function to calculate the total price for a line item, including applying any discounts
-export const calculateLineTotal = (item) => {
-  const price = parseFloat(item.price) || 0;
-  const discount = parseFloat(item.discount) || 0;
-  const quantity = parseInt(item.quantity, 10) || 0;
-  const discountValue = ((price * discount) / 100) * quantity;
-  const lineTotal = price * quantity - discountValue;
-  return lineTotal;
+export const calculateLineTotal = (orderDetail) => {
+  const discount = (orderDetail.price * (orderDetail.discountValue || 0)) / 100;
+  return (orderDetail.price - discount) * orderDetail.quantity;
 };
 
 // Function to calculate the discount amount based on the discount type and value
 export const calculateDiscountAmount = (detail) => {
   let discountAmount = 0;
 
-  const price = parseFloat(detail.price) || 0;
-  const discountValue = parseFloat(detail.discountValue) || 0;
-  const quantity = parseInt(detail.quantity, 10) || 0;
-
-  discountAmount = Math.min(discountValue, quantity * price);
+  discountAmount = Math.min(
+    detail.discountValue,
+    detail.quantity * detail.price
+  );
   return discountAmount;
 };
 
@@ -35,10 +30,8 @@ export const calculateTotalValue = (orderDetails) => {
 
 // Function to calculate the total discount of all items in the order
 export const calculateTotalDiscount = (orderDetails) => {
-  // console.log("Order Details:", orderDetails); // Debugging line
   return orderDetails.reduce((acc, item) => {
     const discountAmount = calculateDiscountAmount(item);
-    // console.log("Item:", item, "Discount Amount:", discountAmount); // Debugging line
     return acc + discountAmount;
   }, 0);
 };

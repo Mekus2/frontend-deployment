@@ -8,7 +8,10 @@ import CardTotalCustomerDelivery from "../../CardsData/CardTotalCustomerDelivery
 import Button from "../../Layout/Button"; // Ensure correct export
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import Loading from "../../Layout/Loading"; // Import Loading component
-import { fetchCustomerDelivery } from "../../../api/CustomerDeliveryApi";
+import {
+  fetchCustomerDelivery,
+  fetchPendingOrderPayables,
+} from "../../../api/CustomerDeliveryApi";
 
 // Custom Status Order Mapping
 const customStatusOrder = {
@@ -57,9 +60,25 @@ const TableHeader = styled.th`
   align-items: center;
 `;
 
+const formatDate = (isoDate) => {
+  if (!isoDate) return "Invalid Date"; // Handle null, undefined, or invalid input
+
+  const date = new Date(isoDate);
+
+  // Check if the date is valid
+  if (isNaN(date)) return "Invalid Date"; // Handle invalid date
+
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed, so add 1
+  const day = String(date.getDate()).padStart(2, "0"); // Ensure two-digit day
+  const year = date.getFullYear();
+
+  return `${month}/${day}/${year}`; // Return in mm-dd-yyyy format
+};
+
 const SharedCustomerDeliveryPage = () => {
   // State Management
   const [orders, setOrders] = useState([]);
+  const [customerPayables, setCustomerPayables] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [sortConfig, setSortConfig] = useState({
@@ -81,7 +100,21 @@ const SharedCustomerDeliveryPage = () => {
         setLoading(false);
       }
     };
+
+    const fetchCustomerPayables = async () => {
+      try {
+        const customerPayables = await fetchPendingOrderPayables();
+        console.info("Fetched Data from API:", customerPayables); // Log response
+        setCustomerPayables(customerPayables); // Update state
+      } catch (err) {
+        console.error("Failed fetching Customer Payables", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOrder();
+    fetchCustomerPayables();
   }, []);
 
   // Filter Deliveries based on the search term
@@ -139,6 +172,16 @@ const SharedCustomerDeliveryPage = () => {
     { title: "Action", key: "action" },
   ];
 
+  const PaymentHeaders = [
+    { title: "Customer Name", key: "CLIENT_NAME" },
+    { title: "Start Date", key: "PAYMENT_START_DATE" },
+    { title: "Due Date", key: "PAYMENT_DUE_DATE" },
+    { title: "Terms", key: "PAYMENT_TERMS" },
+    { title: "Balance", key: "AMOUNT_BALANCE" },
+    { title: "Status", key: "PAYMENT_STATUS" },
+    { title: "Action", key: "action" },
+  ];
+
   const rows = sortedDeliveries.map((delivery) => [
     delivery.OUTBOUND_DEL_CUSTOMER_NAME || "Unknown",
     <Status status={delivery.OUTBOUND_DEL_STATUS}>
@@ -154,11 +197,39 @@ const SharedCustomerDeliveryPage = () => {
       data-cy="details-button"
       backgroundColor={colors.primary}
       hoverColor={colors.primaryHover}
-      onClick={() => openDetailsModal(delivery)}
+      // onClick={() => openDetailsModal(delivery)}
     >
       Details
     </Button>,
   ]);
+
+  const PayableRows = (customerPayables || []).map((customer) => {
+    const startDate = customer.PAYMENT_START_DATE
+      ? new Date(customer.PAYMENT_START_DATE).toLocaleString()
+      : "Unknown Date";
+    const dueDate = customer.PAYMENT_DUE_DATE
+      ? new Date(customer.PAYMENT_DUE_DATE).toLocaleString()
+      : "Unknown Date";
+
+    return [
+      customer.CLIENT_NAME || "Unknown",
+      formatDate(startDate),
+      formatDate(dueDate),
+      customer.PAYMENT_TERMS || "Unknown",
+      `₱${(Number(customer.AMOUNT_BALANCE) || 0).toFixed(2)}`,
+      <Status status={customer.PAYMENT_STATUS}>
+        {customer.PAYMENT_STATUS}
+      </Status>,
+      <Button
+        data-cy="details-button"
+        backgroundColor={colors.primary}
+        hoverColor={colors.primaryHover}
+        onClick={() => openDetailsModal(customer)}
+      >
+        Details
+      </Button>,
+    ];
+  });
 
   if (loading) {
     return <Loading />;
@@ -230,10 +301,10 @@ const SharedCustomerDeliveryPage = () => {
       <div style={{ marginTop: "20px" }}>
         <h3>Payment</h3>
         <Table
-          headers={headers.map((header) => (
+          headers={PaymentHeaders.map((header) => (
             <TableHeader key={header.key}>{header.title}</TableHeader>
           ))}
-          rows={rows}
+          rows={PayableRows}
         />
       </div>
 

@@ -122,3 +122,20 @@ export const createSalesInvoice = async (outboundDeliveryId, orderDetails) => {
     }
   }
 };
+
+// Function to create new customer payment
+
+// Function to fetch all customer pending order payables
+export const fetchPendingOrderPayables = async () => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/sales/customer-payment-list/`
+    );
+
+    // Handle paginated response
+    return response.data.results || []; // Extract results array
+  } catch (error) {
+    console.error("Failed to fetch customer pending order payables:", error);
+    return []; // Return empty array on failure
+  }
+};

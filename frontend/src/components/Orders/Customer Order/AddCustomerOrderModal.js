@@ -55,7 +55,6 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
     handleClientInputChange,
     handleClientSelect,
     handleQuantityChange,
-    handleDiscountChange,
     handlePriceChange,
     handleSave,
     handleRemoveProduct,
@@ -259,11 +258,11 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
             style={{ flex: 1 }}
           >
             <option value="">Select Delivery Option</option>
-            <option value="pickup">Pickup</option>
-            <option value="lbc">LBC</option>
-            <option value="jnt">J&T Express</option>
-            <option value="grab">Grab Express</option>
-            <option value="courier">Courier Service</option>
+            <option value="Pickup">Pickup</option>
+            <option value="LBC">LBC</option>
+            <option value="JNT">J&T Express</option>
+            <option value="Grab">Grab Express</option>
+            <option value="Courier">Courier Service</option>
           </Select>
 
           <Select
@@ -274,10 +273,10 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
             }}
             style={{ flex: 1 }}
           >
-            <option value="">Select Payment Terms</option>
-            <option value="cod">Cash on Delivery (COD)</option>
-            <option value="gcash">GCash</option>
-            <option value="installment">Installment</option>
+            <option value="">Select Payment Options</option>
+            <option value="COD">Cash on Delivery (COD)</option>
+            <option value="Gcash">GCash</option>
+            <option value="Installment">Installment</option>
           </Select>
           <Input
             type="text"
@@ -292,7 +291,7 @@ const AddCustomerOrderModal = ({ onClose, onSave }) => {
                 setPaymentNumber(value);
               }
             }}
-            placeholder="Days"
+            placeholder="Terms(Days)"
             style={{
               width: "150px",
               textAlign: "center",
