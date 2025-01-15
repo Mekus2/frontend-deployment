@@ -4,7 +4,7 @@ import Loading from "../../Layout/Loading";
 import {
   fetchCustomerDelDetails,
   updateDeliveryStatus,
-  createSalesInvoice,
+  createPaymentEntry,
 } from "../../../api/CustomerDeliveryApi";
 import CustomerCreateIssueModal from "./CustomerCreateIssueModal"; // Import the Issue Modal
 import { notify } from "../../Layout/CustomToast";
@@ -39,10 +39,12 @@ const getProgressForStatus = (status) => {
   switch (status) {
     case "Pending":
       return 0;
+    case "Dispatched":
+      return 50;
     case "Delivered":
       return 100;
     case "Delivered with Issues":
-      return 75;
+      return 100;
     default:
       return 0;
   }
@@ -155,25 +157,25 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
       // Call the createSalesInvoice function and store its response status in a new variable
       const outboundDeliveryId = delivery.OUTBOUND_DEL_ID;
       console.log("Updated Order Details:", orderDetails);
-      // const CreatePaymentStatus = await createSalesInvoice(
-      //   outboundDeliveryId,
-      //   orderDetails
-      // );
+      const CreatePaymentStatus = await createPaymentEntry(
+        outboundDeliveryId,
+        orderDetails
+      );
 
-      // // Check the status returned from the API call
-      // if (CreatePaymentStatus === 200 || CreatePaymentStatus === 201) {
-      //   // Only update status if invoice creation was successful
-      //   notify.success(
-      //     "Sales Invoice created successfully, Delivery marked as Delivered."
-      //   );
-      //   updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
-      //   setReceivedDate(updatedReceivedDate); // Update the local received date
-      // } else {
-      //   notify.error(
-      //     "Failed to create Sales Invoice. Delivery status remains as Dispatched."
-      //   );
-      //   return; // Don't proceed if invoice creation failed
-      // }
+      // Check the status returned from the API call
+      if (CreatePaymentStatus === 200 || CreatePaymentStatus === 201) {
+        // Only update status if invoice creation was successful
+        notify.success(
+          "Sales Invoice created successfully, Delivery marked as Delivered."
+        );
+        updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
+        setReceivedDate(updatedReceivedDate); // Update the local received date
+      } else {
+        notify.error(
+          "Failed to create Sales Invoice. Delivery status remains as Dispatched."
+        );
+        return; // Don't proceed if invoice creation failed
+      }
     } else if (status === "Delivered") {
       newStatus = "Delivered"; // Status is already delivered, so just notify
       notify.success("Delivery marked as Delivered.");
@@ -461,7 +463,9 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                       )}
                     </TableCell>
 
-                    <TableCell>{item.QTY_DEFECT || 0}</TableCell>
+                    <TableCell>
+                      {item.OUTBOUND_DETAILS_PROD_QTY_DEFECT || 0}
+                    </TableCell>
                     <TableCell>
                       {item.OUTBOUND_DETAILS_LINE_DISCOUNT || 0}
                     </TableCell>
@@ -479,11 +483,11 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                       {status === "Dispatched"
                         ? (
                             calculateItemTotal(
-                              item.QTY_ACCEPTED ||
-                                item.OUTBOUND_DETAILS_PROD_QTY, // Use QTY_ACCEPTED if available, fallback to QTY
+                              item.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED, // Use QTY_ACCEPTED if available, fallback to QTY
                               item.OUTBOUND_DETAILS_SELL_PRICE
                             ) *
-                            (1 - (item.OUTBOUND_DETAILS_DISCOUNT || 0) / 100)
+                            (1 -
+                              (item.OUTBOUND_DETAILS_LINE_DISCOUNT || 0) / 100)
                           ).toFixed(2)
                         : (
                             Number(item.OUTBOUND_DETAIL_LINE_TOTAL) || 0

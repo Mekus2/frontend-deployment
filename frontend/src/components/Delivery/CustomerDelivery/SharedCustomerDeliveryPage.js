@@ -197,7 +197,7 @@ const SharedCustomerDeliveryPage = () => {
       data-cy="details-button"
       backgroundColor={colors.primary}
       hoverColor={colors.primaryHover}
-      // onClick={() => openDetailsModal(delivery)}
+      onClick={() => openDetailsModal(delivery)}
     >
       Details
     </Button>,

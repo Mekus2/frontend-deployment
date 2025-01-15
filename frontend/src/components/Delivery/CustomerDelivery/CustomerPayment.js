@@ -4,7 +4,7 @@ import Loading from "../../Layout/Loading";
 import {
   fetchCustomerDelDetails,
   updateDeliveryStatus,
-  createSalesInvoice,
+  // createSalesInvoice,
 } from "../../../api/CustomerDeliveryApi";
 import CustomerCreateIssueModal from "./CustomerCreateIssueModal"; // Import the Issue Modal
 import { notify } from "../../Layout/CustomToast";
@@ -157,25 +157,25 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
       // Call the createSalesInvoice function and store its response status in a new variable
       const outboundDeliveryId = delivery.OUTBOUND_DEL_ID;
       console.log("Updated Order Details:", orderDetails);
-      const invoiceStatus = await createSalesInvoice(
-        outboundDeliveryId,
-        orderDetails
-      );
+      // const invoiceStatus = await createSalesInvoice(
+      //   outboundDeliveryId,
+      //   orderDetails
+      // );
 
-      // Check the status returned from the API call
-      if (invoiceStatus === 200) {
-        // Only update status if invoice creation was successful
-        notify.success(
-          "Sales Invoice created successfully, Delivery marked as Delivered."
-        );
-        updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
-        setReceivedDate(updatedReceivedDate); // Update the local received date
-      } else {
-        notify.error(
-          "Failed to create Sales Invoice. Delivery status remains as Dispatched."
-        );
-        return; // Don't proceed if invoice creation failed
-      }
+      // // Check the status returned from the API call
+      // if (invoiceStatus === 200) {
+      //   // Only update status if invoice creation was successful
+      //   notify.success(
+      //     "Sales Invoice created successfully, Delivery marked as Delivered."
+      //   );
+      //   updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
+      //   setReceivedDate(updatedReceivedDate); // Update the local received date
+      // } else {
+      //   notify.error(
+      //     "Failed to create Sales Invoice. Delivery status remains as Dispatched."
+      //   );
+      //   return; // Don't proceed if invoice creation failed
+      // }
     } else if (status === "Delivered") {
       newStatus = "Delivered"; // Status is already delivered, so just notify
       notify.success("Delivery marked as Delivered.");

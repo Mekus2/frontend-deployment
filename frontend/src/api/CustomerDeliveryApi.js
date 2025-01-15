@@ -79,8 +79,8 @@ export const fetchCustomerDelDetails = async (orderId) => {
   }
 };
 
-// Function to create a new sales invoice
-export const createSalesInvoice = async (outboundDeliveryId, orderDetails) => {
+// Function to create a new Payment Entry for the customer delivery
+export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
   const url = `${BASE_URL}/api/delivery/customer/${outboundDeliveryId}/create-invoice/`; // Your API endpoint URL with pk
 
   try {
@@ -89,8 +89,8 @@ export const createSalesInvoice = async (outboundDeliveryId, orderDetails) => {
       items: orderDetails.map((item) => ({
         prod_details_id: item.OUTBOUND_DEL_DETAIL_ID,
         productId: item.OUTBOUND_DETAILS_PROD_ID, // Replace with the correct key for product ID
-        qtyAccepted: item.QTY_ACCEPTED || 0,
-        qtyDefect: item.QTY_DEFECT || 0,
+        qtyAccepted: item.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED || 0,
+        qtyDefect: item.OUTBOUND_DETAILS_PROD_QTY_DEFECT || 0,
       })),
     };
 
