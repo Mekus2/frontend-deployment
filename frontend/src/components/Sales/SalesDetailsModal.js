@@ -11,13 +11,14 @@ const formatCurrency = (value) => {
 };
 
 const SalesDetailsModal = ({ sale, onClose }) => {
-  console.log("Received Sales detail:", sale);
-
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
+
+  // Ensure sales_items has a fallback to an empty array
+  const salesItems = sale?.sales_items || [];
 
   return (
     <Backdrop onClick={handleBackdropClick}>
@@ -32,25 +33,34 @@ const SalesDetailsModal = ({ sale, onClose }) => {
         <DetailsContainer>
           <DetailsColumn>
             <Detail>
-              <strong>Invoice ID:</strong> {sale.SALES_INV_ID || "N/A"}
+              <strong>Invoice ID:</strong> {sale?.SALES_INV_ID || "N/A"}
             </Detail>
             <Detail>
-              <strong>Delivery ID:</strong> {sale.OUTBOUND_DEL_ID || "N/A"}
-            </Detail>
-          </DetailsColumn>
-          <DetailsColumn>
-            <Detail>
-              <strong>Customer Name:</strong> {sale.CLIENT_NAME || "N/A"}
-            </Detail>
-            <Detail>
-              <strong>Payment Status:</strong>{" "}
-              {sale.SALES_INV_PYMNT_STATUS || "N/A"}
+              <strong>Delivery ID:</strong> {sale?.OUTBOUND_DEL_ID || "N/A"}
             </Detail>
           </DetailsColumn>
           <DetailsColumn>
             <Detail>
-              <strong>Balance:</strong>{" "}
-              {formatCurrency(sale.SALES_INV_AMOUNT_BALANCE || 0)}
+              <strong>Customer Name:</strong> {sale?.CLIENT_NAME || "N/A"}
+            </Detail>
+            <Detail>
+              <strong>Payment Status:</strong> {sale?.SALES_INV_PYMNT_STATUS || "N/A"}
+            </Detail>
+          </DetailsColumn>
+          <DetailsColumn>
+            <Detail>
+              <strong>Total Price:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_PRICE || 0)}
+            </Detail>
+            <Detail>
+              <strong>Discount:</strong> {formatCurrency(sale?.SALES_INV_DISCOUNT || 0)}
+            </Detail>
+          </DetailsColumn>
+          <DetailsColumn>
+            <Detail>
+              <strong>Gross Revenue:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_REVENUE || 0)}
+            </Detail>
+            <Detail>
+              <strong>Gross Income:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_INCOME || 0)}
             </Detail>
           </DetailsColumn>
         </DetailsContainer>
@@ -62,26 +72,30 @@ const SalesDetailsModal = ({ sale, onClose }) => {
               <TableHeader>Invoice ID</TableHeader>
               <TableHeader>Date</TableHeader>
               <TableHeader>Client Name</TableHeader>
-              <TableHeader>Balance</TableHeader>
-              <TableHeader>Status</TableHeader>
+              <TableHeader>Gross Revenue</TableHeader>
+              <TableHeader>Gross Income</TableHeader>
+              <TableHeader>Total Price</TableHeader>
+              <TableHeader>Discount</TableHeader>
             </tr>
           </thead>
           <tbody>
-            {/* Static Table Data */}
-            <TableRow>
-              <TableCell>INV12345</TableCell>
-              <TableCell>2025-01-15</TableCell>
-              <TableCell>John Doe</TableCell>
-              <TableCell>{formatCurrency(500)}</TableCell>
-              <TableCell>Pending</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>INV12346</TableCell>
-              <TableCell>2025-01-14</TableCell>
-              <TableCell>Jane Smith</TableCell>
-              <TableCell>{formatCurrency(750)}</TableCell>
-              <TableCell>Paid</TableCell>
-            </TableRow>
+            {salesItems.length > 0 ? (
+              salesItems.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.SALES_INV_ID || "N/A"}</TableCell>
+                  <TableCell>{item.SALES_INV_DATETIME?.split("T")[0] || "N/A"}</TableCell>
+                  <TableCell>{sale?.CLIENT_NAME || "N/A"}</TableCell>
+                  <TableCell>{formatCurrency(item.SALES_INV_ITEM_LINE_GROSS_REVENUE)}</TableCell>
+                  <TableCell>{formatCurrency(item.SALES_INV_ITEM_LINE_GROSS_INCOME)}</TableCell>
+                  <TableCell>{formatCurrency(sale?.SALES_INV_TOTAL_PRICE || 0)}</TableCell>
+                  <TableCell>{formatCurrency(sale?.SALES_INV_DISCOUNT || 0)}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan="7">No sales items available.</TableCell>
+              </TableRow>
+            )}
           </tbody>
         </InvoiceTable>
       </Modal>
@@ -106,8 +120,8 @@ const Backdrop = styled.div`
 const Modal = styled.div`
   background: white;
   border-radius: 8px;
-  width: 80%;
-  max-width: 700px;
+  width: 90%;
+  max-width: 900px;
   padding: 20px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
   position: relative;
