@@ -4,9 +4,8 @@ import Loading from "../../Layout/Loading";
 import {
   fetchCustomerDelDetails,
   updateDeliveryStatus,
-  createSalesInvoice,
+  // createSalesInvoice,
 } from "../../../api/CustomerDeliveryApi";
-import CustomerCreateIssueModal from "./CustomerCreateIssueModal"; // Import the Issue Modal
 import { notify } from "../../Layout/CustomToast";
 import { jsPDF } from "jspdf";
 import { logoBase64 } from "../../../data/imageData";
@@ -33,7 +32,7 @@ import {
   StatusButton,
   IssueButton,
 } from "../DeliveryStyles"; // Ensure correct path
-import CustomerPayment from "./CustomerPayment"; // Add this import at the top
+// import CustomerPayment from "./CustomerPayment"; // Add this import at the top
 
 const getProgressForStatus = (status) => {
   switch (status) {
@@ -65,7 +64,7 @@ const formatDate = (isoDate) => {
   return `${month}/${day}/${year}`; // Return in mm-dd-yyyy format
 };
 
-const CustomerDeliveryDetails = ({ delivery, onClose }) => {
+const CustomerPayment = ({ customer, onClose }) => {
   const abortControllerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -85,46 +84,35 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (!delivery.OUTBOUND_DEL_ID) {
+      if (!customer.PAYMENT_ID) {
         console.warn("Delivery ID is not available yet");
         return;
       }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+      setLoading(false);
+      console.log("Received Customer Details:", customer);
+      // if (abortControllerRef.current) {
+      //   abortControllerRef.current.abort();
+      // }
+      // const controller = new AbortController();
+      // abortControllerRef.current = controller;
 
-      setLoading(true);
-      setError(null);
-      try {
-        const details = await fetchCustomerDelDetails(
-          delivery.OUTBOUND_DEL_ID,
-          controller.signal
-        );
-        console.log("Fetched Details:", details);
-        setReceivedDate(delivery.OUTBOUND_DEL_CSTMR_RCVD_DATE);
-        setOrderDetails(details);
-        setStatus(delivery.OUTBOUND_DEL_STATUS);
-      } catch (error) {
-        if (error.name === "AbortError") {
-          console.log("Fetch aborted");
-        } else {
-          console.error("Failed to fetch order details:", error);
-          setError("Failed to fetch order details.");
-        }
-      } finally {
-        setLoading(false);
-      }
+      // setLoading(true);
+      // setError(null);
+      // try {
+      // } catch (error) {
+      // } finally {
+      //   setLoading(false);
+      // }
     };
 
     fetchDetails();
+    // setStatus(customer.PAYMENT_STATUS);
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [delivery]);
+  }, []);
 
   const calculateTotalQuantity = () =>
     orderDetails.reduce(
@@ -143,192 +131,110 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
     0
   );
 
-  const handleStatusChange = async () => {
-    let newStatus;
-    let updatedReceivedDate = receivedDate; // Store the updated received date (if applicable)
+  const AddPaymentAmount = async () => {};
 
-    // Determine the new status based on the current one
-    if (status === "Pending") {
-      newStatus = "Dispatched";
-      notify.info("Delivery status updated to Dispatched.");
-    } else if (status === "Dispatched") {
-      newStatus = "Delivered"; // Update the status to Delivered
+  // const generateInvoice = () => {
+  //   const doc = new jsPDF();
 
-      // Call the createSalesInvoice function and store its response status in a new variable
-      const outboundDeliveryId = delivery.OUTBOUND_DEL_ID;
-      console.log("Updated Order Details:", orderDetails);
-      const invoiceStatus = await createSalesInvoice(
-        outboundDeliveryId,
-        orderDetails
-      );
+  //   // Use UTF-8 encoding to ensure characters like peso sign render correctly
+  //   doc.setFont("helvetica", "normal", "utf-8");
 
-      // Check the status returned from the API call
-      if (invoiceStatus === 200) {
-        // Only update status if invoice creation was successful
-        notify.success(
-          "Sales Invoice created successfully, Delivery marked as Delivered."
-        );
-        updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
-        setReceivedDate(updatedReceivedDate); // Update the local received date
-      } else {
-        notify.error(
-          "Failed to create Sales Invoice. Delivery status remains as Dispatched."
-        );
-        return; // Don't proceed if invoice creation failed
-      }
-    } else if (status === "Delivered") {
-      newStatus = "Delivered"; // Status is already delivered, so just notify
-      notify.success("Delivery marked as Delivered.");
-    } else if (status === "Delivered with Issues") {
-      newStatus = "Pending";
-      setReceivedDate("Not Received");
-      notify.error("Delivery status reset to Pending.");
-    }
+  //   // Add the company logo at the upper left corner with aspect ratio locked
+  //   const logoWidth = 12; // Width for the logo
+  //   const logoHeight = logoWidth; // Height set to maintain 1:1 aspect ratio
+  //   const logoX = 12; // Margin Left
+  //   const logoY = 5; // Margin Top
+  //   doc.addImage(logoBase64, "PNG", logoX, logoY, logoWidth, logoHeight); // Adds the logo at upper left
 
-    // Update the local status
-    setStatus(newStatus);
+  //   // Center the company name closer to the top
+  //   const pageWidth = doc.internal.pageSize.width;
 
-    // Prepare the status update data
-    const statusData = {
-      status: newStatus,
-      receivedDate: updatedReceivedDate, // Send the updated received date if applicable
-    };
+  //   // Set plain styling for the company name and center it
+  //   doc.setFontSize(16); // Slightly smaller font size for better alignment
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("PHILVETS", pageWidth / 2, logoY + logoHeight + 8, {
+  //     align: "center",
+  //   });
 
-    // Sync the status with the backend only if the status is "Pending"
-    if (newStatus === "Dispatched") {
-      try {
-        const response = await updateDeliveryStatus(
-          delivery.OUTBOUND_DEL_ID,
-          statusData
-        );
+  //   // Company number (move closer to the company name)
+  //   doc.setFontSize(10);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("123-456-789", pageWidth / 2, logoY + logoHeight + 14, {
+  //     align: "center",
+  //   });
 
-        // Check if the status was successfully updated
-        if (response) {
-          console.log(`Delivery status successfully updated to ${newStatus}`);
-        } else {
-          notify.error("Failed to update delivery status on the backend.");
-        }
-      } catch (error) {
-        console.error("Error updating delivery status on the backend:", error);
-        notify.error("Failed to update delivery status.");
-      }
-    }
-  };
+  //   // Title of the invoice (bold and larger, left-aligned)
+  //   doc.setFontSize(16);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("Invoice", 20, 30); // Move to the left
 
-  const handleIssueModalOpen = () => setIsIssueModalOpen(true); // This remains for opening the initial "What's the issue?" modal
-  const handleIssueModalClose = () => setIsIssueModalOpen(false); // This closes the initial modal
+  //   // Customer and delivery details
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text(`Customer: ${delivery.OUTBOUND_DEL_CUSTOMER_NAME}`, 20, 40);
+  //   doc.text(`City: ${delivery.OUTBOUND_DEL_CITY}`, 20, 45);
+  //   doc.text(`Province: ${delivery.OUTBOUND_DEL_PROVINCE}`, 20, 50);
+  //   doc.text(`Delivery Status: ${status}`, 20, 55);
+  //   doc.text(
+  //     `Shipped Date: ${formatDate(delivery.OUTBOUND_DEL_SHIPPED_DATE)}`,
+  //     20,
+  //     60
+  //   );
+  //   doc.text(
+  //     `Received Date: ${formatDate(delivery.OUTBOUND_DEL_CSTMR_RCVD_DATE)}`,
+  //     20,
+  //     65
+  //   );
 
-  const handleIssueDetailsOpen = () => setIsIssueDetailsOpen(true); // Open IssueDetails modal
-  const handleIssueDetailsClose = () => setIsIssueDetailsOpen(false); // Close IssueDetails modal
+  //   // Table for order details
+  //   doc.autoTable({
+  //     startY: 70,
+  //     head: [["Product Name", "Quantity Shipped", "Price", "Total"]],
+  //     body: orderDetails.map((item) => [
+  //       item.OUTBOUND_DETAILS_PROD_NAME,
+  //       item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+  //       Number(item.OUTBOUND_DETAILS_SELL_PRICE).toFixed(2), // Removed the peso sign
+  //       calculateItemTotal(
+  //         item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+  //         item.OUTBOUND_DETAILS_SELL_PRICE
+  //       ).toFixed(2), // Removed the peso sign
+  //     ]),
+  //     styles: {
+  //       cellPadding: 3,
+  //       fontSize: 10,
+  //       halign: "center", // Center all data in the cells
+  //       valign: "middle",
+  //       lineWidth: 0.5, // Line width for cell borders
+  //       lineColor: [169, 169, 169], // Gray color for the lines
+  //     },
+  //     headStyles: {
+  //       fillColor: [0, 196, 255],
+  //       textColor: [255, 255, 255],
+  //       fontStyle: "bold",
+  //       halign: "center", // Center header text
+  //       lineWidth: 0.5, // Line width for header cell borders
+  //       lineColor: [169, 169, 169], // Gray color for the lines
+  //     },
+  //   });
 
-  const handleIssueModalSubmit = (updatedOrderDetails, remarks) => {
-    console.log("Issue reported:", updatedOrderDetails, remarks);
-    setIssueReported(true); // Mark issue as reported after submission
-    setIsIssueModalOpen(false); // Close the modal
-  };
+  //   // Total summary
+  //   const total = totalAmount.toFixed(2);
+  //   doc.text(
+  //     `Total Quantity: ${totalQuantity}`,
+  //     20,
+  //     doc.autoTable.previous.finalY + 10
+  //   );
+  //   doc.text(`Total Amount: ${total}`, 20, doc.autoTable.previous.finalY + 15); // Removed peso sign here as well
 
-  const generateInvoice = () => {
-    const doc = new jsPDF();
-
-    // Use UTF-8 encoding to ensure characters like peso sign render correctly
-    doc.setFont("helvetica", "normal", "utf-8");
-
-    // Add the company logo at the upper left corner with aspect ratio locked
-    const logoWidth = 12; // Width for the logo
-    const logoHeight = logoWidth; // Height set to maintain 1:1 aspect ratio
-    const logoX = 12; // Margin Left
-    const logoY = 5; // Margin Top
-    doc.addImage(logoBase64, "PNG", logoX, logoY, logoWidth, logoHeight); // Adds the logo at upper left
-
-    // Center the company name closer to the top
-    const pageWidth = doc.internal.pageSize.width;
-
-    // Set plain styling for the company name and center it
-    doc.setFontSize(16); // Slightly smaller font size for better alignment
-    doc.setFont("helvetica", "bold");
-    doc.text("PHILVETS", pageWidth / 2, logoY + logoHeight + 8, {
-      align: "center",
-    });
-
-    // Company number (move closer to the company name)
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("123-456-789", pageWidth / 2, logoY + logoHeight + 14, {
-      align: "center",
-    });
-
-    // Title of the invoice (bold and larger, left-aligned)
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("Invoice", 20, 30); // Move to the left
-
-    // Customer and delivery details
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Customer: ${delivery.OUTBOUND_DEL_CUSTOMER_NAME}`, 20, 40);
-    doc.text(`City: ${delivery.OUTBOUND_DEL_CITY}`, 20, 45);
-    doc.text(`Province: ${delivery.OUTBOUND_DEL_PROVINCE}`, 20, 50);
-    doc.text(`Delivery Status: ${status}`, 20, 55);
-    doc.text(
-      `Shipped Date: ${formatDate(delivery.OUTBOUND_DEL_SHIPPED_DATE)}`,
-      20,
-      60
-    );
-    doc.text(
-      `Received Date: ${formatDate(delivery.OUTBOUND_DEL_CSTMR_RCVD_DATE)}`,
-      20,
-      65
-    );
-
-    // Table for order details
-    doc.autoTable({
-      startY: 70,
-      head: [["Product Name", "Quantity Shipped", "Price", "Total"]],
-      body: orderDetails.map((item) => [
-        item.OUTBOUND_DETAILS_PROD_NAME,
-        item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
-        Number(item.OUTBOUND_DETAILS_SELL_PRICE).toFixed(2), // Removed the peso sign
-        calculateItemTotal(
-          item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
-          item.OUTBOUND_DETAILS_SELL_PRICE
-        ).toFixed(2), // Removed the peso sign
-      ]),
-      styles: {
-        cellPadding: 3,
-        fontSize: 10,
-        halign: "center", // Center all data in the cells
-        valign: "middle",
-        lineWidth: 0.5, // Line width for cell borders
-        lineColor: [169, 169, 169], // Gray color for the lines
-      },
-      headStyles: {
-        fillColor: [0, 196, 255],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        halign: "center", // Center header text
-        lineWidth: 0.5, // Line width for header cell borders
-        lineColor: [169, 169, 169], // Gray color for the lines
-      },
-    });
-
-    // Total summary
-    const total = totalAmount.toFixed(2);
-    doc.text(
-      `Total Quantity: ${totalQuantity}`,
-      20,
-      doc.autoTable.previous.finalY + 10
-    );
-    doc.text(`Total Amount: ${total}`, 20, doc.autoTable.previous.finalY + 15); // Removed peso sign here as well
-
-    // Save the PDF
-    doc.save("Invoice.pdf");
-  };
+  //   // Save the PDF
+  //   doc.save("Invoice.pdf");
+  // };
 
   return (
     <>
       <Modal
         data-cy="outbound-delivery-details-modal"
-        title="Outbound Delivery Details"
+        title="Customer Payment Details"
         status={status}
         onClose={onClose}
       >
@@ -342,41 +248,46 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
               <Column>
                 <FormGroup>
                   <Label>Delivery ID:</Label>
-                  <Value>{delivery.OUTBOUND_DEL_ID}</Value>
+                  <Value>{customer.OUTBOUND_DEL_ID}</Value>
                 </FormGroup>
                 <FormGroup>
-                  <Label>Shipped Date:</Label>
+                  <Label>Client Name:</Label>
+                  <Value>{customer.CLIENT_NAME}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Start Date:</Label>
                   <Value>
-                    {delivery.OUTBOUND_DEL_SHIPPED_DATE
-                      ? formatDate(delivery.OUTBOUND_DEL_SHIPPED_DATE)
-                      : "Not yet shipped"}
+                    {customer.PAYMENT_START_DATE
+                      ? formatDate(customer.PAYMENT_START_DATE)
+                      : "Error: Invalid Date"}
                   </Value>
                 </FormGroup>
                 <FormGroup>
-                  <Label>Received Date:</Label>
+                  <Label>Due Date:</Label>
                   <Value>
                     {receivedDate
-                      ? formatDate(receivedDate)
-                      : " Not yet received"}
+                      ? formatDate(customer.PAYMENT_DUE_DATE)
+                      : "Error: Invalid Date"}
                   </Value>
                 </FormGroup>
               </Column>
               <Column>
                 <FormGroup>
-                  <Label>Delivery Option:</Label>
-                  <Value>{delivery.OUTBOUND_DEL_DLVRY_OPTION}</Value>
+                  <Label>Payment Option:</Label>
+                  <Value>{customer.PAYMENT_METHOD}</Value>
                 </FormGroup>
                 <FormGroup>
-                  <Label>Client:</Label>
-                  <Value>{delivery.OUTBOUND_DEL_CUSTOMER_NAME}</Value>
+                  <Label>Payment Terms:</Label>
+                  <Value>{customer.PAYMENT_TERMS}</Value>
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Amount Balance:</Label>
+                  <Value> ₱ {customer.AMOUNT_BALANCE}</Value>
                 </FormGroup>
                 <FormGroup>
-                  <Label>City:</Label>
-                  <Value>{delivery.OUTBOUND_DEL_CITY}</Value>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Province:</Label>
-                  <Value>{delivery.OUTBOUND_DEL_PROVINCE}</Value>
+                  <Label>Amount Paid:</Label>
+                  <Value> ₱ {customer.AMOUNT_PAID}</Value>
                 </FormGroup>
               </Column>
             </DetailsContainer>
@@ -391,7 +302,7 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                   <TableHeader>Total</TableHeader>
                 </tr>
               </thead>
-              <tbody>
+              {/* <tbody>
                 {orderDetails.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell>{item.OUTBOUND_DETAILS_PROD_NAME}</TableCell>
@@ -487,7 +398,7 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                     </TableCell>
                   </TableRow>
                 ))}
-              </tbody>
+              </tbody> */}
             </ProductTable>
 
             <TotalSummary>
@@ -544,63 +455,21 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
               </SummaryItem>
             </TotalSummary>
 
-            <ProgressSection>
-              <ProgressBar>
-                <ProgressFiller progress={progress} />
-              </ProgressBar>
-              <ProgressText>{progress}%</ProgressText>
-            </ProgressSection>
-
-            <ModalFooter>
-              {status === "Pending" && (
-                <StatusButton onClick={() => handleStatusChange("Dispatched")}>
-                  Mark as Dispatched
-                </StatusButton>
-              )}
-              {status === "Dispatched" && (
-                <>
-                  <IssueButton onClick={handleIssueModalOpen}>
-                    What's the issue?
-                  </IssueButton>
-                  <StatusButton onClick={() => handleStatusChange("Delivered")}>
-                    Mark as Delivered
+            {/* <ModalFooter>
+              {status === "Unpaid" ||
+                (status === "Partially Paid" && (
+                  <StatusButton
+                    onClick={() => handleStatusChange("Dispatched")}
+                  >
+                    Add Payment
                   </StatusButton>
-                </>
-              )}
-              {status === "Delivered" && (
-                <>
-                  <InvoiceButton onClick={generateInvoice}>
-                    Generate Invoice
-                  </InvoiceButton>
-                </>
-              )}
-              <StatusButton onClick={handlePaymentModalOpen}>
-                Payment
-              </StatusButton>
-              {/* Add Payment Modal */}
-              {isPaymentModalOpen && (
-                <CustomerPayment
-                  delivery={delivery}
-                  orderDetails={orderDetails}
-                  totalAmount={totalAmount}
-                  onClose={handlePaymentModalClose}
-                />
-              )}
-            </ModalFooter>
+                ))}
+            </ModalFooter> */}
           </>
         )}
       </Modal>
-
-      {isIssueModalOpen && (
-        <CustomerCreateIssueModal
-          orderDetails={orderDetails}
-          onClose={handleIssueModalClose}
-          onSubmit={handleIssueModalSubmit}
-        />
-      )}
-      {isIssueDetailsOpen}
     </>
   );
 };
 
-export default CustomerDeliveryDetails;
+export default CustomerPayment;

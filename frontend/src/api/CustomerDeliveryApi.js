@@ -79,18 +79,19 @@ export const fetchCustomerDelDetails = async (orderId) => {
   }
 };
 
-// Function to create a new sales invoice
-export const createSalesInvoice = async (outboundDeliveryId, orderDetails) => {
+// Function to create a new Payment Entry for the customer delivery
+export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
   const url = `${BASE_URL}/api/delivery/customer/${outboundDeliveryId}/create-invoice/`; // Your API endpoint URL with pk
 
   try {
     // Prepare the request body
     const requestBody = {
+      user_id: localStorage.getItem("user_id"), // Get the user ID from local storage
       items: orderDetails.map((item) => ({
         prod_details_id: item.OUTBOUND_DEL_DETAIL_ID,
         productId: item.OUTBOUND_DETAILS_PROD_ID, // Replace with the correct key for product ID
-        qtyAccepted: item.QTY_ACCEPTED || 0,
-        qtyDefect: item.QTY_DEFECT || 0,
+        qtyAccepted: item.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED || 0,
+        qtyDefect: item.OUTBOUND_DETAILS_PROD_QTY_DEFECT || 0,
       })),
     };
 
@@ -120,5 +121,52 @@ export const createSalesInvoice = async (outboundDeliveryId, orderDetails) => {
       alert("Unexpected error: " + error.message);
       return 500; // Return a 500 status for unexpected errors
     }
+  }
+};
+
+// Function to create new customer payment
+
+// Function to fetch all customer pending order payables
+export const fetchPendingOrderPayables = async () => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/sales/customer-payment-list/`
+    );
+
+    // Handle paginated response
+    return response.data.results || []; // Extract results array
+  } catch (error) {
+    console.error("Failed to fetch customer pending order payables:", error);
+    return []; // Return empty array on failure
+  }
+};
+
+// Function to fetch Customer Payment Details
+export const FetchCustomerPaymentDetails = async (paymentId) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/sales/customer-payment-details/${paymentId}/`
+    );
+    console.log("Successfully fetched customer payment details");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching customer payment details:", error);
+    return null;
+  }
+};
+
+// Function to Add Customer Payment
+export const AddCustomerPayment = async (paymentId, paymentData) => {
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/sales/customer-payment-details/${paymentId}/`,
+      paymentData,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    console.log("Successfully added new customer payment");
+    return response.data;
+  } catch (error) {
+    console.error("Error adding new customer payment:", error);
+    return null;
   }
 };
