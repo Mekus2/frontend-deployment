@@ -2,6 +2,33 @@
 import styled from "styled-components";
 import { colors } from "../../colors";
 
+export const InputField = styled.input`
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid ${colors.border || "#ccc"};
+  border-radius: 5px;
+  outline: none;
+
+  &:focus {
+    border-color: ${colors.primary};
+    box-shadow: 0 0 5px ${colors.primary};
+  }
+`;
+
+export const Button = styled.button`
+  background-color: ${colors.primary};
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: ${colors.primaryHover};
+  }
+`;
 export const InvoiceButton = styled.button`
   background-color: ${colors.primary}; /* Green color */
   color: white;

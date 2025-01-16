@@ -3,16 +3,14 @@ import Modal from "../../Layout/Modal";
 import Loading from "../../Layout/Loading";
 import { notify } from "../../Layout/CustomToast";
 import {
-  fetchCustomerDelDetails,
-  updateDeliveryStatus,
-} from "../../../api/CustomerDeliveryApi";
-import {
   DetailsContainer,
   Column,
   FormGroup,
   Label,
   Value,
-} from "../DeliveryStyles"; // Ensure correct path
+  InputField, // Using the existing InputField style
+  Button, // Using the existing Button style
+} from "../DeliveryStyles";
 
 const formatDate = (isoDate) => {
   if (!isoDate) return "Invalid Date";
@@ -34,6 +32,7 @@ const CustomerPayment = ({ customer, onClose }) => {
   const [error, setError] = useState(null);
   const [status, setStatus] = useState("");
   const [receivedDate, setReceivedDate] = useState("Not Received");
+  const [paymentAmount, setPaymentAmount] = useState("");
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -54,6 +53,27 @@ const CustomerPayment = ({ customer, onClose }) => {
     };
   }, []);
 
+  const handlePaymentInputChange = (e) => {
+    const value = e.target.value;
+
+    // Allow only numbers and a single decimal point
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setPaymentAmount(value);
+    }
+  };
+
+  const handlePaymentSubmit = () => {
+    if (!paymentAmount || isNaN(paymentAmount)) {
+      notify("Invalid payment amount entered", "error");
+      return;
+    }
+
+    notify(`Payment of ₱${paymentAmount} submitted successfully`, "success");
+
+    // Optionally reset the input field
+    setPaymentAmount("");
+  };
+
   return (
     <>
       <Modal
@@ -67,52 +87,108 @@ const CustomerPayment = ({ customer, onClose }) => {
         ) : error ? (
           <div>{error}</div>
         ) : (
-          <DetailsContainer>
-            <Column>
-              <FormGroup>
-                <Label>Delivery ID:</Label>
-                <Value>{customer.OUTBOUND_DEL_ID}</Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Client Name:</Label>
-                <Value>{customer.CLIENT_NAME}</Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Start Date:</Label>
-                <Value>
-                  {customer.PAYMENT_START_DATE
-                    ? formatDate(customer.PAYMENT_START_DATE)
-                    : "Error: Invalid Date"}
-                </Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Due Date:</Label>
-                <Value>
-                  {receivedDate
-                    ? formatDate(customer.PAYMENT_DUE_DATE)
-                    : "Error: Invalid Date"}
-                </Value>
-              </FormGroup>
-            </Column>
-            <Column>
-              <FormGroup>
-                <Label>Payment Option:</Label>
-                <Value>{customer.PAYMENT_METHOD}</Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Payment Terms:</Label>
-                <Value>{customer.PAYMENT_TERMS}</Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Amount Balance:</Label>
-                <Value>₱ {customer.AMOUNT_BALANCE}</Value>
-              </FormGroup>
-              <FormGroup>
-                <Label>Amount Paid:</Label>
-                <Value>₱ {customer.AMOUNT_PAID}</Value>
-              </FormGroup>
-            </Column>
-          </DetailsContainer>
+          <>
+            <DetailsContainer>
+              <Column>
+                <FormGroup>
+                  <Label>Delivery ID:</Label>
+                  <Value>{customer.OUTBOUND_DEL_ID}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Client Name:</Label>
+                  <Value>{customer.CLIENT_NAME}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Start Date:</Label>
+                  <Value>
+                    {customer.PAYMENT_START_DATE
+                      ? formatDate(customer.PAYMENT_START_DATE)
+                      : "Error: Invalid Date"}
+                  </Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Due Date:</Label>
+                  <Value>
+                    {receivedDate
+                      ? formatDate(customer.PAYMENT_DUE_DATE)
+                      : "Error: Invalid Date"}
+                  </Value>
+                </FormGroup>
+              </Column>
+              <Column>
+                <FormGroup>
+                  <Label>Payment Option:</Label>
+                  <Value>{customer.PAYMENT_METHOD}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Payment Terms:</Label>
+                  <Value>{customer.PAYMENT_TERMS}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Amount Balance:</Label>
+                  <Value>₱ {customer.AMOUNT_BALANCE}</Value>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Amount Paid:</Label>
+                  <Value>₱ {customer.AMOUNT_PAID}</Value>
+                </FormGroup>
+              </Column>
+            </DetailsContainer>
+            <DetailsContainer>
+  <Column>
+    {/* Left column content remains as is */}
+  </Column>
+  <Column
+    style={{
+      display: "flex",
+      justifyContent: "flex-end", // Align everything to the right side
+      alignItems: "center", // Center the items vertically in the row
+    }}
+  >
+    <FormGroup
+      style={{
+        display: "flex", // Ensure elements are in a row
+        alignItems: "center", // Center vertically in the row
+        justifyContent: "flex-end", // Push elements to the right
+        marginBottom: "10px",
+      }}
+    >
+      <Label
+        style={{
+          marginRight: "10px",
+          whiteSpace: "nowrap", // Prevent the label from breaking into a new line
+        }}
+      >
+        Payment Amount:
+      </Label>
+      <InputField
+        type="text"
+        value={paymentAmount}
+        onChange={handlePaymentInputChange}
+        placeholder="Enter amount"
+        style={{
+          maxWidth: "200px",
+          textAlign: "center", // Center text inside the input field
+          marginRight: "10px", // Space between input and button
+        }}
+      />
+      <Button
+        onClick={handlePaymentSubmit}
+        style={{
+          maxWidth: "100px", // Set a maximum width for the button
+          marginRight: "10px", // Add margin to the right of the button
+        }}
+      >
+        Submit
+      </Button>
+    </FormGroup>
+  </Column>
+</DetailsContainer>
+
+
+
+
+          </>
         )}
       </Modal>
     </>
