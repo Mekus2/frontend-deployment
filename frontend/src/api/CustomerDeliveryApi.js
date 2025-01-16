@@ -83,10 +83,15 @@ export const fetchCustomerDelDetails = async (orderId) => {
 export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
   const url = `${BASE_URL}/api/delivery/customer/${outboundDeliveryId}/create-invoice/`; // Your API endpoint URL with pk
 
+  const totalQtyAccepted = orderDetails.reduce((acc, item) => {
+    return acc + (item.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED || 0);
+  }, 0);
+
   try {
     // Prepare the request body
     const requestBody = {
       user_id: localStorage.getItem("user_id"), // Get the user ID from local storage
+      total_qty_accepted: totalQtyAccepted,
       items: orderDetails.map((item) => ({
         prod_details_id: item.OUTBOUND_DEL_DETAIL_ID,
         productId: item.OUTBOUND_DETAILS_PROD_ID, // Replace with the correct key for product ID
