@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import CustomerDeliveryDetails from "./CustomerDeliveryDetails"; // Ensure correct path
+import CustomerPayment from "./CustomerPayment"; // Ensure correct path
 import { colors } from "../../../colors";
 import SearchBar from "../../Layout/SearchBar"; // Ensure correct export
 import Table from "../../Layout/Table"; // Ensure correct export
@@ -81,6 +82,7 @@ const SharedCustomerDeliveryPage = () => {
   const [customerPayables, setCustomerPayables] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: "OUTBOUND_DEL_SHIPPED_DATE", // Default sorting key
     direction: "asc",
@@ -104,7 +106,7 @@ const SharedCustomerDeliveryPage = () => {
     const fetchCustomerPayables = async () => {
       try {
         const customerPayables = await fetchPendingOrderPayables();
-        console.info("Fetched Data from API:", customerPayables); // Log response
+        console.info("Fetched Customer Payables from API:", customerPayables); // Log response
         setCustomerPayables(customerPayables); // Update state
       } catch (err) {
         console.error("Failed fetching Customer Payables", err);
@@ -153,6 +155,9 @@ const SharedCustomerDeliveryPage = () => {
 
   const openDetailsModal = (delivery) => setSelectedDelivery(delivery);
   const closeDetailsModal = () => setSelectedDelivery(null);
+
+  const openPaymentModal = (customer) => setSelectedPayment(customer);
+  const closePaymentModal = () => setSelectedPayment(null);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -224,7 +229,7 @@ const SharedCustomerDeliveryPage = () => {
         data-cy="details-button"
         backgroundColor={colors.primary}
         hoverColor={colors.primaryHover}
-        onClick={() => openDetailsModal(customer)}
+        onClick={() => openPaymentModal(customer)}
       >
         Details
       </Button>,
@@ -312,6 +317,12 @@ const SharedCustomerDeliveryPage = () => {
         <CustomerDeliveryDetails
           delivery={selectedDelivery}
           onClose={closeDetailsModal}
+        />
+      )}
+      {selectedPayment && (
+        <CustomerPayment
+          customer={selectedPayment}
+          onClose={closePaymentModal}
         />
       )}
     </>

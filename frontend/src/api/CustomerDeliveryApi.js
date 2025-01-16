@@ -86,6 +86,7 @@ export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
   try {
     // Prepare the request body
     const requestBody = {
+      user_id: localStorage.getItem("user_id"), // Get the user ID from local storage
       items: orderDetails.map((item) => ({
         prod_details_id: item.OUTBOUND_DEL_DETAIL_ID,
         productId: item.OUTBOUND_DETAILS_PROD_ID, // Replace with the correct key for product ID
@@ -137,5 +138,35 @@ export const fetchPendingOrderPayables = async () => {
   } catch (error) {
     console.error("Failed to fetch customer pending order payables:", error);
     return []; // Return empty array on failure
+  }
+};
+
+// Function to fetch Customer Payment Details
+export const FetchCustomerPaymentDetails = async (paymentId) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/sales/customer-payment-details/${paymentId}/`
+    );
+    console.log("Successfully fetched customer payment details");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching customer payment details:", error);
+    return null;
+  }
+};
+
+// Function to Add Customer Payment
+export const AddCustomerPayment = async (paymentId, paymentData) => {
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/sales/customer-payment-details/${paymentId}/`,
+      paymentData,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    console.log("Successfully added new customer payment");
+    return response.data;
+  } catch (error) {
+    console.error("Error adding new customer payment:", error);
+    return null;
   }
 };
