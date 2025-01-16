@@ -254,7 +254,7 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
     // Title of the invoice (bold and larger, left-aligned)
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Invoice", 20, 30); // Move to the left
+    doc.text("Delivery Receipt", 20, 30); // Move to the left
 
     // Customer and delivery details
     doc.setFontSize(12);
@@ -262,7 +262,6 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
     doc.text(`Customer: ${delivery.OUTBOUND_DEL_CUSTOMER_NAME}`, 20, 40);
     doc.text(`City: ${delivery.OUTBOUND_DEL_CITY}`, 20, 45);
     doc.text(`Province: ${delivery.OUTBOUND_DEL_PROVINCE}`, 20, 50);
-    doc.text(`Delivery Status: ${status}`, 20, 55);
     doc.text(
       `Shipped Date: ${formatDate(delivery.OUTBOUND_DEL_SHIPPED_DATE)}`,
       20,
@@ -306,13 +305,16 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
     });
 
     // Total summary
-    const total = totalAmount.toFixed(2);
     doc.text(
-      `Total Quantity: ${totalQuantity}`,
+      `Total Quantity: ${delivery.OUTBOUND_DEL_TOTAL_ORDERED_QTY}`,
       20,
       doc.autoTable.previous.finalY + 10
     );
-    doc.text(`Total Amount: ${total}`, 20, doc.autoTable.previous.finalY + 15); // Removed peso sign here as well
+    doc.text(
+      `Total Amount: ${delivery.OUTBOUND_DEL_TOTAL_PRICE}`,
+      20,
+      doc.autoTable.previous.finalY + 15
+    ); // Removed peso sign here as well
 
     // Save the PDF
     doc.save("Invoice.pdf");
