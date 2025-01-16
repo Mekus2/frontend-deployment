@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import SearchBar from "../Layout/SearchBar";
 import Table from "../Layout/Table";
@@ -13,28 +13,34 @@ const SharedSalesPage = () => {
   const [endDate, setEndDate] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [salesInvoice, setSalesInvoices] = useState([]);
 
-  useEffect(() => {
-    const fetchSalesInvoices = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/sales/list/"); // Your API endpoint for sales invoices
-        const data = await response.json();
-
-        // Assuming the fetched data is an array of sales invoices, set it to the state
-        setSalesInvoices(data.results);
-        console.log("Received Invoice list:", data.results);
-      } catch (error) {
-        console.error("Error fetching sales invoices:", error);
-      }
-    };
-
-    fetchSalesInvoices();
-  }, []);
+  const salesInvoice = [
+    {
+      SALES_INV_ID: 1001,
+      SALES_INV_DATETIME: "2025-01-01T12:34:56",
+      CLIENT_NAME: "John Doe",
+      SALES_INV_AMOUNT_BALANCE: 1500.75,
+      SALES_INV_PYMNT_STATUS: "Paid",
+    },
+    {
+      SALES_INV_ID: 1002,
+      SALES_INV_DATETIME: "2025-01-03T15:20:10",
+      CLIENT_NAME: "Jane Smith",
+      SALES_INV_AMOUNT_BALANCE: 500.0,
+      SALES_INV_PYMNT_STATUS: "Unpaid",
+    },
+    {
+      SALES_INV_ID: 1003,
+      SALES_INV_DATETIME: "2025-01-05T10:00:00",
+      CLIENT_NAME: "ACME Corp.",
+      SALES_INV_AMOUNT_BALANCE: 3000.0,
+      SALES_INV_PYMNT_STATUS: "Paid",
+    },
+  ];
 
   const totalOrders = salesInvoice.length;
   const totalSales = salesInvoice.reduce(
-    (acc, order) => acc + (order.revenue > 0 ? order.revenue : 0),
+    (acc, order) => acc + (order.SALES_INV_AMOUNT_BALANCE || 0),
     0
   );
 
@@ -54,8 +60,9 @@ const SharedSalesPage = () => {
     return (
       order.SALES_INV_ID.toString().includes(search) ||
       order.CLIENT_NAME.toLowerCase().includes(search) ||
-      (order.SALES_INV_AMOUNT_BALANCE && formatCurrency(order.SALES_INV_AMOUNT_BALANCE).includes(search)) ||
-      (order.SALES_INV_PYMNT_STATUS && order.SALES_INV_PYMNT_STATUS.toLowerCase().includes(search))
+      formatCurrency(order.SALES_INV_AMOUNT_BALANCE || 0).includes(search) ||
+      (order.SALES_INV_PYMNT_STATUS &&
+        order.SALES_INV_PYMNT_STATUS.toLowerCase().includes(search))
     );
   });
 
@@ -155,7 +162,6 @@ const SharedSalesPage = () => {
   );
 };
 
-// Styled Components
 const Controls = styled.div`
   display: flex;
   flex-direction: column;

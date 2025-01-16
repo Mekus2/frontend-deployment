@@ -75,14 +75,8 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [isIssueDetailsOpen, setIsIssueDetailsOpen] = useState(false); // State for IssueDetails modal
   const [issueReported, setIssueReported] = useState(false); // Track if issue has been reported
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false); // Add this state
 
   const progress = getProgressForStatus(status);
-
-  const handlePaymentModalOpen = () => setIsPaymentModalOpen(true); // Add this function to handle modal opening
-
-  const handlePaymentModalClose = () => setIsPaymentModalOpen(false); // Add this function to handle modal closing
-
   useEffect(() => {
     const fetchDetails = async () => {
       if (!delivery.OUTBOUND_DEL_ID) {
@@ -603,18 +597,6 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
                     Generate Invoice
                   </InvoiceButton>
                 </>
-              )}
-              <StatusButton onClick={handlePaymentModalOpen}>
-                Payment
-              </StatusButton>
-              {/* Add Payment Modal */}
-              {isPaymentModalOpen && (
-                <CustomerPayment
-                  delivery={delivery}
-                  orderDetails={orderDetails}
-                  totalAmount={totalAmount}
-                  onClose={handlePaymentModalClose}
-                />
               )}
             </ModalFooter>
           </>
