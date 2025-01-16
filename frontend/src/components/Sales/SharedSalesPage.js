@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import SearchBar from "../Layout/SearchBar";
 import Table from "../Layout/Table";
@@ -6,13 +6,18 @@ import ReportCard from "../Layout/ReportCard";
 import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
 import Button from "../Layout/Button";
 import SalesDetailsModal from "./SalesDetailsModal";
+import { fetchSalesInvoices } from "../../api/SalesInvoiceApi";
 
 const SharedSalesPage = () => {
+  const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
 
   const salesInvoice = [
     {
@@ -38,42 +43,41 @@ const SharedSalesPage = () => {
     },
   ];
 
-  const totalOrders = salesInvoice.length;
-  const totalSales = salesInvoice.reduce(
-    (acc, order) => acc + (order.SALES_INV_AMOUNT_BALANCE || 0),
-    0
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchSalesInvoices({
+          search: searchTerm,
+          startDate: startDate,
+          endDate: endDate,
+          page: 1,
+        });
+        setTableData(data.results.sales_invoices);
+        setTotalOrders(data.count);
+        setTotalSales(data.results.total_gross_revenue);
+        setTotalIncome(data.results.total_gross_income);
+      } catch (error) {
+        console.error("Error fetching sales invoices:", error);
+      }
+    };
+
+    fetchData();
+  }, [searchTerm, startDate, endDate]);
 
   const formatCurrency = (value) => {
     const numberValue = isNaN(value) ? 0 : Number(value);
     return `₱${numberValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
-  const sortedInvoices = [...salesInvoice].sort((a, b) => {
-    if (a.SALES_INV_PYMNT_STATUS === "Unpaid" && b.SALES_INV_PYMNT_STATUS !== "Unpaid") return -1;
-    if (a.SALES_INV_PYMNT_STATUS !== "Unpaid" && b.SALES_INV_PYMNT_STATUS === "Unpaid") return 1;
-    return 0;
-  });
-
-  const filteredInvoices = sortedInvoices.filter((order) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      order.SALES_INV_ID.toString().includes(search) ||
-      order.CLIENT_NAME.toLowerCase().includes(search) ||
-      formatCurrency(order.SALES_INV_AMOUNT_BALANCE || 0).includes(search) ||
-      (order.SALES_INV_PYMNT_STATUS &&
-        order.SALES_INV_PYMNT_STATUS.toLowerCase().includes(search))
-    );
-  });
-
-  const tableData = filteredInvoices.map((order) => [
+  const InvoiceData = tableData.map((order) => [
     order.SALES_INV_ID || "N/A",
     order.SALES_INV_DATETIME
       ? new Date(order.SALES_INV_DATETIME).toISOString().slice(0, 10)
       : "N/A",
-    order.CLIENT_NAME || "Unknown",
-    formatCurrency(order.SALES_INV_AMOUNT_BALANCE || 0),
-    order.SALES_INV_PYMNT_STATUS || "Pending",
+    order.client_name || "Unknown",
+    order.client_province || "Unknown",
+    order.client_address || "Unknown",
+    formatCurrency(order.SALES_INV_TOTAL_PRICE || 0),
     <Button variant="primary" onClick={() => handleOpenModal(order)}>
       Details
     </Button>,
@@ -83,8 +87,9 @@ const SharedSalesPage = () => {
     "Invoice ID",
     "Date",
     "Client Name",
-    "Balance",
-    "Status",
+    "Province",
+    "City",
+    "Amount Paid",
     "Action",
   ];
 
@@ -112,13 +117,8 @@ const SharedSalesPage = () => {
           icon={<FaDollarSign />}
         />
         <ReportCard
-          label="Cost"
-          value={formatCurrency(0)} // Replace with total expense if available
-          icon={<FaDollarSign />}
-        />
-        <ReportCard
           label="Gross Profit"
-          value={formatCurrency()} // Replace with net profit if available
+          value={formatCurrency(totalIncome)} // Replace with net profit if available
           icon={<FaDollarSign />}
         />
       </CardsContainer>
@@ -149,14 +149,11 @@ const SharedSalesPage = () => {
       </Controls>
 
       {isModalOpen && selectedOrder && (
-        <SalesDetailsModal
-          onClose={handleCloseModal}
-          sale={selectedOrder}
-        />
+        <SalesDetailsModal onClose={handleCloseModal} sale={selectedOrder} />
       )}
 
       <ReportContent>
-        <Table headers={header} rows={tableData} />
+        <Table headers={header} rows={InvoiceData} />
       </ReportContent>
     </>
   );

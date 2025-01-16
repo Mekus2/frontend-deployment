@@ -2,46 +2,46 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8000";
 // Function to fetch sales invoices with search term and pagination
-export async function fetchSalesInvoices(
-  searchTerm = "",
-  page = 1,
-  pageSize = 10
-) {
-  try {
-    // Construct the URL with search, page, and page_size query parameters
-    const url = new URL("http://localhost:8000/sales/list/");
-    const params = new URLSearchParams();
+// export async function fetchSalesInvoices(
+//   searchTerm = "",
+//   page = 1,
+//   pageSize = 10
+// ) {
+//   try {
+//     // Construct the URL with search, page, and page_size query parameters
+//     const url = new URL("http://localhost:8000/sales/list/");
+//     const params = new URLSearchParams();
 
-    // Add search term if provided
-    if (searchTerm) {
-      params.append("search", searchTerm);
-    }
+//     // Add search term if provided
+//     if (searchTerm) {
+//       params.append("search", searchTerm);
+//     }
 
-    // Add pagination parameters
-    params.append("page", page);
-    params.append("page_size", pageSize);
+//     // Add pagination parameters
+//     params.append("page", page);
+//     params.append("page_size", pageSize);
 
-    // Append the parameters to the URL
-    url.search = params.toString();
+//     // Append the parameters to the URL
+//     url.search = params.toString();
 
-    // Perform the GET request
-    const response = await fetch(url);
+//     // Perform the GET request
+//     const response = await fetch(url);
 
-    // Check if the response is successful (status code 200)
-    if (!response.ok) {
-      throw new Error("Failed to fetch sales invoices");
-    }
+//     // Check if the response is successful (status code 200)
+//     if (!response.ok) {
+//       throw new Error("Failed to fetch sales invoices");
+//     }
 
-    // Parse the JSON response
-    const data = await response.json();
+//     // Parse the JSON response
+//     const data = await response.json();
 
-    // Return the data (sales invoices)
-    return data;
-  } catch (error) {
-    console.error("Error fetching sales invoices:", error);
-    throw error; // Re-throw error to be handled by the caller
-  }
-}
+//     // Return the data (sales invoices)
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching sales invoices:", error);
+//     throw error; // Re-throw error to be handled by the caller
+//   }
+// }
 
 export async function updateInvoice(invoiceId, terms, amount, amountPaid) {
   try {
@@ -96,5 +96,42 @@ export const FetchSalesReport = async ({
   } catch (error) {
     console.error("Error fetching sales report:", error);
     throw error; // Propagate error to be handled in the calling component
+  }
+};
+
+export const fetchSalesInvoices = async ({
+  search = "",
+  startDate = "",
+  endDate = "",
+  page = 1,
+} = {}) => {
+  const baseUrl = "http://127.0.0.1:8000/sales/sales-invoice-list/";
+
+  // Construct query parameters
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.append("search", search);
+  if (startDate) queryParams.append("start_date", startDate);
+  if (endDate) queryParams.append("end_date", endDate);
+  queryParams.append("page", page);
+
+  const url = `${baseUrl}?${queryParams.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data; // Returns the paginated sales invoices with totals
+  } catch (error) {
+    console.error("Failed to fetch sales invoices:", error);
+    throw error;
   }
 };
