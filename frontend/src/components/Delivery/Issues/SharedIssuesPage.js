@@ -13,17 +13,17 @@ const SharedIssuesPage = () => {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [issueData, setIssueData] = useState([]);
 
-  useEffect(() => {
-    const issueList = async () => {
-      try {
-        const data = await fetchIssueList();
-        setIssueData(data);
-      } catch (error) {
-        console.error("Error fetching purchase orders:", error);
-      }
-    };
-    issueList();
-  }, []);
+  // useEffect(() => {
+  //   const issueList = async () => {
+  //     try {
+  //       const data = await fetchIssueList();
+  //       setIssueData(data);
+  //     } catch (error) {
+  //       console.error("Error fetching purchase orders:", error);
+  //     }
+  //   };
+  //   issueList();
+  // }, []);
 
   // const filteredIssues = IssueData
   //   .filter((issue) => {

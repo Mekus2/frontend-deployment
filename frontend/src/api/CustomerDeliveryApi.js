@@ -80,7 +80,11 @@ export const fetchCustomerDelDetails = async (orderId) => {
 };
 
 // Function to create a new Payment Entry for the customer delivery
-export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
+export const createPaymentEntry = async (
+  outboundDeliveryId,
+  orderDetails,
+  Status
+) => {
   const url = `${BASE_URL}/api/delivery/customer/${outboundDeliveryId}/create-invoice/`; // Your API endpoint URL with pk
 
   const totalQtyAccepted = orderDetails.reduce((acc, item) => {
@@ -91,6 +95,7 @@ export const createPaymentEntry = async (outboundDeliveryId, orderDetails) => {
     // Prepare the request body
     const requestBody = {
       user_id: localStorage.getItem("user_id"), // Get the user ID from local storage
+      status: Status,
       total_qty_accepted: totalQtyAccepted,
       items: orderDetails.map((item) => ({
         prod_details_id: item.OUTBOUND_DEL_DETAIL_ID,

@@ -1,71 +1,52 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
-/**
- * Add an issue using the DeliveryIssueCreateAPIView endpoint.
- *
- * @param {Object} issueData - The issue data to be submitted.
- * @param {string} issueData.issueType - The type of the issue (e.g., "Damaged Product").
- * @param {string} issueData.resolution - The proposed resolution (e.g., "Refund").
- * @param {string} issueData.remarks - A detailed description of the issue.
- * @param {Array} issueData.products - A list of products affected by the issue.
- *        Each product should include:
- *          - productId: ID of the product
- *          - defectiveQuantity: Quantity affected
- * @returns {Promise<Object>} The response from the API.
- * @throws {Error} If the API request fails.
- */
-const submitIssueTicket = async (issueData) => {
-  const url = `${API_BASE_URL}/api/delivery/issue/submit-issue/`;
-
+export const createDeliveryIssue = async (deliveryIssueData) => {
   try {
-    const response = await axios.post(url, issueData, {
+    // Prepare the payload for POST request, mapping your fields to match expected fields
+    const requestData = {
+      ORDER_TYPE: deliveryIssueData.ORDER_TYPE,
+      ISSUE_TYPE: deliveryIssueData.ISSUE_TYPE,
+      RESOLUTION: deliveryIssueData.RESOLUTION,
+      DELIVERY_TYPE: deliveryIssueData.DELIVERY_TYPE, // e.g., "outbounddelivery" or "inbounddelivery"
+      DELIVERY_ID: deliveryIssueData.DELIVERY_ID, // ID of the delivery (inbound or outbound)
+      REMARKS: deliveryIssueData.REMARKS,
+      item_issues: deliveryIssueData.item_issues.map((item) => ({
+        ISSUE_PROD_ID: item.OUTBOUND_DETAILS_PROD_ID,
+        ISSUE_PROD_NAME: item.OUTBOUND_DETAILS_PROD_NAME,
+        ISSUE_QTY_DEFECT: item.OUTBOUND_DETAILS_PROD_QTY_DEFECT,
+        ISSUE_QTY_ACCEPTED: item.OUTBOUND_DETAILS_PROD_QTY_ACCEPTED,
+        ISSUE_QTY_ORDERED: item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+        ISSUE_PROD_LINE_PRICE: item.OUTBOUND_DETAILS_SELL_PRICE,
+        ISSUE_LINE_TOTAL_PRICE: item.OUTBOUND_DETAIL_LINE_TOTAL,
+        // Assuming you want to store the discount value in the item as well
+        ISSUE_LINE_DISCOUNT: item.OUTBOUND_DETAILS_LINE_DISCOUNT,
+      })),
+    };
+
+    // Send POST request to the backend API
+    const response = await fetch(`${API_BASE_URL}/api/delivery/issue/`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-    });
-    console.log("Fetched data", response.data);
-    return response.data; // Return the API response
-  } catch (error) {
-    console.error("Failed to create issue:", error);
-    throw error;
-  }
-};
-
-export default submitIssueTicket;
-
-// fetchIssueList.js
-
-export async function fetchIssueList(orderType = null) {
-  try {
-    // Build the URL with optional ORDER_TYPE query parameter if provided
-    let url = `${API_BASE_URL}/api/delivery/issue/issue-list/`;
-    if (orderType) {
-      url += `?ORDER_TYPE=${orderType}`;
-    }
-
-    // Fetch the data from the API
-    const response = await fetch(url, {
-      method: "GET", // HTTP method
-      headers: {
-        "Content-Type": "application/json", // Set content type to JSON
-      },
+      body: JSON.stringify(requestData),
     });
 
-    // Check if the response is OK (status code 200)
+    // Check if the response is successful
     if (!response.ok) {
-      throw new Error("Failed to fetch issues");
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to create delivery issue");
     }
 
     // Parse the JSON response
-    const issues = await response.json();
+    const responseData = await response.json();
 
-    // Return the issues data
-    console.log("Fetched data", issues);
-    return issues;
+    // Return the response data (e.g., the created delivery issue with items)
+    return responseData;
   } catch (error) {
-    console.error("Error fetching issues:", error);
-    return [];
+    console.error("Error creating delivery issue:", error);
+    throw error; // Re-throw the error to be handled by the caller
   }
-}
+};

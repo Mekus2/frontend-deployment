@@ -33,7 +33,8 @@ import {
   StatusButton,
   IssueButton,
 } from "../DeliveryStyles"; // Ensure correct path
-import CustomerPayment from "./CustomerPayment"; // Add this import at the top
+// import CustomerPayment from "./CustomerPayment"; // Add this import at the top
+import { createDeliveryIssue } from "../../../api/addIssueAPI";
 
 const getProgressForStatus = (status) => {
   switch (status) {
@@ -153,7 +154,8 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
       console.log("Updated Order Details:", orderDetails);
       const CreatePaymentStatus = await createPaymentEntry(
         outboundDeliveryId,
-        orderDetails
+        orderDetails,
+        newStatus
       );
 
       // Check the status returned from the API call
@@ -215,8 +217,45 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
   const handleIssueDetailsOpen = () => setIsIssueDetailsOpen(true); // Open IssueDetails modal
   const handleIssueDetailsClose = () => setIsIssueDetailsOpen(false); // Close IssueDetails modal
 
-  const handleIssueModalSubmit = (updatedOrderDetails, remarks) => {
+  const handleIssueModalSubmit = async (updatedOrderDetails, remarks) => {
     console.log("Issue reported:", updatedOrderDetails, remarks);
+    const newStatus = "Delivered with Issues"; // Update the status to Delivered with Issues
+    const outboundDeliveryId = delivery.OUTBOUND_DEL_ID;
+    console.log("Updated Order Details:", updatedOrderDetails);
+    console.log("Comparing Order Details:", orderDetails);
+
+    const orderType = "Customer Delivery";
+
+    const addDeliveryIssue = await createDeliveryIssue(
+      orderType,
+      // issueType,
+      // resolution,
+      // deliveryType,
+      outboundDeliveryId,
+      remarks,
+      updatedOrderDetails
+    );
+
+    // const CreatePaymentStatus = await createPaymentEntry(
+    //   outboundDeliveryId,
+    //   updatedOrderDetails,
+    //   newStatus
+    // );
+
+    // // Check the status returned from the API call
+    // if (CreatePaymentStatus === 200 || CreatePaymentStatus === 201) {
+    //   // Only update status if invoice creation was successful
+    //   notify.success(
+    //     "Sales Invoice created successfully, Delivery marked as Delivered with issues."
+    //   );
+    //   updatedReceivedDate = new Date().toISOString().split("T")[0]; // Set received date when marking as Delivered
+    //   setReceivedDate(updatedReceivedDate); // Update the local received date
+    // } else {
+    //   notify.error(
+    //     "Failed to create Sales Invoice. Delivery status remains as Dispatched."
+    //   );
+    //   return; // Don't proceed if invoice creation failed
+    // }
     setIssueReported(true); // Mark issue as reported after submission
     setIsIssueModalOpen(false); // Close the modal
   };

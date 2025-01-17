@@ -10,19 +10,24 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
   const [issueType, setIssueType] = useState(""); // State to track selected issue type
   const [resolution, setResolution] = useState(""); // State to track selected resolution
 
+  console.log("Passed issue detials", orderDetails);
+
   const handleQuantityChange = (index, value) => {
     const newOrderDetails = [...updatedOrderDetails];
     const availableQuantity =
       newOrderDetails[index].OUTBOUND_DETAILS_PROD_QTY_ORDERED;
 
     if (value >= 0 && value <= availableQuantity) {
-      newOrderDetails[index].updatedQuantity = value;
+      newOrderDetails[index].OUTBOUND_DETAILS_PROD_QTY_DEFECT = value;
+      newOrderDetails[index].OUTBOUND_DETAILS_PROD_QTY_ACCEPTED =
+        availableQuantity - value;
       setUpdatedOrderDetails(newOrderDetails);
     } else {
       alert(
         `Quantity must be between 0 and ${availableQuantity}, and cannot be negative.`
       );
     }
+    console.log("Updated order details", updatedOrderDetails);
   };
 
   const handleSubmit = () => {
@@ -38,8 +43,9 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
 
     const validQuantities = updatedOrderDetails.every(
       (item) =>
-        item.updatedQuantity <= item.OUTBOUND_DETAILS_PROD_QTY &&
-        item.updatedQuantity >= 0
+        item.OUTBOUND_DETAILS_PROD_QTY_DEFECT <=
+          item.OUTBOUND_DETAILS_PROD_QTY_ORDERED &&
+        item.OUTBOUND_DETAILS_PROD_QTY_DEFECT >= 0
     );
     if (!validQuantities) {
       alert("Some quantities are invalid. Please check and try again.");
@@ -128,12 +134,12 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
               <TableCell>
                 <QuantityInput
                   type="number"
-                  value={item.updatedQuantity || 0}
+                  value={item.OUTBOUND_DETAILS_PROD_QTY_DEFECT || 0}
                   onChange={(e) =>
                     handleQuantityChange(index, parseInt(e.target.value))
                   }
                   min="0"
-                  max={item.OUTBOUND_DETAILS_PROD_QTY}
+                  max={item.OUTBOUND_DETAILS_PROD_QTY_ORDERED}
                 />
               </TableCell>
               <TableCell>
@@ -141,7 +147,7 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
               </TableCell>
               <TableCell>
                 ₱
-                {(item.updatedQuantity || 0) *
+                {(item.OUTBOUND_DETAILS_PROD_QTY_DEFECT || 0) *
                   Number(item.OUTBOUND_DETAILS_SELL_PRICE).toFixed(2)}
               </TableCell>
             </TableRow>
