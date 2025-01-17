@@ -25,6 +25,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           PROD_NAME: response.data.PROD_NAME,
           PROD_RO_LEVEL: response.data.PROD_RO_LEVEL || "",
           PROD_RO_QTY: response.data.PROD_RO_QTY || "",
+          PROD_DETAILS_PURCHASE_PRICE: response.data.PROD_DETAILS_PURCHASE_PRICE || "",
           PROD_QOH: response.data.PROD_QOH || "",
           categories: response.data.PROD_CATEGORIES || [],
         });
@@ -100,6 +101,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
       { field: "PROD_CATEGORIES", label: "Categories" },
       { field: "PROD_DETAILS_DESCRIPTION", label: "Description" },
       { field: "PROD_DETAILS_PRICE", label: "Price" },
+      { field: "PROD_DETAILS_PRUCHASE_PRICE", label: "Purchase Price" },
       { field: "PROD_DETAILS_SUPPLIER", label: "Supplier" },
       { field: "PROD_DETAILS_UNITS", label: "Units" },
     ];
@@ -196,6 +198,15 @@ const ProductDetailsModal = ({ productId, onClose }) => {
             />
           </DetailItem>
           <DetailItem>
+            <Label>Purchase Price:</Label>
+            <Input
+              value={editFields.PROD_DETAILS_PURCHASE_PRICE || ""}
+              onChange={(e) =>
+                handleInputChange("PROD_DETAILS_PURCHASE_PRICE", e.target.value)
+              }
+            />
+          </DetailItem>
+          <DetailItem>
             <Label>Brand:</Label>
             <Input
               value={editFields.PROD_DETAILS_BRAND || ""}
@@ -267,6 +278,9 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           </Detail>
           <Detail>
             <DetailLabel>Units:</DetailLabel> {productDetail.PROD_DETAILS_UNITS}
+          </Detail>
+          <Detail>
+            <DetailLabel>Purchase Price:</DetailLabel> {productDetail.PROD_DETAILS_PURCHASE_PRICE}
           </Detail>
           <Detail>
             <DetailLabel>Supplier:</DetailLabel>{" "}
