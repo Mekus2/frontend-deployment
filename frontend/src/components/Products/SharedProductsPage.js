@@ -99,8 +99,23 @@ const SharedProductsPage = () => {
   const closeAddProductModal = () => setIsAddProductModalOpen(false);
 
   const openProductDetailsModal = async (product) => {
-    // Product details logic
+    try {
+      // Ensure product.id is a valid number or string
+      const productResponse = await axios.get(
+        `http://127.0.0.1:8000/items/productList/${product.id}`
+      );
+      console.log("Product API Response:", productResponse.data); // Log the product data
+
+      // Set only the product ID into state
+      setSelectedProductId(product.id);
+
+      // Open the modal with the selected product ID
+      setIsProductDetailsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
   };
+
 
   const closeProductDetailsModal = () => {
     setSelectedProductId(null);

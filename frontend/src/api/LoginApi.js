@@ -10,7 +10,7 @@ export const loginUser = async (credentials) => {
     console.log(response.data); // Check response data
 
     // Destructure response data to get the tokens and other user information
-    const { access, refresh, id, type, first_name, isActive } = response.data;
+    const { access, refresh, id, type, email, first_name, isActive } = response.data;
 
     // Check if the account is active
     if (isActive) {
@@ -31,6 +31,7 @@ export const loginUser = async (credentials) => {
     localStorage.setItem("access_tokenStorage", access);
     localStorage.setItem("user_id", id);
     localStorage.setItem("user_type", type);
+    localStorage.setItem("user_email", email);
     localStorage.setItem("user_first_name", first_name); // Add first name to localStorage
     console.log("Login successful! Tokens and user data stored.");
     return response.data; // Return user data if needed

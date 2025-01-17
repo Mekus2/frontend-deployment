@@ -4,6 +4,13 @@ import { colors } from "../../colors";
 import { IoCloseCircle } from "react-icons/io5";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Button from "../Layout/Button";
+import axios from "axios";
+import {
+  sendOtp,
+  verifyOtp,
+  resetPassword,
+  resendOtp,
+} from "../../api/ForgotPasswordApi";
 
 const AddUserModal = ({ onClose, onSave }) => {
   const [firstname, setFirstname] = useState("");
@@ -67,7 +74,7 @@ const AddUserModal = ({ onClose, onSave }) => {
 
   const handleSave = async () => {
     // If OTP is not verified, show an error
-    if (!otpVerified) {
+    if (otpVerified) {
       alert("Please verify the OTP to proceed.");
       return;
     }
@@ -136,17 +143,46 @@ const AddUserModal = ({ onClose, onSave }) => {
       }
     }
   };
-  const handleOtpSubmit = () => {
-    // Assuming you have a valid OTP for the user. Replace this with your actual OTP check
-    const correctOtp = "123456"; // Example OTP
-
-    if (otp === correctOtp) {
-      setOtpVerified(true);
-      alert("OTP verified successfully.");
-    } else {
-      alert("Invalid OTP. Please try again.");
+  const handleSendOtp = async () => {
+    // Get email from localStorage
+    const email = localStorage.getItem("user_email");
+  
+    // Check if email is present
+    if (!email) {
+      alert("Email not found. Please log in.");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:8000/forgot/newOtp/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),  // Add email to the request body
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        alert("OTP sent successfully. Please check your email.");
+      } else {
+        const errorData = await response.json();
+        alert(`Error sending OTP: ${errorData.detail || "Error occurred"}`);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      alert("Error sending OTP. Please try again.");
     }
   };
+  const handleVerifyOtp = async () => {
+      try {
+        await verifyOtp(email, otp);
+        setOtpVerified(true);
+
+      } catch (error) {
+        window.alert("Invalid OTP. Please try again.");
+      }
+    };
   const logUserCreation = async (user) => {
     // Fetch the user_id from localStorage
     const userId = localStorage.getItem("user_id");
@@ -301,9 +337,12 @@ const AddUserModal = ({ onClose, onSave }) => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
               />
-              <Button variant="primary" onClick={handleOtpSubmit}>
-                Verify OTP
+              <Button variant="primary" onClick={handleSendOtp}>
+                Send OTP
               </Button>
+              {/* <Button variant="primary" onClick={handleVerifyOtp}>
+                Verify OTP
+              </Button> */}
             </Field>
           )}
         </ModalBody>
@@ -311,7 +350,7 @@ const AddUserModal = ({ onClose, onSave }) => {
           <Button variant="red" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleAddUserClick}>
+          <Button variant="primary" onClick={handleSave}>
             Add User
           </Button>
         </ModalFooter>
