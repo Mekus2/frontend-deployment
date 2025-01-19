@@ -45,6 +45,8 @@ const Status = styled.span`
       ? "#f08400"
       : props.status === "Pending"
       ? "#ff5757"
+      : props.status === "Delivered with Issues"
+      ? "#f0070b"
       : "gray"};
   color: white;
   padding: 4px 8px;

@@ -10,8 +10,6 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
   const [issueType, setIssueType] = useState(""); // State to track selected issue type
   const [resolution, setResolution] = useState(""); // State to track selected resolution
 
-  console.log("Passed issue detials", orderDetails);
-
   const handleQuantityChange = (index, value) => {
     const newOrderDetails = [...updatedOrderDetails];
     const availableQuantity =
@@ -71,11 +69,11 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
         <option value="" disabled>
           Select an issue type
         </option>
-        <option value="Damaged Product">Damaged Product</option>
-        <option value="Missing Items">Missing Items</option>
-        <option value="Incorrect Product">Incorrect Product</option>
-        <option value="Expired Product">Expired Product</option>
-        <option value="Defective Product">Defective Product</option>
+        <option value="Damaged">Damaged Product</option>
+        <option value="Missing">Missing Items</option>
+        <option value="Wrong Item">Incorrect Product</option>
+        <option value="Expired">Expired Product</option>
+        <option value="Defective">Defective Product</option>
         <option value="Wrong Quantity">Wrong Quantity</option>
         <option value="Packaging Issues">Packaging Issues</option>
         <option value="Other">Other</option>
@@ -91,17 +89,8 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
         <option value="" disabled>
           Select a resolution
         </option>
-        <option value="Reshipment">Reshipment</option>
-        <option value="Refund">Refund</option>
-        <option value="Delivery Rescheduled">Delivery Rescheduled</option>
-        <option value="Missing/Incorrect Address">
-          Missing/Incorrect Address
-        </option>
-        <option value="Damaged Goods">Damaged Goods</option>
-        <option value="Replaced/Exchanged Product">
-          Replaced/Exchanged Product
-        </option>
-        <option value="Offset Product">Offset Product</option>
+        <option value="Replacement">Replacement</option>
+        <option value="Offset">Refund</option>
         <option value="Other">Other</option>
       </Select>
 
