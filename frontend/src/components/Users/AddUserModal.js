@@ -58,8 +58,8 @@ const AddUserModal = ({ onClose, onSave }) => {
     if (!lastname) newErrors.lastname = "Last name is required.";
     if (!email) {
       newErrors.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address.";
+    } else if (!/^[^\s@]+@gmail\.com$/.test(email)) {
+      newErrors.email = "Please enter a valid Gmail address (ending with @gmail.com).";
     }
     if (!password) newErrors.password = "Password is required.";
     if (!phoneNumber) {
