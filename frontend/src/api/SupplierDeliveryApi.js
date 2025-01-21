@@ -32,7 +32,6 @@ export const fetchCountOrders = async () => {
 export const fetchSupplierDelivery = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/api/delivery/supplier`);
-    console.log("Fetched Data:", response.data);
     return response.data;
   } catch (error) {
     console.error("Failed to fetch orders.");

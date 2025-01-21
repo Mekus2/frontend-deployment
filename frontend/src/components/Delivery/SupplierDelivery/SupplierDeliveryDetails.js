@@ -4,7 +4,7 @@ import Modal from "../../Layout/Modal";
 import { fetchOrderDetails } from "../../../api/SupplierDeliveryApi";
 import { updateOrderStatus } from "../../../api/SupplierDeliveryApi";
 import { addNewInventory } from "../../../api/InventoryApi";
-import submitIssueTicket from "../../../api/addIssueAPI";
+import { createInboundDeliveryIssue } from "../../../api/addIssueAPI";
 import Button from "../../Layout/Button";
 // Import the styles
 import {
@@ -94,7 +94,7 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
         abortControllerRef.current.abort();
       }
     };
-  }, []);
+  }, [delivery.INBOUND_DEL_ID]);
 
   // Early return if order is not provided
   if (loading) return <p>Loading...</p>;
@@ -111,6 +111,27 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
       .padStart(2, "0")}/${date.getFullYear()}`;
   };
 
+  // Function to check if fields are empty
+  const checkAcceptedQty = () => {
+    return orderDetails.every(
+      (item) =>
+        item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT !== undefined &&
+        item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT !== null
+    );
+  };
+
+  const checkExpiryDate = () => {
+    return orderDetails.every((item) => item.INBOUND_DEL_DETAIL_PROD_EXP_DATE);
+  };
+
+  const checkPrice = () => {
+    return orderDetails.every(
+      (item) =>
+        item.INBOUND_DEL_DETAIL_LINE_PRICE !== undefined &&
+        item.INBOUND_DEL_DETAIL_LINE_PRICE !== "0.00"
+    );
+  };
+
   const handleIssueModalSubmit = async (
     updatedOrderDetails,
     remarks,
@@ -125,46 +146,91 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
       resolution
     );
 
-    // Build the details array by iterating through updatedOrderDetails
-    // const issueDetails = updatedOrderDetails
-    //   .filter((item) => item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT > 0) // Only include items with defective quantities
-    //   .map((item) => ({
-    //     ISSUE_PROD_ID: item.INBOUND_DEL_DETAIL_PROD_ID, // Use the correct key for product ID
-    //     ISSUE_PROD_NAME: item.INBOUND_DEL_DETAIL_PROD_NAME,
-    //     ISSUE_QTY_DEFECT: item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT, // Use the correct key for defective quantity
-    //     ISSUE_PROD_LINE_PRICE: item.INBOUND_DEL_DETAIL_LINE_PRICE,
-    //     ISSUE_LINE_TOTAL_PRICE:
-    //       item.INBOUND_DEL_DETAIL_LINE_PRICE *
-    //       item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT, // To be used to deduct total amount of inbound delivery if offset
-    //   }));
+    const newStatus = "Delivered with Issues"; // New status after submitting issue
+    const inboundDeliveryId = delivery.INBOUND_DEL_ID; // ID of the inbound delivery
+    const orderType = "Supplier Delivery"; // Type of order (e.g., Supplier Delivery)
+    const deliveryType = "inbounddelivery"; // Type of delivery (e.g., inbounddelivery)
 
-    // const issueData = {
-    //   ORDER_TYPE: "Supplier Delivery",
-    //   ISSUE_TYPE: issueType, // Use the selected issue type
-    //   RESOLUTION: resolution, // Use the selected resolution
-    //   REMARKS: remarks, // Use the remarks provided
-    //   SUPPLIER_DELIVERY_ID: delivery.INBOUND_DEL_ID,
-    //   SUPPLIER_ID: delivery.INBOUND_DEL_SUPPLIER_ID,
-    //   SUPPLIER_NAME: delivery.INBOUND_DEL_SUPP_NAME,
-    //   details: issueDetails, // Attach the dynamically built details array
-    // };
-    // console.log("Final issue data to submit:", issueData);
+    // Log the data for the issue report
+    console.log(
+      `Prepared Data for Issue Report: 
+      Status:${newStatus}, 
+      Delivery ID:${inboundDeliveryId}, 
+      Order Type:${orderType}, 
+      Delivery Type:${deliveryType}, 
+      Issue Type:${issueType}, 
+      Resolution:${resolution}, 
+      Remarks:${remarks}, `
+    );
 
-    // try {
-    //   // Call the submitIssueTicket API to send data to the backend
-    //   const response = await submitIssueTicket(issueData);
-    //   console.log("Issue successfully submitted:", response);
+    console.log(
+      "Updated Order Details:",
+      updatedOrderDetails.map((item) => ({
+        ISSUE_PROD_ID: item.INBOUND_DEL_DETAIL_PROD_ID,
+        ISSUE_PROD_NAME: item.INBOUND_DEL_DETAIL_PROD_NAME,
+        ISSUE_QTY_DEFECT: item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT,
+        ISSUE_PROD_LINE_PRICE: item.INBOUND_DEL_DETAIL_LINE_PRICE,
+        ISSUE_LINE_TOTAL_PRICE: (
+          item.INBOUND_DEL_DETAIL_LINE_PRICE *
+          item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT
+        ).toFixed(2),
+      }))
+    );
 
-    //   // Mark issue as reported after successful submission
-    //   setIssueReported(true);
-    //   setIsIssueModalOpen(false); // Close the modal
-    // } catch (error) {
-    //   console.error("Failed to create issue:", error);
-    //   // Handle error appropriately (e.g., show error message)
-    // }
+    console.log("Compare Order Details:", orderDetails);
+
+    // Call the API to submit the issue report
+    const addDeliveryIssue = await createInboundDeliveryIssue(
+      orderType,
+      issueType,
+      resolution,
+      deliveryType,
+      inboundDeliveryId,
+      remarks,
+      updatedOrderDetails
+    );
+
+    if (addDeliveryIssue.status === 200 || addDeliveryIssue.status === 201) {
+      notify.success("Issue reported successfully.");
+
+      // Prepare the data for inventory
+      const inventoryData = {
+        INBOUND_DEL_ID: delivery.INBOUND_DEL_ID,
+        status: "Delivered",
+        user: localStorage.getItem("user_first_name"),
+        details: orderDetails.map((item, index) => ({
+          PRODUCT_ID: item.INBOUND_DEL_DETAIL_PROD_ID,
+          PRODUCT_NAME: item.INBOUND_DEL_DETAIL_PROD_NAME,
+          QUANTITY_ON_HAND: item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT,
+          ACCEPTED_QTY: item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT,
+          DEFECT_QTY: item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT,
+          PRICE: item.INBOUND_DEL_DETAIL_LINE_PRICE,
+          EXPIRY_DATE: expiryDates[index],
+        })),
+      };
+
+      try {
+        // Step 1: Add inventory
+        const inventoryResponse = await addNewInventory(inventoryData);
+        if (inventoryResponse) {
+          console.log("Inventory updated successfully:", inventoryResponse);
+          notify.success("Items are added in inventory succesfully!");
+          window.location.reload();
+        } else {
+          console.error("Failed to add inventory.");
+          notify.error("Failed to update inventory. Please try again.");
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Error during the process:", error);
+        notify.error("An error occurred while processing your request.");
+        window.location.reload();
+      }
+    }
 
     setIssueReported(true); // Mark issue as reported after submission
     setIsIssueModalOpen(false); // Close the modal
+    onClose(); // Close the main modal
   };
 
   const handleStatusChange = async (
@@ -275,11 +341,28 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
         return 0; // Default progress if status is unknown
     }
   };
-  const handleIssueModalOpen = () => setIsIssueModalOpen(true);
+  const handleIssueModalOpen = () => {
+    if (!checkAcceptedQty()) {
+      notify.error("Please ensure all rows have entries for Qty accepted.");
+      return;
+    }
+
+    if (!checkExpiryDate()) {
+      notify.error("Please ensure all rows have entries for expiry date.");
+      return;
+    }
+
+    if (!checkPrice()) {
+      notify.error("Please ensure all rows have entries for price.");
+      return;
+    }
+
+    setIsIssueModalOpen(true);
+  };
   const handleIssueModalClose = () => setIsIssueModalOpen(false); // This closes the initial modal
 
-  const handleIssueDetailsOpen = () => setIsIssueDetailsOpen(true); // Open IssueDetails modal
-  const handleIssueDetailsClose = () => setIsIssueDetailsOpen(false); // Close IssueDetails modal
+  // const handleIssueDetailsOpen = () => setIsIssueDetailsOpen(true); // Open IssueDetails modal
+  // const handleIssueDetailsClose = () => setIsIssueDetailsOpen(false); // Close IssueDetails modal
 
   // Update expiry date for specific row
   const handleExpiryDateChange = (index, value) => {
@@ -495,7 +578,7 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
                     }}
                   />
                 ) : (
-                  qtyAccepted[index] || 0
+                  item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT || "0"
                 )}
               </TableCell>
 
@@ -559,7 +642,6 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
           ))}
         </tbody>
       </ProductTable>
-
       {/* Summary Section */}
       <TotalSummary>
         <SummaryItem>
@@ -567,11 +649,18 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
         </SummaryItem>
         <SummaryItem>
           <strong>Total Qty Accepted:</strong>{" "}
-          {qtyAccepted.reduce((total, qty) => total + qty, 0)}
+          {status === "Delivered"
+            ? delivery.INBOUND_DEL_TOTAL_RCVD_QTY
+            : qtyAccepted.reduce((total, qty) => total + qty, 0)}
         </SummaryItem>
         <SummaryItem>
           <strong>Total Amount:</strong>{" "}
-          <HighlightedTotal>₱{totalAmount.toFixed(2)}</HighlightedTotal>
+          <HighlightedTotal>
+            ₱
+            {status === "Delivered"
+              ? (parseFloat(delivery.INBOUND_DEL_TOTAL_PRICE) || 0).toFixed(2)
+              : (parseFloat(totalAmount) || 0).toFixed(2)}
+          </HighlightedTotal>
         </SummaryItem>
       </TotalSummary>
       {/* Progress Bar */}

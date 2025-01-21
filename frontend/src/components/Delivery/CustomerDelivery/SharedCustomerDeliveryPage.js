@@ -39,11 +39,11 @@ const SummarySection = styled.div`
 
 const Status = styled.span`
   background-color: ${(props) =>
-    props.status === "Delivered"
+    props.status === "Delivered" || props.status === "Paid"
       ? "#1DBA0B"
-      : props.status === "Dispatched"
+      : props.status === "Dispatched" || props.status === "Partially Paid"
       ? "#f08400"
-      : props.status === "Pending"
+      : props.status === "Pending" || props.status === "Unpaid"
       ? "#ff5757"
       : props.status === "Delivered with Issues"
       ? "#f0070b"

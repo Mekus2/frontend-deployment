@@ -69,7 +69,7 @@ const SharedSupplierDeliveryPage = () => {
     if (key === "INBOUND_DEL_ORDER_DATE_CREATED") {
       const dateA = a[key] ? new Date(a[key]) : null;
       const dateB = b[key] ? new Date(b[key]) : null;
-      return (dateB - dateA) * (sortConfig.direction === "asc" ? 1 : -1);
+      return dateB - dateA; // Always sort in descending order
     }
     return 0;
   });
@@ -86,7 +86,7 @@ const SharedSupplierDeliveryPage = () => {
   };
 
   const headers = [
-    { title: "Date Created", key: "INBOUND_DEL_ORDER_DATE_CREATED" },
+    { title: "Date", key: "INBOUND_DEL_ORDER_DATE_CREATED" },
     { title: "Status", key: "INBOUND_DEL_STATUS" },
     { title: "Supplier", key: "SUPPLIER_ID" },
     { title: "Approved By", key: "INBOUND_DEL_ORDER_APPRVDBY_USER" },

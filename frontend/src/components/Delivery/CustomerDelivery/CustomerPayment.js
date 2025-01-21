@@ -11,6 +11,7 @@ import {
   InputField, // Using the existing InputField style
   Button, // Using the existing Button style
 } from "../DeliveryStyles";
+import { AddCustomerPayment } from "../../../api/CustomerDeliveryApi";
 
 const formatDate = (isoDate) => {
   if (!isoDate) return "Invalid Date";
@@ -33,6 +34,7 @@ const CustomerPayment = ({ customer, onClose }) => {
   const [status, setStatus] = useState("");
   const [receivedDate, setReceivedDate] = useState("Not Received");
   const [paymentAmount, setPaymentAmount] = useState("");
+  const paymentId = customer.PAYMENT_ID;
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -62,16 +64,30 @@ const CustomerPayment = ({ customer, onClose }) => {
     }
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     if (!paymentAmount || isNaN(paymentAmount)) {
-      notify("Invalid payment amount entered", "error");
+      notify.error("Invalid payment amount entered");
       return;
     }
 
-    notify(`Payment of ₱${paymentAmount} submitted successfully`, "success");
+    try {
+      const paymentData = { CUSTOMER_AMOUNT_PAID: paymentAmount };
+      const result = await AddCustomerPayment(paymentId, paymentData);
 
-    // Optionally reset the input field
-    setPaymentAmount("");
+      if (result.success) {
+        notify.success(`Payment of ₱${paymentAmount} submitted successfully`);
+        setPaymentAmount(""); // Reset input field
+        window.location.reload(); // Refresh the page to reflect the changes
+      } else {
+        notify.error(`Failed to submit payment: ${result.message}`);
+        // window.location.reload(); // Refresh the page to reflect the changes
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      notify.error(
+        "An unexpected error occurred while submitting the payment."
+      );
+    }
   };
 
   return (
@@ -135,59 +151,53 @@ const CustomerPayment = ({ customer, onClose }) => {
               </Column>
             </DetailsContainer>
             <DetailsContainer>
-  <Column>
-    {/* Left column content remains as is */}
-  </Column>
-  <Column
-    style={{
-      display: "flex",
-      justifyContent: "flex-end", // Align everything to the right side
-      alignItems: "center", // Center the items vertically in the row
-    }}
-  >
-    <FormGroup
-      style={{
-        display: "flex", // Ensure elements are in a row
-        alignItems: "center", // Center vertically in the row
-        justifyContent: "flex-end", // Push elements to the right
-        marginBottom: "10px",
-      }}
-    >
-      <Label
-        style={{
-          marginRight: "10px",
-          whiteSpace: "nowrap", // Prevent the label from breaking into a new line
-        }}
-      >
-        Payment Amount:
-      </Label>
-      <InputField
-        type="text"
-        value={paymentAmount}
-        onChange={handlePaymentInputChange}
-        placeholder="Enter amount"
-        style={{
-          maxWidth: "200px",
-          textAlign: "center", // Center text inside the input field
-          marginRight: "10px", // Space between input and button
-        }}
-      />
-      <Button
-        onClick={handlePaymentSubmit}
-        style={{
-          maxWidth: "100px", // Set a maximum width for the button
-          marginRight: "10px", // Add margin to the right of the button
-        }}
-      >
-        Submit
-      </Button>
-    </FormGroup>
-  </Column>
-</DetailsContainer>
-
-
-
-
+              <Column>{/* Left column content remains as is */}</Column>
+              <Column
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end", // Align everything to the right side
+                  alignItems: "center", // Center the items vertically in the row
+                }}
+              >
+                <FormGroup
+                  style={{
+                    display: "flex", // Ensure elements are in a row
+                    alignItems: "center", // Center vertically in the row
+                    justifyContent: "flex-end", // Push elements to the right
+                    marginBottom: "10px",
+                  }}
+                >
+                  <Label
+                    style={{
+                      marginRight: "10px",
+                      whiteSpace: "nowrap", // Prevent the label from breaking into a new line
+                    }}
+                  >
+                    Payment Amount:
+                  </Label>
+                  <InputField
+                    type="text"
+                    value={paymentAmount}
+                    onChange={handlePaymentInputChange}
+                    placeholder="Enter amount"
+                    style={{
+                      maxWidth: "200px",
+                      textAlign: "center", // Center text inside the input field
+                      marginRight: "10px", // Space between input and button
+                    }}
+                  />
+                  <Button
+                    onClick={handlePaymentSubmit}
+                    style={{
+                      maxWidth: "100px", // Set a maximum width for the button
+                      marginRight: "10px", // Add margin to the right of the button
+                    }}
+                  >
+                    Submit
+                  </Button>
+                </FormGroup>
+              </Column>
+            </DetailsContainer>
           </>
         )}
       </Modal>
