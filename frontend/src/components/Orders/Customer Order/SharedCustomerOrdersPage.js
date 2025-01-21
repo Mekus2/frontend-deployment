@@ -54,15 +54,13 @@ const SharedCustomerOrdersPage = ({ userRole }) => {
   const filteredSales = customer.filter((sale) => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     return (
-      String(sale.CLIENT_ID)?.toLowerCase().includes(lowerCaseSearchTerm) ||
-      sale.SALES_ORDER_DATACREATED.toLowerCase().includes(
-        lowerCaseSearchTerm
-      ) ||
-      String(sale.SALES_ORDER_PYMNT_STAT)
-        ?.toLowerCase()
-        .includes(lowerCaseSearchTerm)
+      String(sale.SALES_ORDER_ID).toLowerCase().includes(lowerCaseSearchTerm) ||
+      String(sale.SALES_ORDER_CLIENT_NAME).toLowerCase().includes(lowerCaseSearchTerm) ||
+      (sale.SALES_ORDER_DATE_CREATED && formatDate(sale.SALES_ORDER_DATE_CREATED).toLowerCase().includes(lowerCaseSearchTerm)) ||
+      String(sale.SALES_ORDER_STATUS).toLowerCase().includes(lowerCaseSearchTerm)
     );
   });
+  
 
   const sortedSales = filteredSales.sort((a, b) => {
     if (sortConfig.key === "SALES_ORDER_DATE_CREATED") {

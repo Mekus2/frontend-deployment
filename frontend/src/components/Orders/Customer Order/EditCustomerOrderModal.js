@@ -117,7 +117,7 @@ const EditCustomerOrderModal = ({ order, onClose }) => {
     const price = parseFloat(line.SALES_ORDER_LINE_PRICE) || 0;
     const quantity = parseInt(line.SALES_ORDER_LINE_QTY) || 0;
     const discount = parseFloat(line.SALES_ORDER_LINE_DISCOUNT) || 0;
-    const total = price * quantity * (1 - discount / 100);
+    const total = price * quantity * (1 - discount / 100); // Calculate total after discount
     return total.toFixed(2);
   };
 
@@ -303,11 +303,10 @@ const EditCustomerOrderModal = ({ order, onClose }) => {
               <tr>
                 <TableHeader>Product Name</TableHeader>
                 <TableHeader>Quantity</TableHeader>
-                <TableHeader>Purchase Price</TableHeader>
                 <TableHeader>Sell Price</TableHeader>
                 <TableHeader>Discount</TableHeader>
                 <TableHeader>Total</TableHeader>
-                <TableHeader></TableHeader>
+                <TableHeader>Action</TableHeader>
               </tr>
             </thead>
             <tbody>
@@ -429,7 +428,19 @@ const EditCustomerOrderModal = ({ order, onClose }) => {
                           0
                         }
                         onChange={(e) => {
-                          const newDiscount = e.target.value;
+                          let newDiscount = e.target.value;
+
+                          // Strip leading zeros if more than one digit is entered
+                          if (
+                            newDiscount.startsWith("0") &&
+                            newDiscount.length > 1
+                          ) {
+                            newDiscount = newDiscount.replace(/^0+/, "");
+                          }
+
+                          // Convert the input value to a number or default to 0
+                          newDiscount = parseFloat(newDiscount) || 0;
+
                           console.log(
                             `Updating Discount for index ${index}:`,
                             newDiscount
@@ -441,7 +452,7 @@ const EditCustomerOrderModal = ({ order, onClose }) => {
                             return newStates;
                           });
 
-                          // Update orderDetails to reflect the change in discount and recalculate the line total
+                          // Update the orderDetails with the new discount and recalculate the line total
                           setOrderDetails((prevDetails) => {
                             const newDetails = [...prevDetails];
                             newDetails[index].SALES_ORDER_LINE_DISCOUNT =
@@ -457,11 +468,14 @@ const EditCustomerOrderModal = ({ order, onClose }) => {
                         }}
                         placeholder="Discount"
                       />
+                      <span> %</span> {/* Add the percentage symbol */}
                     </TableCell>
+
                     <TableCell>
                       {formatCurrency(calculateLineTotal(detail))}{" "}
                       {/* Display the recalculated line total */}
                     </TableCell>
+
                     <TableCell>
                       <DeleteButton onClick={() => handleRemoveProduct(index)}>
                         <IoCloseCircle />

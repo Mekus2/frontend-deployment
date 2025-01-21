@@ -226,9 +226,11 @@ const CustomerOrderDetailsModal = ({ order, onClose, userRole }) => {
                       <TableCell>
                         {formatCurrency(detail.SALES_ORDER_LINE_PRICE || 0)}
                       </TableCell>
-                      <TableCell>{`₱${
-                        detail.SALES_ORDER_LINE_DISCOUNT || "0"
-                      }`}</TableCell>
+                      <TableCell>
+                        {detail.SALES_ORDER_LINE_DISCOUNT
+                          ? `${detail.SALES_ORDER_LINE_DISCOUNT}%`
+                          : "0%"}
+                      </TableCell>
                       <TableCell>
                         {formatCurrency(detail.SALES_ORDER_LINE_TOTAL || 0)}
                       </TableCell>
