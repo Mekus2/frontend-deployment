@@ -174,9 +174,13 @@ export const AddCustomerPayment = async (paymentId, paymentData) => {
       { headers: { "Content-Type": "application/json" } }
     );
     console.log("Successfully added new customer payment");
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
-    console.error("Error adding new customer payment:", error);
-    return null;
+    // Extract the error message
+    const errorMessage =
+      error.response?.data?.error || "An unexpected error occurred.";
+
+    // Return the error message
+    return { success: false, message: errorMessage };
   }
 };
