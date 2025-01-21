@@ -123,16 +123,6 @@ export const adminSidebarItems = [
         label: "Expiration Report",
         link: "/admin/expiration-reports",
       },
-      {
-        icon: TbChevronRight,
-        label: "Expiry",
-        link: "/admin/users",
-      },
-      {
-        icon: TbChevronRight,
-        label: "Deficit Product",
-        link: "/admin/users",
-      },
     ],
   },
 ];

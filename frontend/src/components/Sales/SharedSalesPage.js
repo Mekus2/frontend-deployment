@@ -19,30 +19,6 @@ const SharedSalesPage = () => {
   const [totalSales, setTotalSales] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
 
-  const salesInvoice = [
-    {
-      SALES_INV_ID: 1001,
-      SALES_INV_DATETIME: "2025-01-01T12:34:56",
-      CLIENT_NAME: "John Doe",
-      SALES_INV_AMOUNT_BALANCE: 1500.75,
-      SALES_INV_PYMNT_STATUS: "Paid",
-    },
-    {
-      SALES_INV_ID: 1002,
-      SALES_INV_DATETIME: "2025-01-03T15:20:10",
-      CLIENT_NAME: "Jane Smith",
-      SALES_INV_AMOUNT_BALANCE: 500.0,
-      SALES_INV_PYMNT_STATUS: "Unpaid",
-    },
-    {
-      SALES_INV_ID: 1003,
-      SALES_INV_DATETIME: "2025-01-05T10:00:00",
-      CLIENT_NAME: "ACME Corp.",
-      SALES_INV_AMOUNT_BALANCE: 3000.0,
-      SALES_INV_PYMNT_STATUS: "Paid",
-    },
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -69,14 +45,25 @@ const SharedSalesPage = () => {
     return `₱${numberValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
-  const InvoiceData = tableData.map((order) => [
+  const filteredData = tableData.filter((order) => {
+    return (
+      order.SALES_INV_ID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.SALES_INV_DATETIME.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.client_province.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.client_address.toLowerCase().includes(searchTerm.toLowerCase()) || // Search for City using client_address
+      formatCurrency(order.SALES_INV_TOTAL_PRICE).toLowerCase().includes(searchTerm.toLowerCase()) // Amount Paid search
+    );
+  });
+
+  const InvoiceData = filteredData.map((order) => [
     order.SALES_INV_ID || "N/A",
     order.SALES_INV_DATETIME
       ? new Date(order.SALES_INV_DATETIME).toISOString().slice(0, 10)
       : "N/A",
     order.client_name || "Unknown",
     order.client_province || "Unknown",
-    order.client_address || "Unknown",
+    order.client_address || "Unknown", // This will show the full address which can be city
     formatCurrency(order.SALES_INV_TOTAL_PRICE || 0),
     <Button variant="primary" onClick={() => handleOpenModal(order)}>
       Details
@@ -211,7 +198,6 @@ const CardsContainer = styled.div`
 `;
 
 const ReportContent = styled.div`
-  background-color: #f9f9f9;
   border-radius: 8px;
   min-height: 200px;
   text-align: center;

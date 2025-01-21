@@ -107,7 +107,7 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
             <TableHeader>Quantity Shipped</TableHeader>
             <TableHeader>Affected Qty</TableHeader>
             <TableHeader>Price</TableHeader>
-            <TableHeader>Total</TableHeader>
+            <TableHeader>Affected Total</TableHeader>
           </tr>
         </thead>
         <tbody>

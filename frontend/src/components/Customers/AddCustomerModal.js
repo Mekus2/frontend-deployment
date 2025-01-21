@@ -23,8 +23,7 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     let newErrors = {};
 
     // Validate all fields are filled
-    if (!firstName) newErrors.firstName = "First name is required";
-    if (!lastName) newErrors.lastName = "Last name is required";
+    if (!firstName || !lastName) newErrors.name = "Name is required";
     if (!clientAddress) newErrors.clientAddress = "Address is required";
     if (!clientProvince) newErrors.clientProvince = "Province is required";
 
@@ -104,6 +103,7 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
     <Modal title="Add New Customer" onClose={onClose}>
       <Form>
         <Label>Customer Name</Label>
+        {errors.name && <Error>{errors.name}</Error>}
         <NameContainer>
           <NameInput
             type="text"
@@ -124,10 +124,9 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
             onChange={(e) => setLastName(e.target.value)}
           />
         </NameContainer>
-        {errors.firstName && <Error>{errors.firstName}</Error>}
-        {errors.lastName && <Error>{errors.lastName}</Error>}
 
         <Label>Location</Label>
+        {errors.clientAddress && <Error>{errors.clientAddress}</Error>}
         <LocationContainer>
           <CityInput
             type="text"
@@ -135,15 +134,14 @@ const AddCustomerModal = ({ onClose, onAdd }) => {
             value={clientAddress}
             onChange={(e) => setClientAddress(e.target.value)}
           />
-          {errors.clientAddress && <Error>{errors.clientAddress}</Error>}
           <ProvinceInput
             type="text"
             placeholder="Province"
             value={clientProvince}
             onChange={(e) => setClientProvince(e.target.value)}
           />
-          {errors.clientProvince && <Error>{errors.clientProvince}</Error>}
         </LocationContainer>
+        {errors.clientProvince && <Error>{errors.clientProvince}</Error>}
 
         <Label>Phone Number</Label>
         {errors.clientPhoneNum && <Error>{errors.clientPhoneNum}</Error>}
@@ -219,7 +217,7 @@ const ButtonGroup = styled.div`
 const Error = styled.p`
   color: red;
   font-size: 12px;
-  margin-bottom: -10px;
+  margin-bottom: -6px;
 `;
 
 export default AddCustomerModal;

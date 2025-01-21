@@ -121,17 +121,21 @@ const SharedCustomerDeliveryPage = () => {
     fetchCustomerPayables();
   }, []);
 
-  // Filter Deliveries based on the search term
   const filteredDeliveries = (orders || []).filter((delivery) => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
-
+  
     return Object.values(delivery).some((value) => {
       if (value && value.toString) {
-        return value.toString().toLowerCase().includes(lowerCaseSearchTerm);
+        // Convert value to a string and make it case-insensitive
+        const stringValue = value.toString().toLowerCase();
+  
+        // Check if the search term is included in the string value
+        return stringValue.includes(lowerCaseSearchTerm);
       }
       return false;
     });
   });
+  
 
   // Sorting Deliveries
   const sortedDeliveries = filteredDeliveries.sort((a, b) => {
