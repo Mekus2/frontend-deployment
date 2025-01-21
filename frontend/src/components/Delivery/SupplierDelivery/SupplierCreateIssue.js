@@ -10,6 +10,8 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
   const [issueType, setIssueType] = useState(""); // State to track selected issue type
   const [resolution, setResolution] = useState(""); // State to track selected resolution
 
+  console.log("Received order details:", orderDetails);
+
   const handleQuantityChange = (index, value) => {
     const newOrderDetails = [...updatedOrderDetails];
     const availableQuantity =
@@ -130,8 +132,10 @@ const CustomerCreateIssueModal = ({ orderDetails, onClose, onSubmit }) => {
               </TableCell>
               <TableCell>
                 ₱
-                {(item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT || 0) *
-                  Number(item.INBOUND_DEL_DETAIL_LINE_PRICE).toFixed(2)}
+                {(
+                  (item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT || 0) *
+                  Number(item.INBOUND_DEL_DETAIL_LINE_PRICE).toFixed(2)
+                ).toFixed(2)}
               </TableCell>
             </TableRow>
           ))}
