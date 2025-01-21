@@ -1,12 +1,7 @@
-// src/components/SuperAdminDashboard.js
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-//import HighestSellingProducts from "../../components/Dashboard/HighestSellingProducts";
-//import RecentlyAddedProducts from "../../components/Dashboard/RecentlyAddedProducts";
 import LowestStocks from "../../components/Dashboard/LowestStocks";
-//import CardLowStocks from "../../components/CardsData/CardLowStocks";
 import CardTotalProducts from "../../components/CardsData/CardTotalProducts";
 import CardTotalSales from "../../components/CardsData/CardTotalSales";
 import CardTotalInventoryValue from "../../components/CardsData/CardTotalInventoryValue";
@@ -19,20 +14,20 @@ import CardTotalReturns from "../../components/CardsData/CardTotalReturns";
 import CardTotalSuppliers from "../../components/CardsData/CardTotalSuppliers";
 import CardTotalTransactions from "../../components/CardsData/CardTotalTransactions";
 import CardTotalUsers from "../../components/CardsData/CardTotalUsers";
+import CardTotalPendingOrders from "../../components/CardsData/CardTotalPendingOrders";
+import CardTotalPendingPayment from "../../components/CardsData/CardTotalPendingPayment";
 import ExpiredItemsAlert from "../../components/Dashboard/ExpiredItemsAlert";
-import { getLayout, saveLayout } from "../../utils/indexedDB";
 import MainLayout from "../../components/Layout/MainLayout";
-import Loading from "../../components/Layout/Loading";
 import { checkUserAccess } from "../../api/authUtils";
-import RevenueGraph from "../../components/Dashboard/RevenueGraph"; // Import the RevenueGraph component
+import RevenueGraph from "../../components/Dashboard/RevenueGraph";
 
 const SuperAdminDashboard = () => {
   checkUserAccess();
   const navigate = useNavigate();
   const [currentCardOrder, setCurrentCardOrder] = useState([
     "CardTotalProducts",
-    // "CardLowStocks",
-    // "CardTotalInventoryValue",
+    "CardTotalPendingOrders",
+    "CardTotalPendingPayment",
     "CardTotalCustomerOrder",
     "CardTotalCustomers",
     "CardTotalDelivery",
@@ -42,47 +37,17 @@ const SuperAdminDashboard = () => {
     "CardTotalSuppliers",
     "CardTotalTransactions",
     "CardTotalUsers",
-    // "CardTotalSales",
   ]);
 
-  const [tableOrder, setTableOrder] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [tableOrder, setTableOrder] = useState([
+    "ExpiredItemsAlert",
+    "LowestStocks",
+  ]);
 
-  useEffect(() => {
-    const loadLayout = async () => {
-      setLoading(true); // Start loading
-      try {
-        const savedCardOrder = await getLayout("superadmin", "cardOrder");
-        const savedTableOrder = await getLayout("superadmin", "tableOrder");
-
-        if (savedCardOrder) {
-          setCurrentCardOrder(savedCardOrder);
-        }
-
-        if (savedTableOrder) {
-          setTableOrder(savedTableOrder);
-        } else {
-          setTableOrder([
-            "HighestSellingProducts",
-            "ExpiredItemsAlert",
-            "RecentlyAddedProducts",
-            "LowestStocks",
-          ]);
-        }
-      } catch (error) {
-        console.error("Error loading layout:", error);
-      } finally {
-        setLoading(false); // Ensure loading is stopped even if there's an error
-      }
-    };
-
-    loadLayout();
-  }, []);
-
-  // Custom onClick handlers for cards (with superadmin role)
   const cardOnClickHandlers = {
     CardTotalProducts: () => navigate("/admin/products"),
-    //CardLowStocks: () => navigate("/admin/inventory"),
+    CardTotalPendingOrders: () => navigate("/admin/customer-order"),
+    CardTotalPendingPayment: () => navigate("/admin/customer-order"),
     CardTotalInventoryValue: () => navigate("/admin/inventory"),
     CardTotalCustomerOrder: () => navigate("/admin/customer-order"),
     CardTotalCustomers: () => navigate("/admin/customers"),
@@ -96,18 +61,16 @@ const SuperAdminDashboard = () => {
     CardTotalSales: () => navigate("/admin/sales"),
   };
 
-  // Custom onClick handlers for tables (with superadmin role)
   const tableOnClickHandlers = {
-    HighestSellingProducts: () => navigate("/admin/products"),
     ExpiredItemsAlert: () => navigate("/admin/inventory"),
-    RecentlyAddedProducts: () => navigate("/admin/products"),
     LowestStocks: () => navigate("/admin/inventory"),
   };
 
   const cardComponents = {
     CardTotalSales: <CardTotalSales />,
     CardTotalProducts: <CardTotalProducts />,
-    //  CardLowStocks: <CardLowStocks />,
+    CardTotalPendingOrders: <CardTotalPendingOrders />,
+    CardTotalPendingPayment: <CardTotalPendingPayment />,
     CardTotalInventoryValue: <CardTotalInventoryValue />,
     CardTotalCustomerOrder: <CardTotalCustomerOrder />,
     CardTotalCustomers: <CardTotalCustomers />,
@@ -122,19 +85,13 @@ const SuperAdminDashboard = () => {
 
   const tableComponents = {
     ExpiredItemsAlert: <ExpiredItemsAlert />,
-    //HighestSellingProducts: <HighestSellingProducts />,
-    // RecentlyAddedProducts: <RecentlyAddedProducts />,
     LowestStocks: <LowestStocks />,
   };
-
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
     <MainLayout>
       <CardContainer>
-        {currentCardOrder.map((cardKey, index) => {
+        {currentCardOrder.map((cardKey) => {
           if (cardComponents[cardKey]) {
             return (
               <CardWrapper key={cardKey} onClick={cardOnClickHandlers[cardKey]}>
@@ -148,10 +105,10 @@ const SuperAdminDashboard = () => {
 
       <ScrollableTablesContainer>
         <TablesContainer>
-          {tableOrder.map((tableKey, index) => {
+          {tableOrder.map((tableKey) => {
             if (tableComponents[tableKey]) {
               return (
-                <Row key={tableKey}>
+                <Row key={tableKey} onClick={tableOnClickHandlers[tableKey]}>
                   {tableComponents[tableKey]}
                 </Row>
               );
@@ -161,8 +118,6 @@ const SuperAdminDashboard = () => {
         </TablesContainer>
       </ScrollableTablesContainer>
 
-      
-      {/* Revenue Graph below Cards Section */}
       <RevenueGraph />
     </MainLayout>
   );

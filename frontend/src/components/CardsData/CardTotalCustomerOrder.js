@@ -1,31 +1,29 @@
 import React, { useEffect, useState } from "react";
-import Card from "../Layout/Card";
+import Card from "../Layout/Card"; // Reusable Card component
 import styled from "styled-components";
-import { FaClipboardList } from "react-icons/fa";
-import { fetchCountOrders } from "../../api/fetchCustomerOrders";
+import { FaClipboardList } from "react-icons/fa"; // Icon for customer orders
+import { fetchCustomerOrders } from "../../api/fetchCustomerOrders"; // API for fetching customer orders
 
 const CardTotalCustomerOrder = () => {
-  const [salesOrderCount, setSalesOrderCount] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const orders = await fetchCountOrders();
-      setSalesOrderCount(orders.pending_total); // Extract and set `pending_total`
+      const orders = await fetchCustomerOrders();
+      setTotalOrders(orders.length);
     };
 
-    fetchOrders(); // Initial fetch on mount
-
-    const intervalId = setInterval(fetchOrders, 30000); // Fetch every 30 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    fetchOrders();
+    const intervalId = setInterval(fetchOrders, 20000); // Refresh every 20 seconds
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <CardContainer>
       <Card
         label="Customer Orders"
-        value={salesOrderCount} // Display the total number of Customer Orders
-        icon={<FaClipboardList />}
+        value={totalOrders} // Display the total number of customer orders
+        icon={<FaClipboardList />} // Icon for customer orders
       />
     </CardContainer>
   );
