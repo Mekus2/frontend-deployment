@@ -110,3 +110,15 @@ export const createInboundDeliveryIssue = async (
     throw error; // Re-throw the error to be handled by the caller
   }
 };
+
+export const fetchDeliveryIssues = async () => {
+  const apiUrl = "http://127.0.0.1:8000/api/delivery/issue/issue-list/"; // Replace with the correct API endpoint
+
+  try {
+    const response = await axios.get(apiUrl);
+    return response.data; // Returns the serialized delivery issues data
+  } catch (error) {
+    console.error("Error fetching delivery issues:", error);
+    throw error; // Propagates the error to the calling function for further handling
+  }
+};

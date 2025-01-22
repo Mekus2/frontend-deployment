@@ -1,47 +1,6 @@
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8000";
-// Function to fetch sales invoices with search term and pagination
-// export async function fetchSalesInvoices(
-//   searchTerm = "",
-//   page = 1,
-//   pageSize = 10
-// ) {
-//   try {
-//     // Construct the URL with search, page, and page_size query parameters
-//     const url = new URL("http://localhost:8000/sales/list/");
-//     const params = new URLSearchParams();
-
-//     // Add search term if provided
-//     if (searchTerm) {
-//       params.append("search", searchTerm);
-//     }
-
-//     // Add pagination parameters
-//     params.append("page", page);
-//     params.append("page_size", pageSize);
-
-//     // Append the parameters to the URL
-//     url.search = params.toString();
-
-//     // Perform the GET request
-//     const response = await fetch(url);
-
-//     // Check if the response is successful (status code 200)
-//     if (!response.ok) {
-//       throw new Error("Failed to fetch sales invoices");
-//     }
-
-//     // Parse the JSON response
-//     const data = await response.json();
-
-//     // Return the data (sales invoices)
-//     return data;
-//   } catch (error) {
-//     console.error("Error fetching sales invoices:", error);
-//     throw error; // Re-throw error to be handled by the caller
-//   }
-// }
 
 export async function updateInvoice(invoiceId, terms, amount, amountPaid) {
   try {
@@ -133,5 +92,28 @@ export const fetchSalesInvoices = async ({
   } catch (error) {
     console.error("Failed to fetch sales invoices:", error);
     throw error;
+  }
+};
+
+// Function to fetch sales invoice details based on SALES_INV_ID
+export const fetchSalesInvoiceDetails = async (salesInvId) => {
+  try {
+    // Send a GET request to the API view for the sales invoice details
+    const response = await axios.get(
+      `${BASE_URL}/sales/sales-invoice-details/${salesInvId}/`
+    );
+
+    // Return the response data if successful
+    return response.data;
+  } catch (error) {
+    // Handle errors, if any
+    console.error("Error fetching sales invoice details:", error);
+
+    // Return an error message
+    return {
+      error: error.response
+        ? error.response.data
+        : "An unexpected error occurred.",
+    };
   }
 };

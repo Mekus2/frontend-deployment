@@ -4,75 +4,27 @@ import Modal from "../../Layout/Modal";
 import Button from "../../Layout/Button";
 import { colors } from "../../../colors";
 
-const SupplierCreateIssue = ({ orderDetails, onClose, onSubmit }) => {
-  const [updatedOrderDetails, setUpdatedOrderDetails] = useState(
-    orderDetails || []
-  );
+const IssueDetailModal = ({ issue, issueItems, onClose }) => {
   const [remarks, setRemarks] = useState("");
   const [issueType, setIssueType] = useState("");
   const [qtyAccepted, setQtyAccepted] = useState([]);
 
-  console.log("Received Order Details:", orderDetails);
-
-  // Initialize qtyAccepted state based on the orderDetails length
-  useEffect(() => {
-    if (orderDetails && orderDetails.length > 0) {
-      console.log("Initializing state with new orderDetails:", orderDetails);
-      setUpdatedOrderDetails(orderDetails);
-      setQtyAccepted(orderDetails.map(() => 0));
-    }
-  }, [orderDetails]); // Dependency on orderDetails
-
-  const handleQtyAcceptedChange = (index, value) => {
-    const newQtyAccepted = [...qtyAccepted];
-    newQtyAccepted[index] = value;
-    setQtyAccepted(newQtyAccepted);
+  // Function to calculate the total defect amount
+  const calculateTotalDefectAmount = (issueItems) => {
+    if (!Array.isArray(issueItems)) return 0; // Ensure issueItems is an array
+    return issueItems.reduce((total, item) => {
+      const defectPrice =
+        Number(item.ISSUE_QTY_DEFECT) * Number(item.ISSUE_PROD_LINE_PRICE);
+      return total + defectPrice;
+    }, 0);
   };
 
-  const handleSubmit = () => {
-    if (issueType.trim() === "") {
-      alert("Please select the type of issue.");
-      return;
-    }
-
-    if (remarks.trim() === "") {
-      alert("Please provide a description of the issue.");
-      return;
-    }
-
-    const validQuantities = updatedOrderDetails.every(
-      (item, index) =>
-        qtyAccepted[index] <= item.INBOUND_DEL_DETAIL_LINE_QTY &&
-        qtyAccepted[index] >= 0
-    );
-    if (!validQuantities) {
-      alert("Some quantities are invalid. Please check and try again.");
-      return;
-    }
-
-    onSubmit(updatedOrderDetails, remarks, issueType); // Pass issueType in onSubmit
-  };
-
-  const calculateItemTotal = (qty, price) => {
-    return qty * price;
-  };
-
-  const calculateTotalDefectAmount = () => {
-    return updatedOrderDetails.reduce(
-      (sum, item, index) =>
-        sum + qtyAccepted[index] * item.INBOUND_DEL_DETAIL_LINE_PRICE,
-      0
-    );
-  };
-
-  const calculateTotalOrderValue = () => {
-    return updatedOrderDetails.reduce(
-      (sum, item) =>
-        sum +
-        item.INBOUND_DEL_DETAIL_ORDERED_QTY *
-          item.INBOUND_DEL_DETAIL_LINE_PRICE,
-      0
-    );
+  // Function to calculate the total order value
+  const calculateTotalOrderValue = (issueItems) => {
+    if (!Array.isArray(issueItems)) return 0; // Ensure issueItems is an array
+    return issueItems.reduce((total, item) => {
+      return total + Number(item.ISSUE_LINE_TOTAL_PRICE);
+    }, 0);
   };
 
   return (
@@ -81,27 +33,38 @@ const SupplierCreateIssue = ({ orderDetails, onClose, onSubmit }) => {
       title="Report a Supplier Orders Issue"
       onClose={onClose}
     >
-      <Label htmlFor="issue-type">Type of Issue:</Label>
-      <Select
-        id="issue-type"
-        value={issueType}
-        onChange={(e) => setIssueType(e.target.value)}
-      >
-        <option value="Damaged Product">Damaged Product</option>
-        <option value="Missing Items">Missing Items</option>
-        <option value="Incorrect Product">Incorrect Product</option>
-        <option value="Expired Product">Expired Product</option>
-        <option value="Defective Product">Defective Product</option>
-        <option value="Wrong Quantity">Wrong Quantity</option>
-        <option value="Packaging Issues">Packaging Issues</option>
-        <option value="Other">Other</option>
-      </Select>
-
+      <DetailsContainer>
+        <DetailsColumn>
+          <Detail>
+            <strong>
+              Customer/Supplier Name:
+              <br />
+            </strong>{" "}
+            {issue?.name || "N/A"}
+          </Detail>
+        </DetailsColumn>
+        <DetailsColumn>
+          <Detail>
+            <strong>Issue No:</strong> {issue?.ISSUE_NO || "N/A"}
+          </Detail>
+          <Detail>
+            <strong>Delivery ID:</strong> {issue?.DELIVERY_ID || "N/A"}
+          </Detail>
+        </DetailsColumn>
+        <DetailsColumn>
+          <Detail>
+            <strong>Delivery Type: </strong>
+            {issue?.ORDER_TYPE || "N/A"}
+          </Detail>
+          <Detail>
+            <strong>Resolution: </strong>
+            {issue?.RESOLUTION || "N/A"}
+          </Detail>
+        </DetailsColumn>
+      </DetailsContainer>
       <RemarksLabel>Description of the Issue:</RemarksLabel>
       <RemarksTextArea
-        value={remarks}
-        onChange={(e) => setRemarks(e.target.value)}
-        rows="4"
+        value={issue?.REMARKS}
         placeholder="Describe the issue with the product"
       />
 
@@ -109,69 +72,18 @@ const SupplierCreateIssue = ({ orderDetails, onClose, onSubmit }) => {
         <thead>
           <tr>
             <TableHeader>Product Name</TableHeader>
-            <TableHeader>Qty Ordered</TableHeader>
-            <TableHeader>Qty Accepted</TableHeader>
+            <TableHeader>Quantity Defective</TableHeader>
             <TableHeader>Price</TableHeader>
             <TableHeader>Total</TableHeader>
           </tr>
         </thead>
         <tbody>
-          {orderDetails.map((item, index) => (
+          {issueItems.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>{item.INBOUND_DEL_DETAIL_PROD_NAME}</TableCell>
-              <TableCell>{item.INBOUND_DEL_DETAIL_ORDERED_QTY}</TableCell>
-              <TableCell>
-                <input
-                  type="number"
-                  min="0"
-                  max={item.INBOUND_DEL_DETAIL_LINE_QTY}
-                  value={qtyAccepted[index] === 0 ? "" : qtyAccepted[index]} // Show 0 as empty string
-                  onChange={(e) =>
-                    handleQtyAcceptedChange(index, e.target.value)
-                  }
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "5px",
-                    borderRadius: "4px",
-                    appearance: "none",
-                    WebkitAppearance: "none",
-                    MozAppearance: "textfield",
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <input
-                  type="number"
-                  value={item.INBOUND_DEL_DETAIL_LINE_PRICE || ""}
-                  min="0"
-                  onChange={(e) => {
-                    const newPrice = parseFloat(e.target.value);
-                    if (isNaN(newPrice) || newPrice < 0) {
-                      return;
-                    }
-                    const updatedOrderDetails = [...orderDetails];
-                    updatedOrderDetails[index].INBOUND_DEL_DETAIL_LINE_PRICE =
-                      newPrice;
-                    setUpdatedOrderDetails(updatedOrderDetails);
-                  }}
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "5px",
-                    borderRadius: "4px",
-                    appearance: "none",
-                    WebkitAppearance: "none",
-                    MozAppearance: "textfield",
-                  }}
-                />
-              </TableCell>
-
-              <TableCell>
-                ₱
-                {calculateItemTotal(
-                  qtyAccepted[index] ?? 0,
-                  item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
-                ).toFixed(2)}
-              </TableCell>
+              <TableCell>{item.ISSUE_PROD_NAME}</TableCell>
+              <TableCell>{item.ISSUE_QTY_DEFECT}</TableCell>
+              <TableCell>{item.ISSUE_PROD_LINE_PRICE}</TableCell>
+              <TableCell>{item.ISSUE_LINE_TOTAL_PRICE}</TableCell>
             </TableRow>
           ))}
         </tbody>
@@ -181,11 +93,13 @@ const SupplierCreateIssue = ({ orderDetails, onClose, onSubmit }) => {
       <SummarySection>
         <FormGroup>
           <Label>Total Defect Amount:</Label>
-          <Value>₱{calculateTotalDefectAmount().toFixed(2)}</Value>
+          {/* Uncomment and implement the calculation function */}
+          <Value>₱{calculateTotalDefectAmount(issueItems).toFixed(2)}</Value>
         </FormGroup>
         <FormGroup>
           <Label>Total Order Value:</Label>
-          <Value>₱{calculateTotalOrderValue().toFixed(2)}</Value>
+          {/* Uncomment and implement the calculation function */}
+          <Value>₱{calculateTotalOrderValue(issueItems).toFixed(2)}</Value>
         </FormGroup>
       </SummarySection>
 
@@ -193,9 +107,10 @@ const SupplierCreateIssue = ({ orderDetails, onClose, onSubmit }) => {
         <Button variant="red" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        {/* Uncomment and implement the handleSubmit function */}
+        {/* <Button variant="primary" onClick={handleSubmit}>
           Submit Issue
-        </Button>
+        </Button> */}
       </ButtonGroup>
     </Modal>
   );
@@ -226,7 +141,7 @@ const RemarksLabel = styled.label`
 const RemarksTextArea = styled.textarea`
   width: 100%;
   padding: 10px;
-  font-size: 14px;
+  font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 20px;
@@ -283,4 +198,21 @@ const Value = styled.div`
   text-align: left;
 `;
 
-export default SupplierCreateIssue;
+const DetailsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const DetailsColumn = styled.div`
+  flex: 1;
+  padding: 0 10px;
+  text-align: left;
+`;
+
+const Detail = styled.div`
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+`;
+
+export default IssueDetailModal;

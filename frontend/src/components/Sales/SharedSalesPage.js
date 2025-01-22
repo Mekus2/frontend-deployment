@@ -6,7 +6,10 @@ import ReportCard from "../Layout/ReportCard";
 import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
 import Button from "../Layout/Button";
 import SalesDetailsModal from "./SalesDetailsModal";
-import { fetchSalesInvoices } from "../../api/SalesInvoiceApi";
+import {
+  fetchSalesInvoices,
+  fetchSalesInvoiceDetails,
+} from "../../api/SalesInvoiceApi";
 
 const SharedSalesPage = () => {
   const [tableData, setTableData] = useState([]);
@@ -15,9 +18,12 @@ const SharedSalesPage = () => {
   const [endDate, setEndDate] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [invoiceDetails, setInvoiceDetails] = useState(null);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalSales, setTotalSales] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,11 +54,15 @@ const SharedSalesPage = () => {
   const filteredData = tableData.filter((order) => {
     return (
       order.SALES_INV_ID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.SALES_INV_DATETIME.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.SALES_INV_DATETIME.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
       order.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.client_province.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.client_address.toLowerCase().includes(searchTerm.toLowerCase()) || // Search for City using client_address
-      formatCurrency(order.SALES_INV_TOTAL_PRICE).toLowerCase().includes(searchTerm.toLowerCase()) // Amount Paid search
+      formatCurrency(order.SALES_INV_TOTAL_PRICE)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) // Amount Paid search
     );
   });
 
@@ -80,14 +90,32 @@ const SharedSalesPage = () => {
     "Action",
   ];
 
-  const handleOpenModal = (order) => {
-    setSelectedOrder(order);
-    setIsModalOpen(true);
+  const handleOpenModal = async (order) => {
+    setLoading(true); // Set loading to true before fetching
+    console.log("Fetching sales invoice details for order:", order);
+    try {
+      // Fetch the sales invoice details based on the order's SALES_INV_ID
+      const data = await fetchSalesInvoiceDetails(order.SALES_INV_ID);
+      if (data.error) {
+        setError(data.error);
+        setLoading(false);
+        return;
+      }
+      setSelectedOrder(order); // Set the selected order
+      setInvoiceDetails(data.items); // Set the fetched invoice details
+      setIsModalOpen(true); // Open the modal after data is fetched
+    } catch (err) {
+      setError("Failed to fetch sales invoice details");
+      setLoading(false);
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
+    setInvoiceDetails(null);
+    setError(null);
+    setLoading(false);
   };
 
   return (
@@ -136,7 +164,13 @@ const SharedSalesPage = () => {
       </Controls>
 
       {isModalOpen && selectedOrder && (
-        <SalesDetailsModal onClose={handleCloseModal} sale={selectedOrder} />
+        <SalesDetailsModal
+          onClose={handleCloseModal}
+          sale={selectedOrder}
+          invoiceDetails={invoiceDetails}
+          loading={loading}
+          error={error}
+        />
       )}
 
       <ReportContent>

@@ -33,6 +33,8 @@ import { addNewInventoy } from "../../../api/InventoryApi";
 import { notify } from "../../Layout/CustomToast";
 import styled from "styled-components";
 import SupplierCreateIssue from "./SupplierCreateIssue";
+import { jsPDF } from "jspdf";
+import { logoBase64 } from "../../../data/imageData"; 
 
 const SupplierDeliveryDetails = ({ delivery, onClose }) => {
   const abortControllerRef = useRef(null);
@@ -102,6 +104,76 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
   if (!orderDetails) return null;
   if (!delivery) return null;
 
+
+  const generateInvoice = () => {
+    const doc = new jsPDF();
+    const { INBOUND_DEL_ID, INBOUND_DEL_SUPP_NAME } = delivery;
+  
+    // Add logo and header
+    const logoWidth = 12;
+    const logoHeight = logoWidth;
+    const logoX = 12;
+    const logoY = 5;
+    const pageWidth = doc.internal.pageSize.width;
+  
+    doc.addImage(logoBase64, "PNG", logoX, logoY, logoWidth, logoHeight);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("PHILVETS", pageWidth / 2, logoY + logoHeight + 8, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("123-456-789", pageWidth / 2, logoY + logoHeight + 14, { align: "center" });
+  
+    // Add title and date
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Inbound Delivery Receipt", 14, logoY + logoHeight + 24);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, logoY + logoHeight + 30);
+  
+    // Delivery details
+    doc.text(`Delivery ID: ${INBOUND_DEL_ID || "N/A"}`, 14, logoY + logoHeight + 36);
+    doc.text(`Supplier Name: ${INBOUND_DEL_SUPP_NAME || "N/A"}`, 14, logoY + logoHeight + 42);
+    doc.text(`Received Date: ${formatDate(receivedDate)}`, 14, logoY + logoHeight + 48);
+  
+    // Table data
+    const tableData = orderDetails.map((item, index) => {  // Added 'index' here
+      const price = parseFloat(item.INBOUND_DEL_DETAIL_LINE_PRICE) || 0;
+      const acceptedQty = status === "Dispatched" ? qtyAccepted[index] : item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT || 0;
+      const total = calculateItemTotal(acceptedQty, price).toFixed(2);
+  
+      return [
+        item.INBOUND_DEL_DETAIL_PROD_NAME || "N/A",
+        acceptedQty,
+        price.toFixed(2),
+        total,
+      ];
+    });
+  
+    doc.autoTable({
+      startY: logoY + logoHeight + 60,
+      head: [["Product Name", "Product Accepted", "Price", "Total"]],
+      body: tableData,
+      styles: {
+        cellPadding: 3,
+        fontSize: 9,
+        halign: "center",
+      },
+      headStyles: {
+        fillColor: [0, 196, 255],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+    });
+  
+    // Open PDF in a new tab
+    const pdfBlob = doc.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, "_blank");
+  };
+  
+  
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     if (isNaN(date)) return ""; // Return empty string if invalid date
@@ -455,6 +527,8 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
       })),
     };
 
+    console.log("Preparing Data:", inventoryData);
+
     try {
       // Step 1: Add inventory
       const inventoryResponse = await addNewInventory(inventoryData);
@@ -633,10 +707,15 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
               </TableCell>
               <TableCell>
                 ₱
-                {calculateItemTotal(
-                  qtyAccepted[index] ?? 0,
-                  item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
-                ).toFixed(2)}
+                {status === "Dispatched"
+                  ? calculateItemTotal(
+                      qtyAccepted[index] ?? 0,
+                      item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
+                    ).toFixed(2)
+                  : calculateItemTotal(
+                      item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT ?? 0,
+                      item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
+                    ).toFixed(2)}
               </TableCell>
             </TableRow>
           ))}
@@ -697,6 +776,9 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
             {status === "Dispatched" && "Mark as Received"}
           </StatusButton>
         )}
+        <Button onClick={generateInvoice}>
+          Generate Invoice
+        </Button>
       </ModalFooter>
       {/* Issue Modal */}
       {isIssueModalOpen && (

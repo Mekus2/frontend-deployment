@@ -31,8 +31,9 @@ const SharedCustomersPage = () => {
       setIsLoading(true); // Show the loading spinner
       try {
         const data = await fetchCustomers();
-        setCustomers(data);
-        setFilteredCustomers(data);
+        console.log("Received Data", data);
+        setCustomers(data); // Set the full list of customers
+        setFilteredCustomers(data); // Set the filtered list of customers (same initially)
       } catch (error) {
         console.error("Failed to fetch customers", error);
       } finally {
@@ -63,6 +64,7 @@ const SharedCustomersPage = () => {
 
   useEffect(() => {
     console.log("Selected Customer:", selectedCustomer);
+    console.log("Received Data", customers);
   }, [selectedCustomer]);
 
   const openDetailsModal = async (customer) => {
@@ -71,8 +73,8 @@ const SharedCustomersPage = () => {
         `http://localhost:8000/customer/clients/${customer.id}/`
       );
       console.log("API Response:", response.data);
-      setSelectedCustomer(response.data);
-      setShowDetailsModal(true);
+      setSelectedCustomer(response.data); // Update the selected customer
+      setShowDetailsModal(true); // Show the details modal
     } catch (error) {
       console.error("Error fetching customer data:", error);
     }
@@ -126,7 +128,7 @@ const SharedCustomersPage = () => {
     customer.name,
     `${customer.address}, ${customer.province}`, // Combined address and province
     customer.phoneNumber,
-    customer.balance ? formatCurrency(customer.balance) : "₱0.00", // Assuming balance is a field
+    customer.balance ? formatCurrency(customer.balance) : "₱0.00", // Format the balance
     <ActionButton key="action" onClick={() => openDetailsModal(customer)}>
       Details
     </ActionButton>,
