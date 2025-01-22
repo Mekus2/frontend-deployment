@@ -297,101 +297,119 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
 
   const generateInvoice = () => {
     const doc = new jsPDF();
+    const {
+      OUTBOUND_DEL_CUSTOMER_NAME,
+      OUTBOUND_DEL_CITY,
+      OUTBOUND_DEL_PROVINCE,
+      OUTBOUND_DEL_SHIPPED_DATE,
+      OUTBOUND_DEL_CSTMR_RCVD_DATE,
+      OUTBOUND_DEL_TOTAL_ORDERED_QTY,
+      OUTBOUND_DEL_TOTAL_PRICE,
+    } = delivery;
 
-    // Use UTF-8 encoding to ensure characters like peso sign render correctly
-    doc.setFont("helvetica", "normal", "utf-8");
-
-    // Add the company logo at the upper left corner with aspect ratio locked
-    const logoWidth = 12; // Width for the logo
-    const logoHeight = logoWidth; // Height set to maintain 1:1 aspect ratio
-    const logoX = 12; // Margin Left
-    const logoY = 5; // Margin Top
-    doc.addImage(logoBase64, "PNG", logoX, logoY, logoWidth, logoHeight); // Adds the logo at upper left
-
-    // Center the company name closer to the top
+    // Add logo and header
+    const logoWidth = 12;
+    const logoHeight = logoWidth;
+    const logoX = 12;
+    const logoY = 5;
     const pageWidth = doc.internal.pageSize.width;
 
-    // Set plain styling for the company name and center it
-    doc.setFontSize(16); // Slightly smaller font size for better alignment
+    doc.addImage(logoBase64, "PNG", logoX, logoY, logoWidth, logoHeight);
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
     doc.text("PHILVETS", pageWidth / 2, logoY + logoHeight + 8, {
       align: "center",
     });
-
-    // Company number (move closer to the company name)
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text("123-456-789", pageWidth / 2, logoY + logoHeight + 14, {
       align: "center",
     });
 
-    // Title of the invoice (bold and larger, left-aligned)
-    doc.setFontSize(16);
+    // Add title and date
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Delivery Receipt", 20, 30); // Move to the left
+    doc.text("Delivery Receipt", 14, logoY + logoHeight + 24);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `Date: ${new Date().toLocaleDateString()}`,
+      14,
+      logoY + logoHeight + 30
+    );
 
     // Customer and delivery details
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text(`Customer: ${delivery.OUTBOUND_DEL_CUSTOMER_NAME}`, 20, 40);
-    doc.text(`City: ${delivery.OUTBOUND_DEL_CITY}`, 20, 45);
-    doc.text(`Province: ${delivery.OUTBOUND_DEL_PROVINCE}`, 20, 50);
     doc.text(
-      `Shipped Date: ${formatDate(delivery.OUTBOUND_DEL_SHIPPED_DATE)}`,
-      20,
-      60
+      `Customer: ${OUTBOUND_DEL_CUSTOMER_NAME || "N/A"}`,
+      14,
+      logoY + logoHeight + 36
     );
     doc.text(
-      `Received Date: ${formatDate(delivery.OUTBOUND_DEL_CSTMR_RCVD_DATE)}`,
-      20,
-      65
+      `City: ${OUTBOUND_DEL_CITY || "N/A"}`,
+      14,
+      logoY + logoHeight + 42
+    );
+    doc.text(
+      `Province: ${OUTBOUND_DEL_PROVINCE || "N/A"}`,
+      14,
+      logoY + logoHeight + 48
+    );
+    doc.text(
+      `Shipped Date: ${formatDate(OUTBOUND_DEL_SHIPPED_DATE)}`,
+      14,
+      logoY + logoHeight + 54
+    );
+    doc.text(
+      `Received Date: ${formatDate(OUTBOUND_DEL_CSTMR_RCVD_DATE)}`,
+      14,
+      logoY + logoHeight + 60
     );
 
-    // Table for order details
-    doc.autoTable({
-      startY: 70,
-      head: [["Product Name", "Quantity Shipped", "Price", "Total"]],
-      body: orderDetails.map((item) => [
-        item.OUTBOUND_DETAILS_PROD_NAME,
+    // Table data
+    const tableData = orderDetails.map((item) => [
+      item.OUTBOUND_DETAILS_PROD_NAME || "N/A",
+      item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
+      Number(item.OUTBOUND_DETAILS_SELL_PRICE).toFixed(2),
+      calculateItemTotal(
         item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
-        Number(item.OUTBOUND_DETAILS_SELL_PRICE).toFixed(2), // Removed the peso sign
-        calculateItemTotal(
-          item.OUTBOUND_DETAILS_PROD_QTY_ORDERED,
-          item.OUTBOUND_DETAILS_SELL_PRICE
-        ).toFixed(2), // Removed the peso sign
-      ]),
+        item.OUTBOUND_DETAILS_SELL_PRICE
+      ).toFixed(2),
+    ]);
+
+    doc.autoTable({
+      startY: logoY + logoHeight + 70,
+      head: [["Product Name", "Quantity Shipped", "Price", "Total"]],
+      body: tableData,
       styles: {
         cellPadding: 3,
-        fontSize: 10,
-        halign: "center", // Center all data in the cells
-        valign: "middle",
-        lineWidth: 0.5, // Line width for cell borders
-        lineColor: [169, 169, 169], // Gray color for the lines
+        fontSize: 9,
+        halign: "center",
       },
       headStyles: {
         fillColor: [0, 196, 255],
         textColor: [255, 255, 255],
         fontStyle: "bold",
-        halign: "center", // Center header text
-        lineWidth: 0.5, // Line width for header cell borders
-        lineColor: [169, 169, 169], // Gray color for the lines
       },
     });
 
     // Total summary
     doc.text(
-      `Total Quantity: ${delivery.OUTBOUND_DEL_TOTAL_ORDERED_QTY}`,
-      20,
+      `Total Quantity: ${OUTBOUND_DEL_TOTAL_ORDERED_QTY || "N/A"}`,
+      14,
       doc.autoTable.previous.finalY + 10
     );
     doc.text(
-      `Total Amount: ${delivery.OUTBOUND_DEL_TOTAL_PRICE}`,
-      20,
+      `Total Amount: ${OUTBOUND_DEL_TOTAL_PRICE || "N/A"}`,
+      14,
       doc.autoTable.previous.finalY + 15
-    ); // Removed peso sign here as well
+    );
 
-    // Save the PDF
-    doc.save("Invoice.pdf");
+    // Open PDF in a new tab (blob approach)
+    const pdfBlob = doc.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, "_blank");
   };
 
   return (
