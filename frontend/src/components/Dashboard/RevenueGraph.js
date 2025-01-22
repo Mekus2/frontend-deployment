@@ -9,16 +9,7 @@ import {
   Legend,
 } from "recharts";
 import styled from "styled-components";
-//DONT USE THIS
-const data = [
-  { name: "Sun", revenue: 4000, cost: 2400 },
-  { name: "Mon", revenue: 3000, cost: 1398 },
-  { name: "Tue", revenue: 2000, cost: 9800 },
-  { name: "Wed", revenue: 2780, cost: 3908 },
-  { name: "Thu", revenue: 1890, cost: 4800 },
-  { name: "Fri", revenue: 2390, cost: 3800 },
-  { name: "Sat", revenue: 3490, cost: 4300 },
-];
+import axios from "axios";
 
 const RevenueGraph = ({
   titleFontSize = "1rem",
@@ -32,7 +23,29 @@ const RevenueGraph = ({
 }) => {
   const graphCardRef = useRef(null);
   const [chartWidth, setChartWidth] = useState(0);
+  const [chartData, setChartData] = useState([]); // State for dynamic chart data
 
+  // Fetch monthly revenue and income from the API
+  useEffect(() => {
+    const fetchMonthlyRevenueIncome = async () => {
+      const apiUrl = "http://127.0.0.1:8000/sales/monthly-sales/";
+      try {
+        const response = await axios.get(apiUrl, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        console.log("Received data", response.data);
+        setChartData(response.data); // Update chart data with API response
+      } catch (error) {
+        console.error("Error fetching monthly revenue and income:", error);
+      }
+    };
+
+    fetchMonthlyRevenueIncome();
+  }, []);
+
+  // Handle responsive chart width
   useEffect(() => {
     const handleResize = () => {
       if (graphCardRef.current) {
@@ -49,7 +62,7 @@ const RevenueGraph = ({
   return (
     <GraphCard ref={graphCardRef}>
       <GraphTitle fontSize={titleFontSize} fontWeight={titleFontWeight}>
-        Revenue Graph
+        Monthly Sales {new Date().getFullYear()}
       </GraphTitle>
       <LegendDropdownContainer>
         <LegendWrapper>
@@ -60,19 +73,19 @@ const RevenueGraph = ({
         <LineChart
           width={chartWidth}
           height={chartHeight}
-          data={data}
+          data={chartData} // Use the dynamic chart data
           margin={chartMargin}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
-            dataKey="name"
+            dataKey="name" // Use "name" from the API response
             fontSize={axisFontSize}
             fontWeight={axisFontWeight}
           />
           <YAxis fontSize={axisFontSize} fontWeight={axisFontWeight} />
           <Tooltip />
           <Line type="monotone" dataKey="revenue" stroke="#f08400" />
-          <Line type="monotone" dataKey="cost" stroke="#07b64a" />
+          <Line type="monotone" dataKey="income" stroke="#07b64a" />
           <Legend />
         </LineChart>
       </GraphContainer>
