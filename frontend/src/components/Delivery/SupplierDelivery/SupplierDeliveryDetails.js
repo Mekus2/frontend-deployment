@@ -455,6 +455,8 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
       })),
     };
 
+    console.log("Preparing Data:", inventoryData);
+
     try {
       // Step 1: Add inventory
       const inventoryResponse = await addNewInventory(inventoryData);
@@ -637,10 +639,15 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
               </TableCell>
               <TableCell>
                 ₱
-                {calculateItemTotal(
-                  qtyAccepted[index] ?? 0,
-                  item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
-                ).toFixed(2)}
+                {status === "Dispatched"
+                  ? calculateItemTotal(
+                      qtyAccepted[index] ?? 0,
+                      item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
+                    ).toFixed(2)
+                  : calculateItemTotal(
+                      item.INBOUND_DEL_DETAIL_LINE_QTY_ACCEPT ?? 0,
+                      item.INBOUND_DEL_DETAIL_LINE_PRICE ?? 0
+                    ).toFixed(2)}
               </TableCell>
             </TableRow>
           ))}
