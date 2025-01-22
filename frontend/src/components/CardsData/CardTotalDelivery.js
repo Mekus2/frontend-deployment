@@ -11,7 +11,7 @@ const CardTotalDelivery = () => {
   return (
     <CardContainer>
       <Card
-        label="Deliveries"
+        label="Customer Deliveries"
         value={deliveryCount} // Display the total number of deliveries
         icon={<FaTruck />} // Add the icon here
       />
