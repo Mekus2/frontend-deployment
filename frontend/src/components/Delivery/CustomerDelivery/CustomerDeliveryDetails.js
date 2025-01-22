@@ -250,7 +250,9 @@ const CustomerDeliveryDetails = ({ delivery, onClose }) => {
         ISSUE_PROD_NAME: item.OUTBOUND_DETAILS_PROD_NAME,
         ISSUE_QTY_DEFECT: item.OUTBOUND_DETAILS_PROD_QTY_DEFECT,
         ISSUE_PROD_LINE_PRICE: item.OUTBOUND_DETAILS_SELL_PRICE,
-        ISSUE_LINE_TOTAL_PRICE: item.OUTBOUND_DETAIL_LINE_TOTAL,
+        ISSUE_LINE_TOTAL_PRICE:
+          item.OUTBOUND_DETAILS_PROD_QTY_DEFECT *
+          item.OUTBOUND_DETAILS_SELL_PRICE,
       }))
     );
     // Call the createDeliveryIssue function and store its response status in a new variable

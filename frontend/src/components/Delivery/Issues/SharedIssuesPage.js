@@ -12,18 +12,19 @@ const SharedIssuesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [issueData, setIssueData] = useState([]);
+  const [issueItems, setIssueItems] = useState([]);
 
   useEffect(() => {
     const issueList = async () => {
       try {
-        const data = await fetchDeliveryIssues();
-        setIssueData(data);
-        console.log("fetched issues", data);
+        const data = await fetchDeliveryIssues(); // Fetch issues
+        setIssueData(data); // Store fetched issues in state
+        console.log("Fetched issues:", data); // Log fetched issues
       } catch (error) {
-        console.error("Error fetching purchase orders:", error);
+        console.error("Error fetching delivery issues:", error); // Log error if any
       }
     };
-    issueList();
+    issueList(); // Call function to fetch issues
   }, []);
 
   // const filteredIssues = IssueData
@@ -38,13 +39,13 @@ const SharedIssuesPage = () => {
 
   const openDetailModal = (issue) => {
     console.log("Selected issue:", issue);
-    setSelectedIssue(issue);
+    setSelectedIssue(issue); // Set the selected issue for the modal
+    setIssueItems(issue.item_issues || []); // Extract and store item_issues for the modal
   };
-  const closeDetailModal = () => setSelectedIssue(null);
 
-  const handleCancelIssue = (issueId) => {
-    console.log(`Issue with ID ${issueId} has been cancelled.`);
-    setSelectedIssue(null);
+  const closeDetailModal = () => {
+    setSelectedIssue(null); // Reset selected issue
+    setIssueItems([]); // Clear issue items
   };
 
   // Updated headers to match Issue Type, Reported Date, Resolution Status, and Action
@@ -57,15 +58,15 @@ const SharedIssuesPage = () => {
   const rows = issueData.map((issue) => [
     issue.ISSUE_TYPE, // Issue Type
     issue.DATE_CREATED, // Reported Date
-    <Status
-      status={issue.STATUS}
-      key={issue.SUPPLIER_DELIVERY_ID || issue.CUSTOMER_DELIVERY_ID}
+    <Status status={issue.STATUS} key={issue.ISSUE_NO}>
+      {issue.STATUS} {/* Resolution status */}
+    </Status>,
+    <Button
+      bgColor="#00C4FF"
+      onClick={() => openDetailModal(issue)} // Pass the entire issue to the modal
     >
-      {issue.STATUS} {/* Displaying resolution status */}
-    </Status>, // Resolution Status with styled component
-    <Button bgColor="#00C4FF" onClick={() => openDetailModal(issue)}>
       Details
-    </Button>, // Action Button (changed from "View" to "Details")
+    </Button>,
   ]);
 
   return (
@@ -83,9 +84,9 @@ const SharedIssuesPage = () => {
       <Table headers={headers} rows={rows} />
       {selectedIssue && (
         <IssueDetailModal
-          issue={selectedIssue}
-          onClose={closeDetailModal}
-          onCancelIssue={handleCancelIssue}
+          issue={selectedIssue} // Pass the entire issue
+          issueItems={issueItems} // Pass the associated item_issues
+          onClose={closeDetailModal} // Handle modal close
         />
       )}
     </>
