@@ -2,20 +2,14 @@ import React from "react";
 import styled from "styled-components";
 import { colors } from "../../colors";
 import { IoCloseCircle } from "react-icons/io5";
-import Button from "../Layout/Button"; // Assuming Button is located at this path
+import SalesReceipt from "./SalesReceipt"; // Import SalesReceipt component
 
-// Utility function to format numbers as currency
 const formatCurrency = (value) => {
-  // Convert the value to a number if it's not already
   const numberValue =
     typeof value === "number"
       ? value
       : parseFloat((value || "").toString().replace(/[^\d.-]/g, ""));
-
-  // Check if it's a valid number, otherwise set to 0
   const validValue = isNaN(numberValue) ? 0 : numberValue;
-
-  // Format as currency
   return `₱${validValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 };
 
@@ -26,7 +20,8 @@ const SalesDetailsModal = ({ sale, invoiceDetails, onClose }) => {
     }
   };
 
-  console.log("Received Details:", invoiceDetails);
+  const receipt = SalesReceipt({ sale, invoiceDetails }); // Use SalesReceipt
+
   return (
     <Backdrop onClick={handleBackdropClick}>
       <Modal>
@@ -125,13 +120,20 @@ const SalesDetailsModal = ({ sale, invoiceDetails, onClose }) => {
             )}
           </tbody>
         </InvoiceTable>
+
+        {/* Generate Receipt Button */}
+        <ButtonContainer>
+          <Button onClick={receipt.generateReceipt}>Generate Receipt</Button>
+        </ButtonContainer>
       </Modal>
     </Backdrop>
   );
 };
 
-// Styled components
+// Styled components remain the same
 
+
+// Styled components
 const Backdrop = styled.div`
   position: fixed;
   top: 0;
@@ -212,6 +214,25 @@ const TableRow = styled.tr`
 const TableCell = styled.td`
   padding: 10px;
   border-bottom: 1px solid #ddd;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+`;
+
+const Button = styled.button`
+  background-color: ${colors.primary};
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: ${colors.primaryHover};
+  }
 `;
 
 export default SalesDetailsModal;
