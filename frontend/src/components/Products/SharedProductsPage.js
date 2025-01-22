@@ -1,230 +1,149 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate, useLocation } from "react-router-dom";
-import { fetchProductList } from "../../api/ProductApi";
-import SearchBar from "../Layout/SearchBar";
-import Table from "../Layout/Table_Pagination";
-import CardTotalProducts from "../CardsData/CardTotalProducts";
-//import CardTotalCategories from "../CardsData/CardTotalCategories";
-import Button from "../Layout/Button";
-import AddProductModal from "./AddProductModal";
-import ProductDetailsModal from "./ProductDetailsModal";
-import { FaPlus } from "react-icons/fa";
-import { colors } from "../../colors";
-import { fetchCategory } from "../../api/CategoryApi";
 import axios from "axios";
+import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
+import Table from "../Layout/Table";
+import SearchBar from "../Layout/SearchBar";
+import Button from "../Layout/Button";
+import ReportCard from "../Layout/ReportCard";
 
-const SharedProductsPage = () => {
+const AllOrderReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const [isProductDetailsModalOpen, setIsProductDetailsModalOpen] =
-    useState(false);
-  const [products, setProducts] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [rows, setRows] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const itemsPerPage = 20; // Set how many items per page
-  const [totalRows, setTotalRows] = useState(0); // Track the total rows for pagination
+  const [isUpdated, setIsUpdated] = useState(false); // Tracks if the daily report has been updated
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
+  // Fetch initial data on load
   useEffect(() => {
-    const loadProductsAndCategories = async () => {
+    const fetchData = async () => {
       try {
-        // Fetch products with pagination and searchTerm
-        const { results, count } = await fetchProductList(
-          currentPage, // Current page
-          itemsPerPage, // Number of items per page
-          searchTerm // Search term for filtering
-        );
+        setLoading(true);
+        const [viewDailyResponse, currentStockResponse] = await Promise.all([
+          axios.get("http://127.0.0.1:8000/report/viewdaily/"),
+          axios.get("http://127.0.0.1:8000/report/current/"),
+        ]);
 
-        // Set products and total rows for pagination
-        setProducts(results);
-        setTotalRows(count);
+        const combinedData = viewDailyResponse.data.map((daily) => {
+          const currentStock = currentStockResponse.data.find(
+            (current) => current.product_name === daily.product_name
+          )?.current_stock || 0;
 
-        // Get unique category codes
-        const uncachedCategoryCodes = [
-          ...new Set(
-            results.map((product) => product.PROD_DETAILS["PROD_CAT_CODE"])
-          ),
-        ];
-
-        const uncachedCategories =
-          uncachedCategoryCodes.length > 0
-            ? await Promise.all(uncachedCategoryCodes.map(fetchCategory))
-            : [];
-
-        // Map products to rows
-        const rowsData = results.map((product) => {
-          const productDetail = product.PROD_DETAILS;
-          const category = uncachedCategories.find(
-            (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
-          );
-
-          const unit = productDetail.PROD_DETAILS_UNIT || "N/A";
-          const brand = productDetail.PROD_DETAILS_SUPPLIER || "N/A";
-          const price = parseFloat(productDetail.PROD_DETAILS_PRICE);
-
-          return [
-            product.PROD_NAME,
-            category ? category.PROD_CAT_NAME : "N/A",
-            unit,
-            brand,
-            price && !isNaN(price) ? `₱${price.toFixed(2)}` : "₱0.00",
-            <ActionButton
-              key="action"
-              fontSize="14px"
-              onClick={() => openProductDetailsModal(product)}
-            >
-              Details
-            </ActionButton>,
-          ];
+          return {
+            id: daily.id, // Add an ID field if available
+            product: daily.product_name,
+            date: daily.date,
+            openingStock: daily.opening_stock,
+            currentStock: currentStock,
+          };
         });
 
-        setRows(rowsData);
-        setLoading(false);
-      } catch (err) {
-        setError("Error fetching products or categories");
+        setTableData(combinedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
         setLoading(false);
       }
     };
 
-    loadProductsAndCategories();
-  }, [searchTerm, currentPage]); // Re-run if searchTerm or currentPage changes
+    fetchData();
+  }, []);
 
-  const openAddProductModal = () => setIsAddProductModalOpen(true);
-  const closeAddProductModal = () => setIsAddProductModalOpen(false);
-
-  const openProductDetailsModal = async (product) => {
+  const handleUpdate = async (id) => {
     try {
-      // Ensure product.id is a valid number or string
-      const productResponse = await axios.get(
-        `http://127.0.0.1:8000/items/productList/${product.id}`
-      );
-      console.log("Product API Response:", productResponse.data); // Log the product data
-
-      // Set only the product ID into state
-      setSelectedProductId(product.id);
-
-      // Open the modal with the selected product ID
-      setIsProductDetailsModalOpen(true);
+      setLoading(true);
+      await axios.post(`http://127.0.0.1:8000/report/update/${id}/`); // Use the product ID for the update API
+      alert("Row updated successfully.");
+      // Optionally, fetch updated data
     } catch (error) {
-      console.error("Error fetching product data:", error);
+      console.error("Error updating row:", error);
+      alert("Failed to update the row.");
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  const closeProductDetailsModal = () => {
-    setSelectedProductId(null);
-    setIsProductDetailsModalOpen(false);
-  };
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  if (loading) {
-    return <div>Loading products...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  const headers = [
-    "Product Name",
-    "Category",
-    "Unit",
-    "Supplier",
-    "Price",
-    "Actions",
-  ];
+  const header = ["Product", "Date", "Opening Stock", "Current Stock", "Actions"];
 
   return (
     <>
-      <AnalyticsContainer>
-        <CardTotalProducts />
-        {/* <ClickableCard onClick={handleCardClick} /> */}
-      </AnalyticsContainer>
+      <CardsContainer>
+        <ReportCard
+          label="Total Products"
+          value={`${tableData.length} Products`}
+          startDate={startDate}
+          endDate={endDate}
+          icon={<FaShoppingCart />}
+        />
+        <ReportCard
+          label="Order Value"
+          value={`₱${tableData.reduce((acc, row) => acc + (row.gross || 0), 0).toFixed(2)}`}
+          startDate={startDate}
+          endDate={endDate}
+          icon={<FaDollarSign />}
+        />
+      </CardsContainer>
+
       <Controls>
         <SearchBar
-          placeholder="Search / Filter product..."
+          placeholder="Search reports..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        
       </Controls>
 
-      {/* Pass props to the Table component */}
-      <Table
-        headers={headers}
-        rows={rows}
-        rowsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        totalRows={totalRows}
-        onPageChange={handlePageChange}
-      />
-
-      {isAddProductModalOpen && (
-        <AddProductModal onClose={closeAddProductModal} />
-      )}
-      {isProductDetailsModalOpen && selectedProductId && (
-        <ProductDetailsModal
-          productId={selectedProductId}
-          onClose={closeProductDetailsModal}
-        />
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <ReportContent>
+          <Table
+            headers={header}
+            rows={tableData.map((row) => [
+              row.product,
+              row.date,
+              row.openingStock,
+              row.currentStock,
+              <Button
+                variant="secondary"
+                onClick={() => handleUpdate(row.id)} // Pass the ID for the update
+              >
+                Update
+              </Button>,
+            ])}
+          />
+        </ReportContent>
       )}
     </>
   );
 };
 
-// Styled components
+// Styled Components
+const CardsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+`;
+
 const Controls = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   margin-bottom: 16px;
-  padding: 0 1px;
-`;
 
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 16px;
-`;
-
-const StyledButton = styled(Button)`
-  display: flex;
-  align-items: center;
-
-  .icon {
-    font-size: 20px;
-    margin-right: 8px;
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 `;
 
-const AnalyticsContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding: 0 1px;
+const ReportContent = styled.div`
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  min-height: 200px;
+  text-align: center;
 `;
 
-const ClickableCard = styled.div`
-  cursor: pointer;
-`;
-
-const ActionButton = styled(Button)`
-  background-color: ${colors.primary};
-  &:hover {
-    background-color: ${colors.primaryHover};
-  }
-
-  .icon {
-    font-size: 20px;
-    margin-right: 8px;
-  }
-`;
-
-export default SharedProductsPage;
+export default AllOrderReport;

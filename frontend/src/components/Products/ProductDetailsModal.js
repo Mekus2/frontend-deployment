@@ -10,7 +10,7 @@ import { notify } from "../Layout/CustomToast";
 const ProductDetailsModal = ({ productId, onClose }) => {
   const [product, setProduct] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editFields, setEditFields] = useState({ categories: [] });
+  const [editFields, setEditFields] = useState({});
   const [showPriceHistory, setShowPriceHistory] = useState(false);
 
   useEffect(() => {
@@ -19,15 +19,19 @@ const ProductDetailsModal = ({ productId, onClose }) => {
         const response = await axios.get(
           `http://localhost:8000/items/productList/${productId}/`
         );
-        setProduct(response.data);
+        const data = response.data;
+        setProduct(data);
         setEditFields({
-          ...response.data.PROD_DETAILS,
-          PROD_NAME: response.data.PROD_NAME,
-          PROD_RO_LEVEL: response.data.PROD_RO_LEVEL || "",
-          PROD_RO_QTY: response.data.PROD_RO_QTY || "",
-          PROD_DETAILS_PURCHASE_PRICE: response.data.PROD_DETAILS_PURCHASE_PRICE || "",
-          PROD_QOH: response.data.PROD_QOH || "",
-          categories: response.data.PROD_CATEGORIES || [],
+          PROD_BRAND: data.PROD_BRAND || "",
+          PROD_NAME: data.PROD_NAME || "",
+          PROD_RO_LEVEL: data.PROD_RO_LEVEL || "",
+          PROD_RO_QTY: data.PROD_RO_QTY || "",
+          PROD_QOH: data.PROD_QOH || "",
+          PROD_DETAILS_DESCRIPTION: data.PROD_DETAILS?.PROD_DETAILS_DESCRIPTION || "",
+          PROD_DETAILS_PRICE: data.PROD_DETAILS?.PROD_DETAILS_PRICE || "",
+          PROD_DETAILS_PURCHASE_PRICE: data.PROD_DETAILS?.PROD_DETAILS_PURCHASE_PRICE || "",
+          PROD_DETAILS_UNITS: data.PROD_DETAILS?.PROD_DETAILS_UNITS || "",
+          categories: data.PROD_CATEGORIES || [],
         });
       } catch (error) {
         console.error("Error fetching product data:", error);
@@ -37,41 +41,33 @@ const ProductDetailsModal = ({ productId, onClose }) => {
     fetchProductDetails();
   }, [productId]);
 
-  if (!product) return <p>Loading...</p>;
-
   const handleEdit = () => setIsEditing(true);
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file); // Create a preview URL for the image
-      setEditFields((prev) => ({ ...prev, PROD_IMG: imageUrl }));
-    }
-  };
   const handleInputChange = (field, value) => {
     setEditFields((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleCategoriesChange = (newCategories) => {
-    setEditFields((prev) => ({ ...prev, categories: newCategories }));
   };
 
   const handleSave = async () => {
     try {
       const updatedProduct = {
         ...product,
+        PROD_BRAND: editFields.PROD_BRAND,
         PROD_NAME: editFields.PROD_NAME,
-        PROD_DETAILS: { ...editFields },
         PROD_RO_LEVEL: editFields.PROD_RO_LEVEL,
         PROD_RO_QTY: editFields.PROD_RO_QTY,
         PROD_QOH: editFields.PROD_QOH,
-        PROD_CATEGORIES: editFields.categories, // Save categories
+        PROD_DETAILS: {
+          PROD_DETAILS_DESCRIPTION: editFields.PROD_DETAILS_DESCRIPTION,
+          PROD_DETAILS_PRICE: editFields.PROD_DETAILS_PRICE,
+          PROD_DETAILS_PURCHASE_PRICE: editFields.PROD_DETAILS_PURCHASE_PRICE,
+          PROD_DETAILS_UNITS: editFields.PROD_DETAILS_UNITS,
+        },
+        PROD_CATEGORIES: editFields.categories,
       };
       await axios.put(
         `http://localhost:8000/items/productList/${productId}/`,
         updatedProduct
       );
       notify.success("Product updated successfully!");
-      await logProductCreation(product, updatedProduct);
       setProduct(updatedProduct);
       setIsEditing(false);
     } catch (error) {
@@ -79,119 +75,42 @@ const ProductDetailsModal = ({ productId, onClose }) => {
     }
   };
 
-  const logProductCreation = async (oldProduct, updatedProduct) => {
-    const userId = localStorage.getItem("user_id");
-    const userResponse = await fetch(
-      `http://localhost:8000/account/logs/${userId}/`
-    );
-    if (!userResponse.ok) {
-      const errorData = await userResponse.json();
-      console.error("Failed to fetch user details:", errorData);
-      return;
-    }
-    const userData = await userResponse.json();
-    const username = userData.username; // Assuming the API response includes a `username` field
+  const productDetail = product?.PROD_DETAILS;
 
-    const changes = [];
-    const fieldsToCheck = [
-      { field: "PROD_NAME", label: "Product Name" },
-      { field: "PROD_RO_LEVEL", label: "Reorder Level" },
-      { field: "PROD_RO_QTY", label: "Reorder Quantity" },
-      { field: "PROD_QOH", label: "Quantity on Hand" },
-      { field: "PROD_CATEGORIES", label: "Categories" },
-      { field: "PROD_DETAILS_DESCRIPTION", label: "Description" },
-      { field: "PROD_DETAILS_PRICE", label: "Price" },
-      { field: "PROD_DETAILS_PRUCHASE_PRICE", label: "Purchase Price" },
-      { field: "PROD_DETAILS_SUPPLIER", label: "Supplier" },
-      { field: "PROD_DETAILS_UNITS", label: "Units" },
-    ];
-    // Check for changes and format them for logging
-    fieldsToCheck.forEach(({ field, label }) => {
-      if (oldProduct[field] !== updatedProduct[field]) {
-        changes.push(
-          `${label} changed from "${oldProduct[field] || "N/A"}" to "${
-            updatedProduct[field] || "N/A"
-          }"`
-        );
-      }
-    });
-
-    // If there are changes, prepare the log payload
-    if (changes.length > 0) {
-      const logPayload = {
-        LLOG_TYPE: "User logs",
-        LOG_DESCRIPTION: `${username} updated the Product details:${changes.join(
-          "\n"
-        )}`,
-        USER_ID: userId,
-      };
-
-      try {
-        // Send the log data to the backend
-        const response = await fetch("http://localhost:8000/logs/logs/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(logPayload),
-        });
-
-        // Handle the response
-        if (response.ok) {
-          console.log("Product updated details:", logPayload);
-        } else {
-          const errorData = await response.json();
-          console.error("Failed to create log:", errorData);
-        }
-      } catch (error) {
-        console.error("Error logging product updates:", error);
-      }
-    } else {
-      console.log("No changes detected. Logging skipped.");
-    }
-  };
-
-  const handleRemove = () => {
-    const confirmRemoval = window.confirm(
-      `Are you sure you want to remove this product?`
-    );
-    if (confirmRemoval) {
-      alert(`Product ${product.PROD_NAME} removed`);
-      onClose();
-    }
-  };
-
-  const handleMoreInfoClick = () => setShowPriceHistory(true);
-
-  const productDetail = product.PROD_DETAILS;
+  if (!product) return <p>Loading...</p>;
 
   return (
     <Modal
-      title={
-        isEditing ? `Edit ${product.PROD_NAME}` : `${product.PROD_NAME} Details`
-      }
+      title={isEditing ? `Edit ${product.PROD_NAME}` : `${product.PROD_NAME} Details`}
       onClose={onClose}
     >
       {isEditing ? (
         <Details>
           <DetailItem>
+            <Label>Brand:</Label>
+            <Input
+              value={editFields.PROD_BRAND}
+              onChange={(e) => handleInputChange("PROD_BRAND", e.target.value)}
+            />
+          </DetailItem>
+          <DetailItem>
             <Label>Name:</Label>
             <Input
-              value={editFields.PROD_NAME || ""}
+              value={editFields.PROD_NAME}
               onChange={(e) => handleInputChange("PROD_NAME", e.target.value)}
             />
           </DetailItem>
           <DetailItem>
             <Label>Category:</Label>
-            <CategoriesInput
-              value={editFields.categories}
-              onChange={handleCategoriesChange}
+            <Input
+              value={editFields.categories.join(", ")}
+              onChange={(e) => handleInputChange("categories", e.target.value.split(", "))}
             />
           </DetailItem>
           <DetailItem>
             <Label>Units:</Label>
             <Input
-              value={editFields.PROD_DETAILS_UNITS || ""}
+              value={editFields.PROD_DETAILS_UNITS}
               onChange={(e) =>
                 handleInputChange("PROD_DETAILS_UNITS", e.target.value)
               }
@@ -200,18 +119,9 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           <DetailItem>
             <Label>Purchase Price:</Label>
             <Input
-              value={editFields.PROD_DETAILS_PURCHASE_PRICE || ""}
+              value={editFields.PROD_DETAILS_PURCHASE_PRICE}
               onChange={(e) =>
                 handleInputChange("PROD_DETAILS_PURCHASE_PRICE", e.target.value)
-              }
-            />
-          </DetailItem>
-          <DetailItem>
-            <Label>Brand:</Label>
-            <Input
-              value={editFields.PROD_DETAILS_BRAND || ""}
-              onChange={(e) =>
-                handleInputChange("PROD_DETAILS_BRAND", e.target.value)
               }
             />
           </DetailItem>
@@ -219,7 +129,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
             <Label>Price:</Label>
             <Input
               type="number"
-              value={editFields.PROD_DETAILS_PRICE || ""}
+              value={editFields.PROD_DETAILS_PRICE}
               onChange={(e) =>
                 handleInputChange("PROD_DETAILS_PRICE", e.target.value)
               }
@@ -228,7 +138,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           <DetailItem>
             <Label>Description:</Label>
             <TextArea
-              value={editFields.PROD_DETAILS_DESCRIPTION || ""}
+              value={editFields.PROD_DETAILS_DESCRIPTION}
               onChange={(e) =>
                 handleInputChange("PROD_DETAILS_DESCRIPTION", e.target.value)
               }
@@ -238,7 +148,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
             <Label>Reorder Level:</Label>
             <Input
               type="number"
-              value={editFields.PROD_RO_LEVEL || ""}
+              value={editFields.PROD_RO_LEVEL}
               onChange={(e) =>
                 handleInputChange("PROD_RO_LEVEL", e.target.value)
               }
@@ -248,54 +158,49 @@ const ProductDetailsModal = ({ productId, onClose }) => {
             <Label>Reorder Quantity:</Label>
             <Input
               type="number"
-              value={editFields.PROD_RO_QTY || ""}
-              onChange={(e) => handleInputChange("PROD_RO_QTY", e.target.value)}
+              value={editFields.PROD_RO_QTY}
+              onChange={(e) =>
+                handleInputChange("PROD_RO_QTY", e.target.value)
+              }
             />
           </DetailItem>
           <DetailItem>
             <Label>Quantity on Hand:</Label>
             <Input
               type="number"
-              value={editFields.PROD_QOH || ""}
-              onChange={(e) => handleInputChange("PROD_QOH", e.target.value)}
+              value={editFields.PROD_QOH}
+              onChange={(e) =>
+                handleInputChange("PROD_QOH", e.target.value)
+              }
             />
           </DetailItem>
         </Details>
       ) : (
         <Details>
-          {/* <Detail>
-            <DetailLabel>Image:</DetailLabel>
-            {product.PROD_IMG && (
-              <ImagePreview src={product.PROD_IMG} alt="Product Image" />
-            )}
-          </Detail> */}
+          <Detail>
+            <DetailLabel>Brand:</DetailLabel> {product.PROD_BRAND}
+          </Detail>
           <Detail>
             <DetailLabel>Name:</DetailLabel> {product.PROD_NAME}
           </Detail>
           <Detail>
             <DetailLabel>Category:</DetailLabel>{" "}
-            {product.PROD_CATEGORIES && product.PROD_CATEGORIES.join(", ")}
+            {product.PROD_CATEGORIES?.join(", ")}
           </Detail>
           <Detail>
-            <DetailLabel>Units:</DetailLabel> {productDetail.PROD_DETAILS_UNITS}
+            <DetailLabel>Units:</DetailLabel> {productDetail?.PROD_DETAILS_UNITS}
           </Detail>
           <Detail>
-            <DetailLabel>Purchase Price:</DetailLabel> {productDetail.PROD_DETAILS_PURCHASE_PRICE}
-          </Detail>
-          <Detail>
-            <DetailLabel>Supplier:</DetailLabel>{" "}
-            {productDetail.PROD_DETAILS_SUPPLIER}
+            <DetailLabel>Purchase Price:</DetailLabel> ₱
+            {productDetail?.PROD_DETAILS_PURCHASE_PRICE}
           </Detail>
           <Detail>
             <DetailLabel>Price:</DetailLabel> ₱
-            {productDetail.PROD_DETAILS_PRICE}
-            {/* <MoreInfoButton onClick={handleMoreInfoClick}>
-              More Info
-            </MoreInfoButton> */}
+            {productDetail?.PROD_DETAILS_PRICE}
           </Detail>
           <Detail>
             <DetailLabel>Description:</DetailLabel>{" "}
-            {productDetail.PROD_DETAILS_DESCRIPTION}
+            {productDetail?.PROD_DETAILS_DESCRIPTION}
           </Detail>
           <Detail>
             <DetailLabel>Reorder Level:</DetailLabel> {product.PROD_RO_LEVEL}
@@ -320,7 +225,7 @@ const ProductDetailsModal = ({ productId, onClose }) => {
           </>
         ) : (
           <>
-            <Button variant="red" onClick={handleRemove}>
+            <Button variant="red">
               Remove
             </Button>
             <Button variant="primary" onClick={handleEdit}>
