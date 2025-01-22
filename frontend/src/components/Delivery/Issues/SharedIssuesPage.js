@@ -6,24 +6,25 @@ import Table from "../../Layout/Table";
 // import IssueData from "../../../data/IssueData"; // Import IssueData
 import Button from "../../Layout/Button";
 import CardTotalIssues from "../../CardsData/CardTotalIssues";
-import { fetchIssueList } from "../../../api/addIssueAPI";
+import { fetchDeliveryIssues } from "../../../api/addIssueAPI";
 
 const SharedIssuesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [issueData, setIssueData] = useState([]);
 
-  // useEffect(() => {
-  //   const issueList = async () => {
-  //     try {
-  //       const data = await fetchIssueList();
-  //       setIssueData(data);
-  //     } catch (error) {
-  //       console.error("Error fetching purchase orders:", error);
-  //     }
-  //   };
-  //   issueList();
-  // }, []);
+  useEffect(() => {
+    const issueList = async () => {
+      try {
+        const data = await fetchDeliveryIssues();
+        setIssueData(data);
+        console.log("fetched issues", data);
+      } catch (error) {
+        console.error("Error fetching purchase orders:", error);
+      }
+    };
+    issueList();
+  }, []);
 
   // const filteredIssues = IssueData
   //   .filter((issue) => {
