@@ -6,20 +6,27 @@ import Button from "../Layout/Button"; // Assuming Button is located at this pat
 
 // Utility function to format numbers as currency
 const formatCurrency = (value) => {
-  const numberValue = typeof value === "number" && !isNaN(value) ? value : 0;
-  return `₱${numberValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  // Convert the value to a number if it's not already
+  const numberValue =
+    typeof value === "number"
+      ? value
+      : parseFloat((value || "").toString().replace(/[^\d.-]/g, ""));
+
+  // Check if it's a valid number, otherwise set to 0
+  const validValue = isNaN(numberValue) ? 0 : numberValue;
+
+  // Format as currency
+  return `₱${validValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 };
 
-const SalesDetailsModal = ({ sale, onClose }) => {
+const SalesDetailsModal = ({ sale, invoiceDetails, onClose }) => {
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // Ensure sales_items has a fallback to an empty array
-  const salesItems = sale?.sales_items || [];
-
+  console.log("Received Details:", invoiceDetails);
   return (
     <Backdrop onClick={handleBackdropClick}>
       <Modal>
@@ -41,26 +48,28 @@ const SalesDetailsModal = ({ sale, onClose }) => {
           </DetailsColumn>
           <DetailsColumn>
             <Detail>
-              <strong>Customer Name:</strong> {sale?.CLIENT_NAME || "N/A"}
-            </Detail>
-            <Detail>
-              <strong>Payment Status:</strong> {sale?.SALES_INV_PYMNT_STATUS || "N/A"}
+              <strong>Customer Name:</strong>
+              <br /> {sale?.client_name || "N/A"}
             </Detail>
           </DetailsColumn>
           <DetailsColumn>
             <Detail>
-              <strong>Total Price:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_PRICE || 0)}
+              <strong>Total Price:</strong>{" "}
+              {formatCurrency(sale?.SALES_INV_TOTAL_PRICE || 0)}
             </Detail>
             <Detail>
-              <strong>Discount:</strong> {formatCurrency(sale?.SALES_INV_DISCOUNT || 0)}
+              <strong>Discount:</strong>{" "}
+              {formatCurrency(sale?.SALES_INV_DISCOUNT || 0)}
             </Detail>
           </DetailsColumn>
           <DetailsColumn>
             <Detail>
-              <strong>Gross Revenue:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_REVENUE || 0)}
+              <strong>Gross Revenue:</strong>{" "}
+              {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_REVENUE || 0)}
             </Detail>
             <Detail>
-              <strong>Gross Income:</strong> {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_INCOME || 0)}
+              <strong>Gross Income:</strong>{" "}
+              {formatCurrency(sale?.SALES_INV_TOTAL_GROSS_INCOME || 0)}
             </Detail>
           </DetailsColumn>
         </DetailsContainer>
@@ -69,26 +78,44 @@ const SalesDetailsModal = ({ sale, onClose }) => {
         <InvoiceTable>
           <thead>
             <tr>
-              <TableHeader>Invoice ID</TableHeader>
-              <TableHeader>Date</TableHeader>
-              <TableHeader>Client Name</TableHeader>
-              <TableHeader>Gross Revenue</TableHeader>
-              <TableHeader>Gross Income</TableHeader>
+              <TableHeader>Product Name</TableHeader>
+              <TableHeader>Qty</TableHeader>
+              <TableHeader>Selling Price</TableHeader>
+              <TableHeader>Purchase Price</TableHeader>
+              <TableHeader>Revenue </TableHeader>
+              <TableHeader>Income</TableHeader>
               <TableHeader>Total Price</TableHeader>
-              <TableHeader>Discount</TableHeader>
             </tr>
           </thead>
           <tbody>
-            {salesItems.length > 0 ? (
-              salesItems.map((item, index) => (
+            {invoiceDetails.length > 0 ? (
+              invoiceDetails.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell>{item.SALES_INV_ID || "N/A"}</TableCell>
-                  <TableCell>{item.SALES_INV_DATETIME?.split("T")[0] || "N/A"}</TableCell>
-                  <TableCell>{sale?.CLIENT_NAME || "N/A"}</TableCell>
-                  <TableCell>{formatCurrency(item.SALES_INV_ITEM_LINE_GROSS_REVENUE)}</TableCell>
-                  <TableCell>{formatCurrency(item.SALES_INV_ITEM_LINE_GROSS_INCOME)}</TableCell>
-                  <TableCell>{formatCurrency(sale?.SALES_INV_TOTAL_PRICE || 0)}</TableCell>
-                  <TableCell>{formatCurrency(sale?.SALES_INV_DISCOUNT || 0)}</TableCell>
+                  <TableCell>
+                    {item.SALES_INV_ITEM_PROD_NAME || "N/A"}
+                  </TableCell>
+                  <TableCell>{item.SALES_INV_item_PROD_DLVRD || "0"}</TableCell>
+                  <TableCell>
+                    {formatCurrency(item.SALES_INV_ITEM_PROD_SELL_PRICE) ||
+                      "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(item.SALES_INV_ITEM_PROD_PURCH_PRICE)}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(item.SALES_INV_ITEM_LINE_GROSS_REVENUE)}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(
+                      item?.SALES_INV_ITEM_LINE_GROSS_INCOME || 0
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(
+                      item?.SALES_INV_ITEM_PROD_SELL_PRICE *
+                        item.SALES_INV_item_PROD_DLVRD || 0
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
