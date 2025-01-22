@@ -11,13 +11,14 @@ import { addNewSupplierDelivery } from "../../../api/SupplierDeliveryApi";
 import EditSupplierOrderModal from "./EditSupplierOrderModal"; // Importing the EditSupplierOrderModal
 import { notify } from "../../Layout/CustomToast";
 
-const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
+const SupplierOrderDetailsModal = ({ order, onClose }) => {
   const abortControllerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State to control EditSupplierOrderModal visibility
-
+  const userRole = localStorage.getItem("user_type");
+  console.log("User Role: ", userRole);
   useEffect(() => {
     const fetchDetails = async () => {
       if (abortControllerRef.current) {
@@ -191,19 +192,25 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
             </SummaryItem>
           </TotalSummary>
         </Section>
-        {order.PURCHASE_ORDER_STATUS === "Pending" && (
-          <ButtonGroup>
-            <Button variant="red" onClick={handleCancelOrder}>
-              Cancel Order
-            </Button>
-            <Button variant="green" onClick={openEditModal}>
-              Update Order
-            </Button>
-            <Button variant="primary" onClick={handleAcceptOrder}>
-              Accept Order
-            </Button>
-          </ButtonGroup>
-        )}
+        <ButtonGroup>
+          {order.PURCHASE_ORDER_STATUS === "Pending" && (
+            <>
+              {(userRole === "admin" || userRole === "Admin") && (
+                <>
+                  <Button variant="red" onClick={handleCancelOrder}>
+                    Cancel Order
+                  </Button>
+                  <Button variant="green" onClick={openEditModal}>
+                    Update Order
+                  </Button>
+                </>
+              )}
+              <Button variant="primary" onClick={handleAcceptOrder}>
+                Accept Order
+              </Button>
+            </>
+          )}
+        </ButtonGroup>
       </Modal>
 
       {isEditModalOpen && (
