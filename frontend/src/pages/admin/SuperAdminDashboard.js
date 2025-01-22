@@ -7,6 +7,7 @@ import CardTotalSales from "../../components/CardsData/CardTotalSales";
 import CardTotalInventoryValue from "../../components/CardsData/CardTotalInventoryValue";
 import CardTotalCustomerOrder from "../../components/CardsData/CardTotalCustomerOrder";
 import CardTotalCustomers from "../../components/CardsData/CardTotalCustomers";
+import CardTotalCustomerDelivery from "../../components/CardsData/CardTotalCustomerDelivery";
 import CardTotalDelivery from "../../components/CardsData/CardTotalDelivery";
 import CardTotalLogs from "../../components/CardsData/CardTotalLogs";
 import CardTotalSupplierOrder from "../../components/CardsData/CardTotalSupplierOrder";
@@ -47,11 +48,11 @@ const SuperAdminDashboard = () => {
   const cardOnClickHandlers = {
     CardTotalProducts: () => navigate("/admin/products"),
     CardTotalPendingOrders: () => navigate("/admin/customer-order"),
-    CardTotalPendingPayment: () => navigate("/admin/customer-order"),
+    CardTotalPendingPayment: () => navigate("/admin/customer-delivery"),
     CardTotalInventoryValue: () => navigate("/admin/inventory"),
     CardTotalCustomerOrder: () => navigate("/admin/customer-order"),
     CardTotalCustomers: () => navigate("/admin/customers"),
-    CardTotalDelivery: () => navigate("/admin/delivery"),
+    CardTotalDelivery: () => navigate("/admin/customer-delivery"),
     CardTotalLogs: () => navigate("/admin/logs"),
     CardTotalSupplierOrder: () => navigate("/admin/purchase-order"),
     CardTotalReturns: () => navigate("/admin/issues"),
@@ -74,7 +75,7 @@ const SuperAdminDashboard = () => {
     CardTotalInventoryValue: <CardTotalInventoryValue />,
     CardTotalCustomerOrder: <CardTotalCustomerOrder />,
     CardTotalCustomers: <CardTotalCustomers />,
-    CardTotalDelivery: <CardTotalDelivery />,
+    CardTotalDelivery: <CardTotalCustomerDelivery />,
     CardTotalLogs: <CardTotalLogs />,
     CardTotalSupplierOrder: <CardTotalSupplierOrder />,
     CardTotalReturns: <CardTotalReturns />,
