@@ -582,7 +582,11 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
                 )}
               </TableCell>
 
-              <TableCell>{calculateQtyDefect(index)}</TableCell>
+              <TableCell>
+                {status === "Dispatched"
+                  ? calculateQtyDefect(index)
+                  : item.INBOUND_DEL_DETAIL_LINE_QTY_DEFECT}
+              </TableCell>
               <TableCell>
                 {status === "Dispatched" ? (
                   <InputContainer>
