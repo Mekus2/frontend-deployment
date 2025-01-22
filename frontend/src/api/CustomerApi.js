@@ -18,9 +18,11 @@ export const fetchTotalCustomer = async () => {
 // Fetch the list of customers
 export const fetchCustomers = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/clients/`);
+    const response = await axios.get(
+      `http://localhost:8000/customer/client-balance/`
+    );
     console.log("Fetched customers:", response.data);
-    return response.data;
+    return response.data.clients || [];
   } catch (error) {
     console.error("Failed to fetch customers", error);
     throw new Error("Failed to fetch customers");
