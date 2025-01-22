@@ -14,6 +14,8 @@ import {
   ButtonGroup,
   InputField,
 } from "../OrderStyles";
+import { notify } from "../../Layout/CustomToast";
+import { updatePurchaseOrder } from "../../../api/fetchPurchaseOrders";
 
 // Styled components for suggestions
 const SuggestionsContainer = styled.div`
@@ -66,14 +68,16 @@ const SummaryItem = styled.div`
   margin-top: 10px;
 `;
 
-const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
+const EditSupplierOrderModal = ({ order, orderDetails, onClose }) => {
   const [inputStates, setInputStates] = useState([]);
   const [productSearch, setProductSearch] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentEditingIndex, setCurrentEditingIndex] = useState(null);
+  const [updatedOrderDetails, setOrderDetails] = useState([]);
 
   useEffect(() => {
     if (orderDetails.length > 0) {
+      setOrderDetails(orderDetails); // Initialize updatedOrderDetails with the existing details
       setInputStates(
         orderDetails.map((detail) => ({
           productName: detail.PURCHASE_ORDER_DET_PROD_NAME,
@@ -99,52 +103,131 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
     const products = await getProductByName(value);
     setFilteredProducts(products);
     setCurrentEditingIndex(index);
+
+    console.log("Filtered Products:", products);
   };
 
   const handleProductSelect = (index, product) => {
+    // Combine existing orderDetails and updatedOrderDetails for duplicate checking
+    const allOrderDetails = [...orderDetails, ...updatedOrderDetails];
+
+    // Check if the selected product already exists in either the existing or updated details
+    const isProductAlreadySelected = allOrderDetails.some(
+      (detail) => detail.PURCHASE_ORDER_DET_PROD_ID === product.id
+    );
+
+    if (isProductAlreadySelected) {
+      notify.warning("This product is already added to the order.");
+      return; // Exit early if the product is already present
+    }
+
+    // Update inputStates to reflect the selected product's display details
     setInputStates((prevStates) => {
       const newStates = [...prevStates];
-      newStates[index].productName = product.PROD_NAME;
+      newStates[index] = {
+        ...newStates[index], // Retain existing values (e.g., quantity if already set)
+        productName: product.PROD_NAME, // Update productName
+        productId: product.id, // Add or update productId if needed
+      };
       return newStates;
     });
 
+    // Update updatedOrderDetails with the selected product's details
+    setOrderDetails((prevDetails) => {
+      const newDetails = [...prevDetails];
+      newDetails[index] = {
+        ...newDetails[index], // Retain existing fields (e.g., PURCHASE_ORDER_ID, quantity)
+        PURCHASE_ORDER_DET_PROD_ID: product.id, // Update with fetched product ID
+        PURCHASE_ORDER_DET_PROD_NAME: product.PROD_NAME, // Update with fetched product name
+      };
+      return newDetails;
+    });
+
+    // Close the product search suggestions
     setProductSearch(false);
   };
 
+  const handleAddProduct = () => {
+    const newProduct = {
+      PURCHASE_ORDER_DET_PROD_ID: 0,
+      PURCHASE_ORDER_DET_PROD_LINE_QTY: 0,
+      PURCHASE_ORDER_DET_PROD_NAME: "",
+      PURCHASE_ORDER_ID: order.PURCHASE_ORDER_ID,
+    };
+
+    const newInputState = {
+      productName: "",
+      quantity: 0,
+    };
+
+    setOrderDetails((prevOrderDetails) => {
+      const updatedDetails = [...prevOrderDetails, newProduct];
+      setInputStates((prevStates) => [...prevStates, newInputState]);
+      return updatedDetails;
+    });
+
+    console.log("Updated Product Details:", updatedOrderDetails);
+  };
+
   const handleRemoveProduct = (index) => {
+    // Update inputStates
     setInputStates((prevStates) => {
       const newStates = [...prevStates];
       newStates.splice(index, 1);
       return newStates;
     });
+
+    // Update updatedOrderDetails
+    setOrderDetails((prevOrderDetails) => {
+      const newDetails = [...prevOrderDetails];
+      newDetails.splice(index, 1);
+      return newDetails;
+    });
   };
 
-  const totalQuantity = orderDetails.reduce(
+  const totalQuantity = updatedOrderDetails.reduce(
     (total, detail) => total + (detail.PURCHASE_ORDER_DET_PROD_LINE_QTY || 0),
     0
   );
 
+  // Function to update the purchase order
+  const handleUpdate = async (purchaseOrderId, updatedData) => {
+    try {
+      // Make an API call to update the purchase order
+      const successMessage = await updatePurchaseOrder(
+        purchaseOrderId,
+        updatedData
+      );
+
+      // Optionally, show success message
+      alert(successMessage);
+    } catch (error) {
+      // Show an error alert if the update fails
+      alert("Error updating the Purchase Order.");
+      console.error("Error:", error);
+    }
+  };
+
   // Ensure orderDetails is not empty and the necessary data is available
-  const orderData = orderDetails[0]; // Assuming the first detail object contains all necessary order data
 
   return (
     <Modal title="Edit Supplier Order" status="Pending" onClose={onClose}>
       {/* Order details display above the table */}
-      {orderData && (
+      {order && (
         <Section>
           <p>
-            <strong>Order ID:</strong> {orderData.PURCHASE_ORDER_ID}
+            <strong>Order ID:</strong> {order.PURCHASE_ORDER_ID}
           </p>
           <p>
             <strong>Order Created Date:</strong>{" "}
-            {new Date(orderData.PURCHASE_ORDER_DATE_CREATED).toLocaleDateString()}
+            {new Date(order.PURCHASE_ORDER_DATE_CREATED).toLocaleDateString()}
           </p>
           <p>
-            <strong>Supplier ID:</strong> {orderData.PURCHASE_ORDER_SUPPLIER_ID}
+            <strong>Supplier ID:</strong> {order.PURCHASE_ORDER_SUPPLIER_ID}
           </p>
           <p>
             <strong>Supplier Name:</strong>{" "}
-            {orderData.PURCHASE_ORDER_SUPPLIER_CMPNY_NAME}
+            {order.PURCHASE_ORDER_SUPPLIER_CMPNY_NAME}
           </p>
         </Section>
       )}
@@ -161,8 +244,8 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {orderDetails.length > 0 ? (
-                orderDetails.map((detail, index) => (
+              {updatedOrderDetails.length > 0 ? (
+                updatedOrderDetails.map((detail, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <InputField
@@ -181,7 +264,9 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
                             {filteredProducts.map((product) => (
                               <SuggestionItem
                                 key={product.PROD_ID}
-                                onClick={() => handleProductSelect(index, product)}
+                                onClick={() =>
+                                  handleProductSelect(index, product)
+                                }
                               >
                                 {product.PROD_NAME}
                               </SuggestionItem>
@@ -197,13 +282,30 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
                           inputStates[index]?.quantity ||
                           detail.PURCHASE_ORDER_DET_PROD_LINE_QTY
                         }
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const quantity = e.target.value;
+
+                          // Update inputStates
                           setInputStates((prevStates) => {
                             const newStates = [...prevStates];
-                            newStates[index].quantity = e.target.value;
+                            newStates[index] = {
+                              ...newStates[index],
+                              quantity: Number(quantity), // Ensure the quantity is updated
+                            };
                             return newStates;
-                          })
-                        }
+                          });
+
+                          // Update updatedOrderDetails
+                          setOrderDetails((prevDetails) => {
+                            const newDetails = [...prevDetails];
+                            newDetails[index] = {
+                              ...newDetails[index],
+                              PURCHASE_ORDER_DET_PROD_LINE_QTY:
+                                Number(quantity), // Sync updated quantity
+                            };
+                            return newDetails;
+                          });
+                        }}
                         placeholder="Quantity"
                       />
                     </TableCell>
@@ -222,6 +324,11 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
             </tbody>
           </Table>
         </TableWrapper>
+        <ButtonWrapper>
+          <Button variant="primary" onClick={handleAddProduct}>
+            Add Product
+          </Button>
+        </ButtonWrapper>
       </Section>
 
       {/* Total Quantity display below the table */}
@@ -238,9 +345,22 @@ const EditSupplierOrderModal = ({ orderDetails, onClose }) => {
         </Button>
         <Button
           variant="primary"
-          onClick={() =>
-            alert("Order update functionality is not yet implemented.")
-          }
+          onClick={() => {
+            const updatedData = {
+              details: updatedOrderDetails.map((detail) => ({
+                PURCHASE_ORDER_DET_PROD_ID: detail.PURCHASE_ORDER_DET_PROD_ID,
+                PURCHASE_ORDER_DET_PROD_NAME:
+                  detail.PURCHASE_ORDER_DET_PROD_NAME,
+                PURCHASE_ORDER_DET_PROD_LINE_QTY:
+                  detail.PURCHASE_ORDER_DET_PROD_LINE_QTY,
+              })),
+            };
+
+            const purchaseOrderId = order.PURCHASE_ORDER_ID; // The ID of the purchase order you want to update
+
+            // Call the handleUpdate function
+            handleUpdate(purchaseOrderId, updatedData);
+          }}
         >
           Save Update
         </Button>

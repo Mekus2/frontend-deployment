@@ -3,9 +3,13 @@ import styled from "styled-components";
 import Modal from "../../Layout/Modal"; // Assuming you have a modal component
 import { colors } from "../../../colors"; // Ensure the path to colors is correct
 import Button from "../../Layout/Button"; // Ensure you import the Button component
-import { fetchPurchaseDetailsById } from "../../../api/fetchPurchaseOrders";
+import {
+  fetchPurchaseDetailsById,
+  cancelPurchaseOrder,
+} from "../../../api/fetchPurchaseOrders";
 import { addNewSupplierDelivery } from "../../../api/SupplierDeliveryApi";
 import EditSupplierOrderModal from "./EditSupplierOrderModal"; // Importing the EditSupplierOrderModal
+import { notify } from "../../Layout/CustomToast";
 
 const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
   const abortControllerRef = useRef(null);
@@ -81,8 +85,7 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
       details: orderDetails.map((detail) => ({
         INBOUND_DEL_DETAIL_PROD_ID: detail.PURCHASE_ORDER_DET_PROD_ID,
         INBOUND_DEL_DETAIL_PROD_NAME: detail.PURCHASE_ORDER_DET_PROD_NAME,
-        INBOUND_DEL_DETAIL_ORDERED_QTY:
-          detail.PURCHASE_ORDER_DET_PROD_LINE_QTY,
+        INBOUND_DEL_DETAIL_ORDERED_QTY: detail.PURCHASE_ORDER_DET_PROD_LINE_QTY,
       })),
     };
 
@@ -100,9 +103,23 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
     }
   };
 
-  const handleCancelOrder = () => {
-    console.log("Supplier order cancelled");
-    onClose(); // Close modal after action
+  const handleCancelOrder = async () => {
+    const purchaseOrderId = order.PURCHASE_ORDER_ID; // Replace this with the actual purchase order ID from your application context
+
+    try {
+      // Call the cancelPurchaseOrder API function
+      const successMessage = await cancelPurchaseOrder(purchaseOrderId);
+
+      // Show a success message
+      notify.success(successMessage);
+
+      // Close the modal after the action
+      onClose();
+    } catch (error) {
+      // Handle errors (for example, show an error message)
+      notify.error(error.message);
+      onClose();
+    }
   };
 
   const openEditModal = () => {
@@ -150,7 +167,9 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
                 {orderDetails.length > 0 ? (
                   orderDetails.map((detail) => (
                     <TableRow key={detail.PURCHASE_ORDER_DET_ID}>
-                      <TableCell>{detail.PURCHASE_ORDER_DET_PROD_NAME}</TableCell>
+                      <TableCell>
+                        {detail.PURCHASE_ORDER_DET_PROD_NAME}
+                      </TableCell>
                       <TableCell>
                         {detail.PURCHASE_ORDER_DET_PROD_LINE_QTY || 0}
                       </TableCell>
@@ -158,7 +177,9 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={2}>No order details available.</TableCell>
+                    <TableCell colSpan={2}>
+                      No order details available.
+                    </TableCell>
                   </TableRow>
                 )}
               </tbody>
@@ -187,6 +208,7 @@ const SupplierOrderDetailsModal = ({ order, onClose, userRole }) => {
 
       {isEditModalOpen && (
         <EditSupplierOrderModal
+          order={order}
           orderDetails={orderDetails}
           onClose={closeEditModal}
         />

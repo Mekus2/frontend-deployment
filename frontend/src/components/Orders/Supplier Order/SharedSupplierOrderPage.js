@@ -122,8 +122,8 @@ const SharedSupplierOrderPage = () => {
   return (
     <>
       <AnalyticsContainer>
-          <CardTotalSupplierOrder />
-          <CardTotalPendingOrders />
+        <CardTotalSupplierOrder />
+        <CardTotalPendingOrders />
       </AnalyticsContainer>
       <Controls>
         <SearchBar
@@ -221,7 +221,7 @@ const AnalyticsContainer = styled.div`
 
 const Status = styled.span`
   background-color: ${(props) =>
-    props.status === "Accepted"
+    props.status === "Accepted" || props.status === "Delivered"
       ? "#1DBA0B"
       : (props.status === props.status) === "In Progress"
       ? "#f08400"
