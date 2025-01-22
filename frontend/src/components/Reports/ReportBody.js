@@ -36,8 +36,8 @@ const ReportBody = ({
           icon={<FaShoppingCart />}
         />
         <ReportCard
-          label={`Order Value`}
-          value={`₱${totalOrderValue.toFixed(2)}`} // Keep peso sign in the value
+          label={`Order Quantity`}
+          value={`${totalOrderValue}`} // Keep peso sign in the value
           startDate={startDate ? formatDate(startDate) : ""}
           endDate={endDate ? formatDate(endDate) : ""}
           icon={<FaDollarSign />}

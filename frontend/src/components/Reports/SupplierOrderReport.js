@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReportBody from "./ReportBody";
-import PURCHASE_ORDR from "../../data/SuppOrderData"; // Corrected import
 import generatePDF from "./GeneratePdf";
 import generateExcel from "./GenerateExcel";
 import PreviewModal from "./PreviewModal";
@@ -12,69 +11,64 @@ const SupplierOrderReport = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pdfContent, setPdfContent] = useState("");
   const [excelData, setExcelData] = useState(null);
+  const [orders, setOrders] = useState([]); // State to store fetched orders
+
+  // Fetch purchase orders from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/supplier-order/purchaseOrder/");
+        const data = await response.json();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching purchase orders:", error);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   // Helper function to search in all fields
   const matchesSearchTerm = (order) => {
     const searchStr = searchTerm.toLowerCase();
     return (
-      order.SUPPLIER_NAME.toLowerCase().includes(searchStr) ||
-      order.PURCHASE_ORDER_DATE.toLowerCase().includes(searchStr) ||
-      order.PURCHASE_ORDER_QTY.toString().includes(searchStr) ||
-      order.PURCHASE_ORDER_COST.toString().includes(searchStr) ||
-      order.PURCHASE_ORDER_REVENUE.toString().includes(searchStr) ||
-      order.PURCHASE_ORDER_DISCOUNT.toString().includes(searchStr)
+      (order.PURCHASE_ORDER_SUPPLIER_CMPNY_NAME && order.PURCHASE_ORDER_SUPPLIER_CMPNY_NAME.toLowerCase().includes(searchStr)) ||
+      (order.PURCHASE_ORDER_DATE_CREATED && order.PURCHASE_ORDER_DATE_CREATED.toLowerCase().includes(searchStr)) ||
+      (order.PURCHASE_ORDER_TOTAL_QTY && order.PURCHASE_ORDER_TOTAL_QTY.toString().includes(searchStr)) ||
+      (order.PURCHASE_ORDER_SUPPLIER_CMPNY_NUM && order.PURCHASE_ORDER_SUPPLIER_CMPNY_NUM.toString().includes(searchStr))
     );
   };
 
-  // Ensure PURCHASE_ORDR is an array before using filter
-  const filteredOrders = Array.isArray(PURCHASE_ORDR)
-    ? PURCHASE_ORDR.filter((order) => {
-        const matchesDateRange =
-          (!startDate ||
-            new Date(order.PURCHASE_ORDER_DATE) >= new Date(startDate)) &&
-          (!endDate ||
-            new Date(order.PURCHASE_ORDER_DATE) <= new Date(endDate));
-        return matchesSearchTerm(order) && matchesDateRange;
-      }).sort(
-        (a, b) =>
-          new Date(b.PURCHASE_ORDER_DATE) - new Date(a.PURCHASE_ORDER_DATE)
-      )
-    : []; // Fallback to empty array if it's not an array
+  const filteredOrders = orders
+    .filter((order) => {
+      const matchesDateRange =
+        (!startDate ||
+          new Date(order.PURCHASE_ORDER_DATE_CREATED) >= new Date(startDate)) &&
+        (!endDate ||
+          new Date(order.PURCHASE_ORDER_DATE_CREATED) <= new Date(endDate));
+      return matchesSearchTerm(order) && matchesDateRange;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.PURCHASE_ORDER_DATE_CREATED) - new Date(a.PURCHASE_ORDER_DATE_CREATED)
+    );
 
   const totalOrders = filteredOrders.length;
 
   // Calculate total order value (as negative)
-  const totalOrderValue = -filteredOrders.reduce(
-    (acc, order) => acc + (order.PURCHASE_ORDER_REVENUE || 0),
+  const totalOrderValue = +filteredOrders.reduce(
+    (acc, order) => acc + (order.PURCHASE_ORDER_TOTAL_QTY || 0),
     0
   );
 
-  // Map the filtered orders to display necessary fields and calculate gross profit
-  const tableData = filteredOrders.map((order) => {
-    const grossProfit =
-      order.PURCHASE_ORDER_REVENUE -
-      order.PURCHASE_ORDER_COST -
-      order.PURCHASE_ORDER_DISCOUNT;
-    return [
-      order.SUPPLIER_NAME, // CUSTOMER
-      order.PURCHASE_ORDER_DATE, // DATE
-      `₱${order.PURCHASE_ORDER_COST.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`, // COST
-      `₱${order.PURCHASE_ORDER_REVENUE.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`, // REVENUE
-      `₱${grossProfit.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`, // GROSS PROFIT
-    ];
-  });
+  // Format the date and create the table data
+  const tableData = filteredOrders.map((order) => [
+    order.PURCHASE_ORDER_SUPPLIER_CMPNY_NAME, // Supplier Name
+    new Date(order.PURCHASE_ORDER_DATE_CREATED).toLocaleDateString("en-US"), // Formatted Date Created
+    order.PURCHASE_ORDER_STATUS, // Status
+    order.PURCHASE_ORDER_TOTAL_QTY, // Order Quantity
+  ]);
 
-  // Updated header to match the requested fields
-  const header = ["Supplier", "Order Date", "Cost", "Revenue", "Gross Profit"];
+  const header = ["Supplier", "Order Date", "Status", "Order Quantity"];
 
   const handlePreviewPDF = () => {
     const pdfData = generatePDF(

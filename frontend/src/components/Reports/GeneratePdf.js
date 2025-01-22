@@ -105,14 +105,14 @@ const generatePDF = (
   doc.text(`Total Orders: ${totalOrders}`, 14, summaryY);
 
   // Total Amount with commas
-  doc.text(
-    `Total Amount: ${totalValue.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`,
-    14,
-    summaryY + 6
-  ); // Format total amount with commas
+  // doc.text(
+  //   `Total Amount: ${totalValue.toLocaleString(undefined, {
+  //     minimumFractionDigits: 2,
+  //     maximumFractionDigits: 2,
+  //   })}`,
+  //   14,
+  //   summaryY + 6
+  // ); // Format total amount with commas
 
   // Convert to base64 string for preview or download
   return doc.output("datauristring");
