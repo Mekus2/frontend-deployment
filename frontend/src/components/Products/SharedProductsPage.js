@@ -21,14 +21,15 @@ const AllOrderReport = () => {
       try {
         setLoading(true);
         const [viewDailyResponse, currentStockResponse] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/report/viewdaily/"),
-          axios.get("http://127.0.0.1:8000/report/current/"),
+          axios.get("http://127.0.0.1:8000//viewdaily/"),
+          axios.get("http://127.0.0.1:8000/repreportort/current/"),
         ]);
 
         const combinedData = viewDailyResponse.data.map((daily) => {
-          const currentStock = currentStockResponse.data.find(
-            (current) => current.product_name === daily.product_name
-          )?.current_stock || 0;
+          const currentStock =
+            currentStockResponse.data.find(
+              (current) => current.product_name === daily.product_name
+            )?.current_stock || 0;
 
           return {
             id: daily.id, // Add an ID field if available
@@ -64,7 +65,13 @@ const AllOrderReport = () => {
     }
   };
 
-  const header = ["Product", "Date", "Opening Stock", "Current Stock", "Actions"];
+  const header = [
+    "Product",
+    "Date",
+    "Opening Stock",
+    "Current Stock",
+    "Actions",
+  ];
 
   return (
     <>
@@ -78,7 +85,9 @@ const AllOrderReport = () => {
         />
         <ReportCard
           label="Order Value"
-          value={`₱${tableData.reduce((acc, row) => acc + (row.gross || 0), 0).toFixed(2)}`}
+          value={`₱${tableData
+            .reduce((acc, row) => acc + (row.gross || 0), 0)
+            .toFixed(2)}`}
           startDate={startDate}
           endDate={endDate}
           icon={<FaDollarSign />}
@@ -91,7 +100,6 @@ const AllOrderReport = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        
       </Controls>
 
       {loading ? (
