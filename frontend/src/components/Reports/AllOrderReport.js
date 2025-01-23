@@ -129,8 +129,8 @@ const handlePreviewExcel = async () => {
           icon={<FaShoppingCart />}
         />
         <ReportCard
-          label="Order Value"
-          value={`₱${tableData.reduce((acc, row) => acc + (row.gross || 0), 0).toFixed(2)}`}
+          label="Total Current Stock"
+          value={`${tableData.reduce((acc, row) => acc + (row.currentStock || 0), 0)}`}
           startDate={startDate ? formatDate(startDate) : ""}
           endDate={endDate ? formatDate(endDate) : ""}
           icon={<FaDollarSign />}
@@ -142,7 +142,7 @@ const handlePreviewExcel = async () => {
           placeholder="Search reports..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        /> 
         <DateContainer>
           <label>
             Start Date:
@@ -167,6 +167,7 @@ const handlePreviewExcel = async () => {
         <p>Loading...</p>
       ) : (
         <ReportContent>
+  
           <Table
             headers={header}
             rows={tableData.map((row) => [
