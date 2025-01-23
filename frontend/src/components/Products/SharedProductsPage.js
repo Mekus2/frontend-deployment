@@ -31,7 +31,8 @@ const SharedProductsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+  useEffect(() => { 
+    
     const loadProductsAndCategories = async () => {
       try {
         // Fetch products with pagination and searchTerm
