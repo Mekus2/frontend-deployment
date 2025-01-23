@@ -31,8 +31,7 @@ const SharedProductsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => { 
-    
+  useEffect(() => {
     const loadProductsAndCategories = async () => {
       try {
         // Fetch products with pagination and searchTerm
@@ -64,14 +63,16 @@ const SharedProductsPage = () => {
           const category = uncachedCategories.find(
             (cat) => cat.PROD_CAT_CODE === productDetail.PROD_CAT_CODE
           );
-        
+
           const unit = productDetail.PROD_DETAILS_UNIT || "N/A";
-          const brand = product.PROD_BRAND|| "N/A";
+          const brand = product.PROD_BRAND || "N/A";
           const price = parseFloat(productDetail.PROD_DETAILS_PRICE);
-        
+
           // Combine brand and product name
-          const productName = `${product.PROD_BRAND || ""} ${product.PROD_NAME}`.trim();
-        
+          const productName = `${product.PROD_BRAND || ""} ${
+            product.PROD_NAME
+          }`.trim();
+
           return [
             productName, // Updated to include combined brand and name
             category ? category.PROD_CAT_NAME : "N/A",
@@ -120,7 +121,6 @@ const SharedProductsPage = () => {
     }
   };
 
-
   const closeProductDetailsModal = () => {
     setSelectedProductId(null);
     setIsProductDetailsModalOpen(false);
@@ -128,7 +128,7 @@ const SharedProductsPage = () => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-};
+  };
 
   if (loading) {
     return <div>Loading products...</div>;
@@ -138,7 +138,7 @@ const SharedProductsPage = () => {
     return <div>{error}</div>;
   }
 
-  const headers = [ 
+  const headers = [
     "Product Name",
     "Category",
     "Unit",
