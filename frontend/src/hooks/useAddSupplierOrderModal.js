@@ -168,21 +168,49 @@ const useAddSupplierOrderModal = (onSave, onClose) => {
     console.log("Selected product:", product);
 
     setOrderDetails((prevOrderDetails) => {
+      // Debug the current state before modification
+      console.log("Current orderDetails:", prevOrderDetails);
+
       const updatedOrderDetails = [...prevOrderDetails];
 
-      // Log for debugging
+      // Check if the product is already present in the order details
+      const existingProductIndex = updatedOrderDetails.findIndex(
+        (detail, idx) => detail.productId === product.id && idx !== index
+      );
+
+      if (existingProductIndex !== -1) {
+        // Product is already selected in another row
+        console.log(
+          `Product ID ${product.id} is already selected in row ${existingProductIndex}.`
+        );
+
+        // Add 1 to the quantity of the existing row
+        updatedOrderDetails[existingProductIndex].quantity += 1;
+
+        // Remove the current row
+        updatedOrderDetails.splice(index, 1);
+
+        console.log(
+          "Updated orderDetails after merging rows:",
+          updatedOrderDetails
+        );
+        return updatedOrderDetails;
+      }
+
+      // If the product is not already selected, update the row at the given index
       console.log(`Updating order details at index ${index} with product data`);
-      console.log(`Product ID: ${product.id}`);
-      console.log(`Product Name: ${product.PROD_NAME}`);
+      updatedOrderDetails[index] = {
+        ...updatedOrderDetails[index], // Preserve existing fields if necessary
+        productId: product.id,
+        productName: product.PROD_NAME,
+      };
 
-      // Update the Order Details
-      updatedOrderDetails[index].productId = product.id;
-      updatedOrderDetails[index].productName = product.PROD_NAME;
-
+      // Debug the updated state
+      console.log("Updated orderDetails:", updatedOrderDetails);
       return updatedOrderDetails;
     });
 
-    // Log for debuggging
+    // Reset product search and suggestions
     console.log("Resetting product search and suggestions");
     setProductSearch("");
     setFilteredProducts([]); // Reset product list
