@@ -9,6 +9,7 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
   const [remarks, setRemarks] = useState("");
   const [qtyAccepted, setQtyAccepted] = useState([]);
   const [isEditing, setIsEditing] = useState(false); // New state for edit mode
+  const [resolution, setResolution] = useState(""); // State to track selected resolution
 
   // Function to calculate the total defect amount
   const calculateTotalDefectAmount = (issueItems) => {
@@ -51,13 +52,12 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
         <DetailsColumn>
           <Detail>
             <strong>
-              Customer/Supplier Name:
-              <br />
+              {issue?.ORDER_TYPE === "Customer Delivery"
+                ? "Customer Name:"
+                : "Supplier Name:"}
             </strong>{" "}
             {issue?.name || "N/A"}
           </Detail>
-        </DetailsColumn>
-        <DetailsColumn>
           <Detail>
             <strong>Issue No:</strong> {issue?.ISSUE_NO || "N/A"}
           </Detail>
@@ -72,7 +72,21 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
           </Detail>
           <Detail>
             <strong>Resolution: </strong>
-            {issue?.RESOLUTION || "N/A"}
+            {isEditing ? (
+              <Select
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Resolution
+                </option>
+                <option value="Reshipment">Reshipment</option>
+                <option value="Offset Product">Offset Product</option>
+                <option value="Other">Other</option>
+              </Select>
+            ) : (
+              issue?.RESOLUTION || "N/A"
+            )}
           </Detail>
         </DetailsColumn>
       </DetailsContainer>
@@ -216,6 +230,15 @@ const Input = styled.input`
   &:focus {
     border-color: ${colors.primary};
   }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
 `;
 
 const ButtonGroup = styled.div`
