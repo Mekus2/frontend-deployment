@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Modal from "../../Layout/Modal";
 import Button from "../../Layout/Button";
 import { colors } from "../../../colors";
+import { notify } from "../../Layout/CustomToast";
 
 const IssueDetailModal = ({ issue, issueItems, onClose }) => {
   const [remarks, setRemarks] = useState("");
@@ -108,9 +109,14 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
           Cancel
         </Button>
         {/* Uncomment and implement the handleSubmit function */}
-        {/* <Button variant="primary" onClick={handleSubmit}>
-          Submit Issue
-        </Button> */}
+        <Button
+          variant="primary"
+          onClick={() => {
+            notify.warning("No cmommand yet!");
+          }}
+        >
+          Resolve Issue
+        </Button>
       </ButtonGroup>
     </Modal>
   );
