@@ -4,7 +4,7 @@ import AddCustomerOrderModal from "./AddCustomerOrderModal";
 import SearchBar from "../../../components/Layout/SearchBar";
 import Table from "../../../components/Layout/Table";
 import CardTotalCustomerOrder from "../../../components/CardsData/CardTotalCustomerOrder";
-import CardTotalPendingPayment from "../../../components/CardsData/CardTotalPendingPayment";
+import CardTotalPendingCusOrder from "../../../components/CardsData/CardTotalPendingCusOrder";
 import Button from "../../../components/Layout/Button";
 import { fetchCustomerOrders } from "../../../api/fetchCustomerOrders";
 import { FaPlus } from "react-icons/fa";
@@ -119,7 +119,7 @@ const SharedCustomerOrdersPage = ({ userRole }) => {
     <>
       <AnalyticsContainer>
         <CardTotalCustomerOrder />
-        <CardTotalPendingPayment />
+        <CardTotalPendingCusOrder />
       </AnalyticsContainer>
       <Controls>
         <SearchBar

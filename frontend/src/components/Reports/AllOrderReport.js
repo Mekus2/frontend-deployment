@@ -6,6 +6,7 @@ import axios from "axios"; // For API calls
 import Table from "../Layout/Table";
 import SearchBar from "../Layout/SearchBar";
 import Button from "../Layout/Button";
+import { colors } from "../../colors";
 import ReportCard from "../Layout/ReportCard";
 import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
 
@@ -33,9 +34,10 @@ const AllOrderReport = () => {
         const currentStockData = currentStockResponse.data;
 
         const combinedData = viewDailyData.map((daily) => {
-          const currentStock = currentStockData.find(
-            (current) => current.product_name === daily.product_name
-          )?.current_stock || 0;
+          const currentStock =
+            currentStockData.find(
+              (current) => current.product_name === daily.product_name
+            )?.current_stock || 0;
 
           return {
             product: daily.product_name,
@@ -57,44 +59,43 @@ const AllOrderReport = () => {
   }, []);
 
   const header = ["Product", "Date", "Opening Stock", "Current Stock"];
-// Handle PDF Preview
-const handlePreviewPDF = async () => {
-  const validTableData = tableData.map((row) => [
-    row.product || "N/A", // Fallback value if undefined
-    row.date || "N/A", // Fallback value if undefined
-    row.openingStock || 0, // Fallback value if undefined
-    row.currentStock || 0, // Fallback value if undefined
-  ]);
+  // Handle PDF Preview
+  const handlePreviewPDF = async () => {
+    const validTableData = tableData.map((row) => [
+      row.product || "N/A", // Fallback value if undefined
+      row.date || "N/A", // Fallback value if undefined
+      row.openingStock || 0, // Fallback value if undefined
+      row.currentStock || 0, // Fallback value if undefined
+    ]);
 
-  try {
-    const pdfData = await generatePDF(header, validTableData);
-    setPdfContent(pdfData); // Set the generated PDF content
-    setExcelData(null); // Clear any Excel data
-    setIsModalOpen(true); // Open preview modal
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-  }
-};
+    try {
+      const pdfData = await generatePDF(header, validTableData);
+      setPdfContent(pdfData); // Set the generated PDF content
+      setExcelData(null); // Clear any Excel data
+      setIsModalOpen(true); // Open preview modal
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
 
-// Handle Excel Preview
-const handlePreviewExcel = async () => {
-  const validTableData = tableData.map((row) => [
-    row.product || "N/A", // Fallback value if undefined
-    row.date || "N/A", // Fallback value if undefined
-    row.openingStock || 0, // Fallback value if undefined
-    row.currentStock || 0, // Fallback value if undefined
-  ]);
+  // Handle Excel Preview
+  const handlePreviewExcel = async () => {
+    const validTableData = tableData.map((row) => [
+      row.product || "N/A", // Fallback value if undefined
+      row.date || "N/A", // Fallback value if undefined
+      row.openingStock || 0, // Fallback value if undefined
+      row.currentStock || 0, // Fallback value if undefined
+    ]);
 
-  try {
-    const excelData = await generateExcel(header, validTableData);
-    setExcelData(excelData); // Set the generated Excel data
-    setPdfContent(null); // Clear any PDF content
-    setIsModalOpen(true); // Open preview modal
-  } catch (error) {
-    console.error("Error generating Excel:", error);
-  }
-};
-
+    try {
+      const excelData = await generateExcel(header, validTableData);
+      setExcelData(excelData); // Set the generated Excel data
+      setPdfContent(null); // Clear any PDF content
+      setIsModalOpen(true); // Open preview modal
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+    }
+  };
 
   const handleDownloadPDF = () => {
     const link = document.createElement("a");
@@ -130,7 +131,9 @@ const handlePreviewExcel = async () => {
         />
         <ReportCard
           label="Order Value"
-          value={`₱${tableData.reduce((acc, row) => acc + (row.gross || 0), 0).toFixed(2)}`}
+          value={`₱${tableData
+            .reduce((acc, row) => acc + (row.gross || 0), 0)
+            .toFixed(2)}`}
           startDate={startDate ? formatDate(startDate) : ""}
           endDate={endDate ? formatDate(endDate) : ""}
           icon={<FaDollarSign />}
@@ -138,30 +141,41 @@ const handlePreviewExcel = async () => {
       </CardsContainer>
 
       <Controls>
-        <SearchBar
-          placeholder="Search reports..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <DateContainer>
-          <label>
-            Start Date:
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </label>
-          <label>
-            End Date:
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </label>
-        </DateContainer>
-      </Controls>
+  <div style={{ display: "flex", alignItems: "center" }}>
+    <SearchBar
+      placeholder="Search reports..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+    <Button
+      data-cy="simple-button"
+      backgroundColor={colors.primary}
+      hoverColor={colors.primaryHover}
+      onClick={() => console.log("Simple Button Clicked")} // Replace with desired functionality
+    >
+      Button
+    </Button>
+  </div>
+  <DateContainer>
+    <label>
+      Start Date:
+      <input
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+    </label>
+    <label>
+      End Date:
+      <input
+        type="date"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+      />
+    </label>
+  </DateContainer>
+</Controls>
+
 
       {loading ? (
         <p>Loading...</p>
