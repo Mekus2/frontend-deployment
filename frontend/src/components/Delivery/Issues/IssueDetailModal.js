@@ -4,12 +4,15 @@ import Modal from "../../Layout/Modal";
 import Button from "../../Layout/Button";
 import { colors } from "../../../colors";
 import { notify } from "../../Layout/CustomToast";
+import { resolveIssue } from "../../../api/addIssueAPI";
 
 const IssueDetailModal = ({ issue, issueItems, onClose }) => {
   const [remarks, setRemarks] = useState("");
   const [qtyAccepted, setQtyAccepted] = useState([]);
   const [isEditing, setIsEditing] = useState(false); // New state for edit mode
   const [resolution, setResolution] = useState(""); // State to track selected resolution
+  // Temporary state to store the edited quantity separately
+  const [editedQty, setEditedQty] = useState(null);
 
   // Function to calculate the total defect amount
   const calculateTotalDefectAmount = (issueItems) => {
@@ -33,13 +36,64 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
     setIsEditing(true);
   };
 
-  const handleResolvedClick = () => {
-    notify.success("Issue Resolved!");
-    setIsEditing(false); // Exit edit mode after resolving
+  const handleResolvedClick = async () => {
+    try {
+      // Display success notification
+      notify.success("Issue Resolved!");
+
+      // Prepare the data
+      const preparedData = {
+        "Issue No": issue.ISSUE_NO,
+        "Delivery ID": issue.DELIVERY_ID,
+        "Delivery Type": issue.ORDER_TYPE,
+        Resolution: issue.RESOLUTION,
+        items: issueItems.map((item) => ({
+          PROD_ID: item.ISSUE_PROD_ID,
+          PROD_NAME: item.ISSUE_PROD_NAME,
+          QTY_DEFECT: item.ISSUE_QTY_DEFECT,
+          PRICE: item.ISSUE_PROD_LINE_PRICE,
+        })),
+      };
+
+      console.log("Prepared data:", preparedData);
+
+      // Call the resolveIssue function to send data to the backend
+      const result = await resolveIssue(issue, issueItems);
+
+      // Check the result and handle accordingly
+      if (result && result.message === "Issue resolved successfully") {
+        // Handle success (e.g., show success message, update UI, etc.)
+        console.log("Issue resolved!");
+      } else {
+        // Handle error (e.g., show error message, update UI, etc.)
+        console.error("Error resolving issue:", result);
+      }
+
+      // Exit edit mode after resolving
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      // Optionally notify user about the error
+      notify.error("An unexpected error occurred while resolving the issue.");
+    }
   };
 
   const handleCloseClick = () => {
     setIsEditing(false); // Exit edit mode
+  };
+
+  const handleQtyChange = (e, index) => {
+    const newQty = parseInt(e.target.value, 10);
+
+    // Validate the new quantity: Ensure the new value doesn't exceed ISSUE_QTY_DEFECT
+    if (newQty < 0 || newQty > issueItems[index].ISSUE_QTY_DEFECT) {
+      return; // Ignore if the quantity is out of bounds
+    }
+
+    // Update the temporary edited quantity
+    const updatedItems = [...issueItems];
+    updatedItems[index].ISSUE_QTY_DEFECT = newQty; // Save the updated quantity
+    setQtyAccepted(updatedItems); // Update the state
   };
 
   return (
@@ -116,12 +170,7 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
                     type="number"
                     value={item.ISSUE_QTY_DEFECT}
                     max={item.ISSUE_QTY_DEFECT} // Set the max value to ISSUE_QTY_DEFECT
-                    onChange={(e) => {
-                      const newQty = e.target.value;
-                      const updatedItems = [...issueItems];
-                      updatedItems[index].ISSUE_QTY_DEFECT = newQty;
-                      setQtyAccepted(updatedItems); // Update the quantity
-                    }}
+                    onChange={(e) => handleQtyChange(e, index)} // Handle change for quantity
                   />
                 ) : (
                   item.ISSUE_QTY_DEFECT
