@@ -6,6 +6,7 @@ import SearchBar from "../../Layout/SearchBar";
 // import Table from "../../Layout/Table_Pagination";
 import Table from "../../Layout/Table";
 import CardTotalSupplierDelivery from "../../CardsData/CardTotalSupplierDelivery";
+import PendingSuppDel from "../../CardsData/PendingSuppDel";
 import CardTotalDelivered from "../../CardsData/CardTotalDelivered";
 import Button from "../../Layout/Button";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
@@ -120,6 +121,7 @@ const SharedSupplierDeliveryPage = () => {
         <>
           <SummarySection>
             <CardTotalDelivered />
+            <PendingSuppDel />
           </SummarySection>
           <Controls>
             <SearchBar
@@ -194,6 +196,7 @@ const SummarySection = styled.div`
   justify-content: left;
   margin-bottom: 20px;
   flex-direction: row;
+  gap: 10px;
 `;
 
 const SpinnerWrapper = styled.div`

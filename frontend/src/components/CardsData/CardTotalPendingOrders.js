@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Card from "../Layout/Card";
 import styled from "styled-components";
-import { FaClipboardCheck } from "react-icons/fa";
+import { FaHourglassHalf } from "react-icons/fa";
 import { fetchPurchaseOrders } from "../../api/fetchPurchaseOrders";
 
 const TotalPendingOrders = () => {
@@ -31,7 +31,7 @@ const TotalPendingOrders = () => {
       <Card
         label="Pending Orders"
         value={pendingOrderCount}
-        icon={<FaClipboardCheck />} 
+        icon={<FaHourglassHalf />} 
       />
     </CardContainer>
   );

@@ -3,11 +3,13 @@ import styled from "styled-components";
 import Modal from "../../Layout/Modal";
 import Button from "../../Layout/Button";
 import { colors } from "../../../colors";
+import { notify } from "../../Layout/CustomToast";
 
 const IssueDetailModal = ({ issue, issueItems, onClose }) => {
   const [remarks, setRemarks] = useState("");
-  const [issueType, setIssueType] = useState("");
   const [qtyAccepted, setQtyAccepted] = useState([]);
+  const [isEditing, setIsEditing] = useState(false); // New state for edit mode
+  const [resolution, setResolution] = useState(""); // State to track selected resolution
 
   // Function to calculate the total defect amount
   const calculateTotalDefectAmount = (issueItems) => {
@@ -27,23 +29,35 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
     }, 0);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleResolvedClick = () => {
+    notify.success("Issue Resolved!");
+    setIsEditing(false); // Exit edit mode after resolving
+  };
+
+  const handleCloseClick = () => {
+    setIsEditing(false); // Exit edit mode
+  };
+
   return (
     <Modal
       data-cy="supplier-create-issue-modal"
-      title="Report a Supplier Orders Issue"
+      title="Report a Supplier Order Issue"
       onClose={onClose}
     >
       <DetailsContainer>
         <DetailsColumn>
           <Detail>
             <strong>
-              Customer/Supplier Name:
-              <br />
+              {issue?.ORDER_TYPE === "Customer Delivery"
+                ? "Customer Name:"
+                : "Supplier Name:"}
             </strong>{" "}
             {issue?.name || "N/A"}
           </Detail>
-        </DetailsColumn>
-        <DetailsColumn>
           <Detail>
             <strong>Issue No:</strong> {issue?.ISSUE_NO || "N/A"}
           </Detail>
@@ -58,7 +72,21 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
           </Detail>
           <Detail>
             <strong>Resolution: </strong>
-            {issue?.RESOLUTION || "N/A"}
+            {isEditing ? (
+              <Select
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select Resolution
+                </option>
+                <option value="Reshipment">Reshipment</option>
+                <option value="Offset Product">Offset Product</option>
+                <option value="Other">Other</option>
+              </Select>
+            ) : (
+              issue?.RESOLUTION || "N/A"
+            )}
           </Detail>
         </DetailsColumn>
       </DetailsContainer>
@@ -66,6 +94,7 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
       <RemarksTextArea
         value={issue?.REMARKS}
         placeholder="Describe the issue with the product"
+        disabled={!isEditing}
       />
 
       <ProductTable>
@@ -81,9 +110,30 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
           {issueItems.map((item, index) => (
             <TableRow key={index}>
               <TableCell>{item.ISSUE_PROD_NAME}</TableCell>
-              <TableCell>{item.ISSUE_QTY_DEFECT}</TableCell>
+              <TableCell>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={item.ISSUE_QTY_DEFECT}
+                    max={item.ISSUE_QTY_DEFECT} // Set the max value to ISSUE_QTY_DEFECT
+                    onChange={(e) => {
+                      const newQty = e.target.value;
+                      const updatedItems = [...issueItems];
+                      updatedItems[index].ISSUE_QTY_DEFECT = newQty;
+                      setQtyAccepted(updatedItems); // Update the quantity
+                    }}
+                  />
+                ) : (
+                  item.ISSUE_QTY_DEFECT
+                )}
+              </TableCell>
+
               <TableCell>{item.ISSUE_PROD_LINE_PRICE}</TableCell>
-              <TableCell>{item.ISSUE_LINE_TOTAL_PRICE}</TableCell>
+              <TableCell>
+                {(item.ISSUE_QTY_DEFECT * item.ISSUE_PROD_LINE_PRICE).toFixed(
+                  2
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </tbody>
@@ -93,24 +143,30 @@ const IssueDetailModal = ({ issue, issueItems, onClose }) => {
       <SummarySection>
         <FormGroup>
           <Label>Total Defect Amount:</Label>
-          {/* Uncomment and implement the calculation function */}
           <Value>₱{calculateTotalDefectAmount(issueItems).toFixed(2)}</Value>
         </FormGroup>
         <FormGroup>
           <Label>Total Order Value:</Label>
-          {/* Uncomment and implement the calculation function */}
           <Value>₱{calculateTotalOrderValue(issueItems).toFixed(2)}</Value>
         </FormGroup>
       </SummarySection>
 
       <ButtonGroup>
-        <Button variant="red" onClick={onClose}>
-          Cancel
-        </Button>
-        {/* Uncomment and implement the handleSubmit function */}
-        {/* <Button variant="primary" onClick={handleSubmit}>
-          Submit Issue
-        </Button> */}
+        {/* Show Resolve or Edit buttons depending on the mode */}
+        {isEditing ? (
+          <>
+            <Button variant="primary" onClick={handleResolvedClick}>
+              Resolved
+            </Button>
+            <Button variant="red" onClick={handleCloseClick}>
+              Close
+            </Button>
+          </>
+        ) : (
+          <Button variant="primary" onClick={handleEditClick}>
+            Resolve Issue
+          </Button>
+        )}
       </ButtonGroup>
     </Modal>
   );
@@ -121,15 +177,6 @@ const Label = styled.label`
   font-weight: bold;
   margin-bottom: 5px;
   display: block;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 20px;
 `;
 
 const RemarksLabel = styled.label`
@@ -170,6 +217,28 @@ const TableCell = styled.td`
   padding: 10px;
   border-bottom: 1px solid #ddd;
   text-align: center;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 5px;
+  text-align: center;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  margin: 5px 0;
+  font-size: 14px;
+  &:focus {
+    border-color: ${colors.primary};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
 `;
 
 const ButtonGroup = styled.div`

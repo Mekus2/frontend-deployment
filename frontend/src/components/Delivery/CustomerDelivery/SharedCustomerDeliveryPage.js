@@ -5,7 +5,8 @@ import CustomerPayment from "./CustomerPayment"; // Ensure correct path
 import { colors } from "../../../colors";
 import SearchBar from "../../Layout/SearchBar"; // Ensure correct export
 import Table from "../../Layout/Table"; // Ensure correct export
-import CardTotalCustomerDelivery from "../../CardsData/CardTotalCustomerDelivery"; // Ensure correct export
+import CardTotalCustDelivered from "../../CardsData/CardTotalCustDelivered"; // Ensure correct export
+import CardTotalPendingCusDel from "../../CardsData/CardTotalPendingCusDel"; // Ensure correct export
 import Button from "../../Layout/Button"; // Ensure correct export
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import Loading from "../../Layout/Loading"; // Import Loading component
@@ -35,6 +36,8 @@ const SummarySection = styled.div`
   display: flex;
   justify-content: left;
   margin-bottom: 20px;
+  flex-direction: row;
+  gap: 10px;
 `;
 
 const Status = styled.span`
@@ -83,6 +86,7 @@ const SharedCustomerDeliveryPage = () => {
   const [orders, setOrders] = useState([]);
   const [customerPayables, setCustomerPayables] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [paymentSearchTerm, setPaymentSearchTerm] = useState(""); // Added state for Payment SearchBar
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [sortConfig, setSortConfig] = useState({
@@ -123,19 +127,26 @@ const SharedCustomerDeliveryPage = () => {
 
   const filteredDeliveries = (orders || []).filter((delivery) => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
-  
+
     return Object.values(delivery).some((value) => {
       if (value && value.toString) {
-        // Convert value to a string and make it case-insensitive
         const stringValue = value.toString().toLowerCase();
-  
-        // Check if the search term is included in the string value
         return stringValue.includes(lowerCaseSearchTerm);
       }
       return false;
     });
   });
-  
+
+  const filteredPayables = (customerPayables || []).filter((customer) => {
+    const lowerCaseSearchTerm = paymentSearchTerm.toLowerCase();
+    return Object.values(customer).some((value) => {
+      if (value && value.toString) {
+        const stringValue = value.toString().toLowerCase();
+        return stringValue.includes(lowerCaseSearchTerm);
+      }
+      return false;
+    });
+  });
 
   // Sorting Deliveries
   const sortedDeliveries = filteredDeliveries.sort((a, b) => {
@@ -214,7 +225,7 @@ const SharedCustomerDeliveryPage = () => {
     </Button>,
   ]);
 
-  const PayableRows = (customerPayables || []).map((customer) => {
+  const PayableRows = (filteredPayables || []).map((customer) => {
     const startDate = customer.PAYMENT_START_DATE
       ? new Date(customer.PAYMENT_START_DATE).toLocaleString()
       : "Unknown Date";
@@ -249,7 +260,8 @@ const SharedCustomerDeliveryPage = () => {
   return (
     <>
       <SummarySection>
-        <CardTotalCustomerDelivery />
+        <CardTotalCustDelivered />
+        <CardTotalPendingCusDel />
       </SummarySection>
       <Controls>
         <SearchBar
@@ -308,8 +320,16 @@ const SharedCustomerDeliveryPage = () => {
         />
       </div>
 
-      {/* Payment Table (Duplicate) */}
+      {/* Payment Table with SearchBar */}
       <div style={{ marginTop: "20px" }}>
+        <Controls>
+          <SearchBar
+            data-cy="payment-search-bar"
+            placeholder="Search Payments..."
+            value={paymentSearchTerm}
+            onChange={(e) => setPaymentSearchTerm(e.target.value)}
+          />
+        </Controls>
         <h3>Payment</h3>
         <Table
           headers={PaymentHeaders.map((header) => (
@@ -334,5 +354,6 @@ const SharedCustomerDeliveryPage = () => {
     </>
   );
 };
+
 
 export default SharedCustomerDeliveryPage;
