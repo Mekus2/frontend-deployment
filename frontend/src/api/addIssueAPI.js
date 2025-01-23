@@ -122,3 +122,50 @@ export const fetchDeliveryIssues = async () => {
     throw error; // Propagates the error to the calling function for further handling
   }
 };
+
+// Function to resolve Issues
+export const resolveIssue = async (issue, issueItems) => {
+  const apiUrl = "http://127.0.0.1:8000/api/delivery/issue/resolve/";
+  const preparedData = {
+    "Issue No": issue.ISSUE_NO,
+    "Delivery ID": issue.DELIVERY_ID,
+    "Delivery Type": issue.ORDER_TYPE,
+    Resolution: issue.RESOLUTION,
+    items: issueItems.map((item) => ({
+      PROD_ID: item.ISSUE_PROD_ID,
+      PROD_NAME: item.ISSUE_PROD_NAME,
+      QTY_DEFECT: item.ISSUE_QTY_DEFECT,
+      PRICE: item.ISSUE_PROD_LINE_PRICE,
+    })),
+  };
+
+  try {
+    // Make a POST request to the backend API
+    const response = await axios.post(apiUrl, preparedData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Handle success
+    if (response.status === 200) {
+      console.log("Issue resolved successfully:", response.data);
+      return response.data; // You can return the response or perform other actions
+    }
+  } catch (error) {
+    // Handle error
+    if (error.response) {
+      // Server responded with an error
+      console.error("Error resolving issue:", error.response.data);
+      return error.response.data;
+    } else if (error.request) {
+      // No response from server
+      console.error("No response from the server:", error.request);
+      return { error: "No response from server" };
+    } else {
+      // Something else happened
+      console.error("Unexpected error:", error.message);
+      return { error: "An unexpected error occurred" };
+    }
+  }
+};
