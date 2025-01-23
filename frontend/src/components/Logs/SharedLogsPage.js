@@ -100,7 +100,7 @@ const SharedLogsPage = () => {
         <Loading />
       ) : (
         <div>
-          <Tabs>
+          {/* <Tabs>
             <StyledTabButton
               active={activeTab === "User Logs"}
               onClick={() => {
@@ -119,7 +119,7 @@ const SharedLogsPage = () => {
             >
               Transaction Logs
             </StyledTabButton>
-          </Tabs>
+          </Tabs> */}
           <AnalyticsContainer>
             <Card
               label="Total Logs"
