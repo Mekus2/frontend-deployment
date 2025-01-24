@@ -551,22 +551,22 @@ const SupplierDeliveryDetails = ({ delivery, onClose }) => {
 
     console.log("Preparing Data:", inventoryData);
 
-    // try {
-    //   // Step 1: Add inventory
-    //   const inventoryResponse = await addNewInventory(inventoryData);
-    //   if (inventoryResponse) {
-    //     console.log("Inventory updated successfully:", inventoryResponse);
-    //     notify.success("Inventory has been updated successfully!");
-    //     window.location.reload();
-    //   } else {
-    //     console.error("Failed to add inventory.");
-    //     notify.error("Failed to update inventory. Please try again.");
-    //     window.location.reload();
-    //   }
-    // } catch (error) {
-    //   console.error("Error during the process:", error);
-    //   notify.error("An error occurred while processing your request.");
-    // }
+    try {
+      // Step 1: Add inventory
+      const inventoryResponse = await addNewInventory(inventoryData);
+      if (inventoryResponse) {
+        console.log("Inventory updated successfully:", inventoryResponse);
+        notify.success("Inventory has been updated successfully!");
+        window.location.reload();
+      } else {
+        console.error("Failed to add inventory.");
+        notify.error("Failed to update inventory. Please try again.");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error during the process:", error);
+      notify.error("An error occurred while processing your request.");
+    }
   };
 
   // Calculate Qty Defect (Difference between Delivered Quantity and Accepted Quantity)

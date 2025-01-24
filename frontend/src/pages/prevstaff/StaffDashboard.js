@@ -28,7 +28,7 @@ const StaffDashboard = () => {
     CardLowStocks: <CardLowStocks />,
     CardTotalCustomers: <CardTotalCustomers />,
     CardTotalCustomerOrder: <CardTotalCustomerOrder />,
-    CardTotalReturns: <CardTotalReturns />,
+    // CardTotalReturns: <CardTotalReturns />,
     CardTotalDelivery: <CardTotalDelivery />,
     //  CardTotalNotification: <CardTotalNotification />,
     // CardTotalCategories: <CardTotalCategories />, // Add categories card
@@ -47,7 +47,7 @@ const StaffDashboard = () => {
     CardLowStocks: () => navigate("/prevstaff/inventory"),
     CardTotalCustomers: () => navigate("/prevstaff/customers"),
     CardTotalCustomerOrder: () => navigate("/prevstaff/customer-order"),
-    CardTotalReturns: () => navigate("/prevstaff/issues"),
+    // CardTotalReturns: () => navigate("/prevstaff/issues"),
     CardTotalDelivery: () => navigate("/prevstaff/delivery"),
     CardTotalNotification: () => navigate("/prevstaff/notifications"), // Update as necessary
     CardTotalCategories: () => navigate("/prevstaff/categories"), // Update as necessary

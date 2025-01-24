@@ -94,6 +94,7 @@ const SharedCustomerDeliveryPage = () => {
     direction: "asc",
   });
   const [loading, setLoading] = useState(true);
+  const user_type = localStorage.getItem("user_type")
 
   // Fetch Data on Component Mount
   useEffect(() => {
@@ -322,21 +323,27 @@ const SharedCustomerDeliveryPage = () => {
 
       {/* Payment Table with SearchBar */}
       <div style={{ marginTop: "20px" }}>
-        <Controls>
-          <SearchBar
-            data-cy="payment-search-bar"
-            placeholder="Search Payments..."
-            value={paymentSearchTerm}
-            onChange={(e) => setPaymentSearchTerm(e.target.value)}
-          />
-        </Controls>
-        <h3>Payment</h3>
-        <Table
-          headers={PaymentHeaders.map((header) => (
-            <TableHeader key={header.key}>{header.title}</TableHeader>
-          ))}
-          rows={PayableRows}
-        />
+        
+        {user_type === "admin" && (
+          
+          <>
+          <Controls>
+            <SearchBar
+              data-cy="payment-search-bar"
+              placeholder="Search Payments..."
+              value={paymentSearchTerm}
+              onChange={(e) => setPaymentSearchTerm(e.target.value)}
+            />
+          </Controls>
+            <h3>Payment</h3>
+            <Table
+              headers={PaymentHeaders.map((header) => (
+                <TableHeader key={header.key}>{header.title}</TableHeader>
+              ))}
+              rows={PayableRows}
+            />
+          </>
+        )}
       </div>
 
       {selectedDelivery && (

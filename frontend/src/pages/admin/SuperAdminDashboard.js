@@ -34,9 +34,9 @@ const SuperAdminDashboard = () => {
     "CardTotalDelivery",
     "CardTotalLogs",
     "CardTotalSupplierOrder",
-    "CardTotalReturns",
+    // "CardTotalReturns",
     "CardTotalSuppliers",
-    "CardTotalTransactions",
+    // "CardTotalTransactions",
     "CardTotalUsers",
   ]);
 
@@ -55,9 +55,9 @@ const SuperAdminDashboard = () => {
     CardTotalDelivery: () => navigate("/admin/customer-delivery"),
     CardTotalLogs: () => navigate("/admin/logs"),
     CardTotalSupplierOrder: () => navigate("/admin/purchase-order"),
-    CardTotalReturns: () => navigate("/admin/issues"),
+    // CardTotalReturns: () => navigate("/admin/issues"),
     CardTotalSuppliers: () => navigate("/admin/suppliers"),
-    CardTotalTransactions: () => navigate("/admin/reports"),
+    // CardTotalTransactions: () => navigate("/admin/reports"),
     CardTotalUsers: () => navigate("/admin/users"),
     CardTotalSales: () => navigate("/admin/sales"),
   };

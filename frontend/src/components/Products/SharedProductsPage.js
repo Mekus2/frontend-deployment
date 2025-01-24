@@ -75,8 +75,6 @@ const SharedProductsPage = () => {
 
           return [
             productName, // Updated to include combined brand and name
-            category ? category.PROD_CAT_NAME : "N/A",
-            unit,
             brand,
             price && !isNaN(price) ? `₱${price.toFixed(2)}` : "₱0.00",
             <ActionButton
@@ -140,8 +138,6 @@ const SharedProductsPage = () => {
 
   const headers = [
     "Product Name",
-    "Category",
-    "Unit",
     "Supplier",
     "Price",
     "Actions",

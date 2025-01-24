@@ -27,12 +27,12 @@ const AdminReports = () => {
   return (
     <MainLayout>
       <Tabs>
-        <StyledTabButton
+        {/* <StyledTabButton
           active={activeTab === "Daily Stock Report"}
           onClick={() => setActiveTab("Daily Stock Report")}
         >
           Daily Stock Report
-        </StyledTabButton>
+        </StyledTabButton> */}
 
         <StyledTabButton
           active={activeTab === "Supplier Order Report"}
@@ -41,12 +41,12 @@ const AdminReports = () => {
           Supplier Order Report
         </StyledTabButton>
 
-        <StyledTabButton
+        {/* <StyledTabButton
           active={activeTab === "Customer Order Report"}
           onClick={() => setActiveTab("Customer Order Report")}
         >
           Customer Order Report
-        </StyledTabButton>
+        </StyledTabButton> */}
       </Tabs>
       {renderActiveReport()} {/* Render the report based on active tab */}
     </MainLayout>

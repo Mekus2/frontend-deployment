@@ -54,7 +54,7 @@ const AdminDashboard = () => {
     "CardTotalCustomerOrder",
     "CardTotalCustomers",
     "CardTotalDelivery",
-    "CardTotalReturns",
+    // "CardTotalReturns",
     "CardTotalLogs", // Add logs to the order
     "CardTotalSuppliers", // Add suppliers to the order
     "CardTotalStaffs", // Add users to the order
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
     CardTotalCustomerOrder: () => navigate("/staff/customer-order"),
     CardTotalCustomers: () => navigate("/staff/customers"),
     CardTotalDelivery: () => navigate("/staff/delivery"),
-    CardTotalReturns: () => navigate("/staff/issues"),
+    // CardTotalReturns: () => navigate("/staff/issues"),
     CardTotalLogs: () => navigate("/staff/logs"), // Update as necessary
     CardTotalSuppliers: () => navigate("/staff/suppliers"), // Update as necessary
     CardTotalStaffs: () => navigate("/staff/users"), // Update as necessary
